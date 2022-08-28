@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 156b2219ae057de41bbbc4278ace77b7, type: 3}
+  m_Name: GrassHills
+  m_EditorClassIdentifier: 
+  biomeName: Grass Hills
+  minTerrainHeight: 20
+  maxTerrainHeight: 23
+  terrainNoiseScale: 0.3
+  renderWorldBorder: 1
+  TopLayerBlock: {fileID: 11400000, guid: dacd877b6dfa5e64e9c1813b20db5aeb, type: 2}
+  UnderTopLayerBlock: {fileID: 11400000, guid: 6ef975ae1217fe74a83f721915f5043a, type: 2}
+  UnderTopLayerBlockDistance: 4
+  BottomLayerBlock: {fileID: 11400000, guid: aea85bdc38360104fa92f852257df464, type: 2}
+  waterSettings:
+    spawnPropsOnWater: 0
+    useSeaLevel: 1
+    sealevel: 25
+    seaBlock: {fileID: 11400000, guid: 44c250874fde05c448ab0c7f9867a424, type: 2}
+  blockProps: []
+  treeProps:
+  - offset: 789
+    treeTrunkBlock: {fileID: 11400000, guid: f37a7f6d97564364181c9ceb1ff1936a, type: 2}
+    treeLeavesBlock: {fileID: 11400000, guid: e64574a5ce280cb4ea1947719cecf873, type: 2}
+    useHeight: 0
+    minHeight: 0
+    maxHeight: 0
+    ZoneScale: 0.3
+    ZoneThreshold: 0.4
+    replaceZoneWhitBlock: 0
+    replaceBlock: {fileID: 0}
+    PlacementScale: 15
+    PlacementThreshold: 0.83
+    minTrunkHeight: 4
+    maxTrunkHeight: 6
+  cactusProps: []
+  modelProps: []
+  lodes: []

@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/uss/menu.uss?fileID=7433441132597879392&amp;guid=f1b3e17822aa8e342a8f2ae64ef7d266&amp;type=3#menu" />
+    <ui:VisualElement name="main-menu-screen" class="screen screen-background" style="background-color: rgba(255, 255, 255, 0);">
+        <ui:VisualElement name="menu-central-panel" class="menu-central-panel menu-background-color">
+            <ui:VisualElement name="menu-start-title" style="width: 50%; height: auto; min-height: 100px; background-image: url(&apos;project://database/Assets/Images/Logo3.png?fileID=2800000&amp;guid=a91b6dcaeec4662489a5e0a20045e631&amp;type=3#Logo3&apos;); -unity-background-scale-mode: scale-to-fit; flex-direction: column;" />
+            <ui:VisualElement name="menu-button-list" class="menu-button-list">
+                <ui:Button text="Start" display-tooltip-when-elided="true" name="start-button" class="menu-button menu-button-list main-menu-button1" style="font-size: 20px; padding-left: 2px; padding-right: 2px; margin-top: 5px; margin-bottom: 5px; color: rgb(255, 255, 255);" />
+                <ui:Button text="Settings" display-tooltip-when-elided="true" name="settings-button" class="menu-button menu-button-list main-menu-button1" style="font-size: 20px; padding-left: 2px; padding-right: 2px; margin-top: 5px; margin-bottom: 5px; color: rgb(255, 255, 255);" />
+                <ui:Button text="Exit" display-tooltip-when-elided="true" name="exit-button" class="menu-button menu-button-list main-menu-button1" style="font-size: 20px; padding-left: 2px; padding-right: 2px; margin-top: 5px; margin-bottom: 5px; color: rgb(255, 255, 255);" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
