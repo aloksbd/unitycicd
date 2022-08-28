@@ -132,9 +132,7 @@
             <Component Id="cmpA9684724C35CBEFE1508DF7AAD3953B1" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{4AC0D59E-CA28-430E-A11B-60CC8E061704}">
                 <File Id="filAFFE9DDE27A79880092116712B36DF33" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\globalgamemanagers.assets" />
             </Component>
-            <Component Id="cmp65FBC52759C66EAEE9A4AF679AC7E347" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{45A0306F-430D-4A43-952A-455E816A5145}">
-                <File Id="filBDE4C684F306737797448A10678914E8" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\globalgamemanagers.assets.resS" />
-            </Component>
+		
             <Component Id="cmp0B3E006EDD1902C500EAAD9EAF1640E9" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{66812E41-F63A-4ACD-9BE8-6DFC60AD75E7}">
                 <File Id="fil4B92DB3E40EC4B8FD7E28F0E17329176" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\level0" />
             </Component>
@@ -158,12 +156,6 @@
             </Component>
             <Component Id="cmp62821814777E0AD641FE18335892283E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{07D98723-F5DD-4774-A871-EFEC05078B62}">
                 <File Id="fil5EE7B6799FD2CF908A1F63549CD2DFF9" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Assembly-CSharp.dll" />
-            </Component>
-            <Component Id="cmp5C1138AD9C69B481240FE3EC1640F3D4" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{D79F3B33-94F6-4DA9-B91F-899BDC536B9B}">
-                <File Id="filE0BD2F724887235B371C1C1153BE19AD" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Cinemachine.dll" />
-            </Component>
-            <Component Id="cmpC82CBB7B0DA5927892290353B26055FD" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{3720250E-CDC2-4538-8B02-A440D527D30C}">
-                <File Id="fil4B2BED7A53011EE0D10D44925C344BD9" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\clipper_library.dll" />
             </Component>
             <Component Id="cmpA992A77256BC1986D8EBF97D99249168" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9AE544B2-8EBF-497F-A0EA-E0DC73E1F175}">
                 <File Id="filF3BEB7BD210CF61CB15E1345DFEC88D5" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Mono.Security.dll" />
@@ -213,9 +205,6 @@
             <Component Id="cmp238B24A9215C88C8B8C735C7DAACFA17" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{DA107E36-B6D8-44C2-8397-97A29EBF9503}">
                 <File Id="fil3E96935EEAB401FB9319DE37BEAB94C7" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\System.Numerics.dll" />
             </Component>
-            <Component Id="cmpDEB7E88EF376D06CA4970981CD2F3F4B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{5F8F8445-3D79-4DB5-8EE6-148D4C5B1641}">
-                <File Id="fil0D9BC2D219112EA24DCDE8FDC64F401B" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\System.Runtime.dll" />
-            </Component>
             <Component Id="cmp814011EDF17708F1719C27BE9FE55640" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FDA481F0-87DD-4938-84FA-6F6CFE66B7CC}">
                 <File Id="filC051579980F5EDB8D5E9F1AE440A5091" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\System.Runtime.Serialization.dll" />
             </Component>
@@ -234,48 +223,11 @@
             <Component Id="cmp627694A346DAA8E087A39A006EA0A4BB" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{2C9528A0-0177-42FE-A017-A2C1344B0ED4}">
                 <File Id="filCF2EB38BAFD395E05951F1899A8D3AE6" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\System.Xml.Linq.dll" />
             </Component>
-            <Component Id="cmp762DFBFAC2CF27C9D62FBC808575B320" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{06595944-4292-4AB8-A2A6-23C18D212623}">
-                <File Id="filA24165368EF0E5B5545F6D8ED6EA8345" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Burst.Cecil.dll" />
-            </Component>
-            <Component Id="cmpEBE896D6966BA63152B7311236C6DC7B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{268D2192-CEDC-4E55-B793-A7A3738344CD}">
-                <File Id="filC7C37EDE026AEDE038BF19A3BE4714B0" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Burst.Cecil.Mdb.dll" />
-            </Component>
-            <Component Id="cmp3A6BF7511FB41902A2F59985ED7D0944" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{0CD86F15-785E-433A-A0C6-77EC05F7F4A2}">
-                <File Id="filADB22401D6B2B414A8C0C983E57065A5" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Burst.Cecil.Pdb.dll" />
-            </Component>
-            <Component Id="cmpED3744DEE02079E5FAF26103A87B3657" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{EDB7BFD0-2BE8-4A90-BC77-DB17B936AE18}">
-                <File Id="fil62226727310273A9D3B0D4C36269F0A1" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Burst.Cecil.Rocks.dll" />
-            </Component>
-            <Component Id="cmp5592348423AAFF45A97ADC791DE37598" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{2B8BA1B4-B186-4F62-9D09-ED328613DAA1}">
-                <File Id="fil0A5979DF5FB3282CBE9A843BBE6929D7" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Burst.dll" />
-            </Component>
-            <Component Id="cmp366C201EBA20D6B6EA19C48F51BA1E75" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{23C8F71E-1AD9-4151-867F-7E63A8FA0311}">
-                <File Id="fil053C7035B45BDFAEE1C3842C0906EB51" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Burst.Unsafe.dll" />
-            </Component>
+            
             <Component Id="cmp11CB12E7989035DFB0EE74B43804E0AB" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9228C2F8-2FD7-4262-91DA-FF2D5F00C85F}">
                 <File Id="filC1F9B7292CAEA8A0A1C402FB05FD0436" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.InputSystem.dll" />
             </Component>
-            <Component Id="cmp6E6B2C87E4A6195847204F6D4E40F494" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{BC17285F-0789-4629-AFA0-788461ECDDA4}">
-                <File Id="filBF46E54E9ABDFDCCC44345E55D0A711E" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Mathematics.dll" />
-            </Component>
-            <Component Id="cmp0D3DDE4C010A56B15D26ADE5C6B68013" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{96394594-1883-4353-B143-2D352C4117EF}">
-                <File Id="filAE20BF334C231281EBF77C9317575A3C" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.RenderPipeline.Universal.ShaderLibrary.dll" />
-            </Component>
-            <Component Id="cmp8417DAB76BEB54584D92DDF3B0EE6298" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9B5E5FFD-CEE6-4AA6-9B61-BAE28BAAA09D}">
-                <File Id="fil347DB6AC974CB162ACA82366A05BF1BD" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.RenderPipelines.Core.Runtime.dll" />
-            </Component>
-            <Component Id="cmp68365BB306D4FF5DE18B812AD984AD83" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{909130DF-827C-4B1B-BF55-CBA781195831}">
-                <File Id="filBEB6A9E8FFFCDD317CA07A79F18CDE3E" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.RenderPipelines.Core.ShaderLibrary.dll" />
-            </Component>
-            <Component Id="cmp89CDA9365C2B261E02CA14A5520FB96F" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9622885D-5D80-47EA-8352-F1A1DD7E4374}">
-                <File Id="fil745247C2CDFF68B985874FAC5BBBAAF1" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll" />
-            </Component>
-            <Component Id="cmpDEF019FB303DEDA65DA31C879F27A8CD" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{AF8E3146-C4F8-4B09-9435-A9F129F20CD7}">
-                <File Id="fil74F36DE3E60742119818615FD4983AF2" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.RenderPipelines.Universal.Runtime.dll" />
-            </Component>
-            <Component Id="cmpDAC9221F3433048F06B3125C31562290" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{CF25DFAF-899F-4FE0-BDB2-F45B29942DB7}">
-                <File Id="filA6E056C82997EC077E8B43FDCBE98795" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.RenderPipelines.Universal.Shaders.dll" />
-            </Component>
+           
             <Component Id="cmp293D12A1E8A439F0A290B8ADF69AF468" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{B5C9EECB-EDD3-41C1-B71D-441C50D9C4F8}">
                 <File Id="filA7EE2A7B5E6AEF7EB325885C9B66788E" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\Unity.Services.Core.Analytics.dll" />
             </Component>
@@ -534,9 +486,7 @@
             <Component Id="cmpA52F9658F6B1D7E304E0D87FB6F1B4ED" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{491EAD5B-DA8F-43E5-8EAF-19109DEEAE8E}">
                 <File Id="fil6D4311490FADBB24DC337B769080D66D" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Managed\UnityEngine.XRModule.dll" />
             </Component>
-            <Component Id="cmp8A54C981188974FB3C75BFE3F584DA6E" Directory="dir55380559CD1A1B1A091708588CA5B18A" Guid="{4BE0191F-3B40-483B-A62B-C95D54A59FAA}">
-                <File Id="fil1D6641DCECF4159CEED79610DCD61072" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Plugins\x86_64\lib_burst_generated.dll" />
-            </Component>
+            
             <Component Id="cmp9C28707F40FF6194F9D58FD2FC23A9B9" Directory="dirE9943C285CF537BE5B9ADB6B66DF3DCF" Guid="{31C6B9C6-5FB2-4D93-8861-1EDEB3BE222C}">
                 <File Id="fil76F6A1E51B13761905875A27FD80E619" KeyPath="yes" Source="SourceDir\build\StandaloneWindows64\StandaloneWindows64_Data\Resources\unity default resources" />
             </Component>
