@@ -1,4 +1,6 @@
 using UnityEditor;
+     namespace Editor {
+          
 class MyEditorScript
 {
      static void PerformBuild ()
@@ -8,4 +10,5 @@ class MyEditorScript
         PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "CREATOR");
         BuildPipeline.BuildPlayer(buildPlayerOptions);
      }
+}
 }
