@@ -41,14 +41,10 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: BuildPlayer.MyEditorScript.PerformBuild
           customParameters:  -quit -batchmode
-      - name: Find Build
-        run: | 
-          dir creator /S
-        shell: cmd
       - uses: actions/upload-artifact@v2
         with:
           name: Earth9-Creator
-          path: build/Earth9-Creator.exe
+          path: creator/build/Earth9-Creator.exe
 #       - name: Building the installer
 #         run: | 
 #           dir build /S
