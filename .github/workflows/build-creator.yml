@@ -43,7 +43,8 @@ jobs:
           customParameters:  -quit -batchmode
       - name: Find Build
         run: | 
-          dir creator /S
+          dir /S
+        shell: cmd
       - uses: actions/upload-artifact@v2
         with:
           name: Earth9-Creator
