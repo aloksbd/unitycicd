@@ -44,18 +44,18 @@ jobs:
         with:
           name: Build-${{ matrix.targetPlatform }}
           path: build/${{ matrix.targetPlatform }}
-      - name: Building the installer
-        run: | 
-          dir build /S
-          "c:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" Setup.wxs
-          "c:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixUIExtension -cultures:en-us Setup.wixobj -out Earth9-Creator.msi
-        shell: cmd
-      - name: Upload the installer as an artifact
-        uses: actions/upload-artifact@v2
-        if: ${{ github.event_name != 'pull_request' }}
-        with:
-          path: "Earth9-Creator.msi"
-          name: Earth9-Creator
+#       - name: Building the installer
+#         run: | 
+#           dir build /S
+#           "c:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" Setup.wxs
+#           "c:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixUIExtension -cultures:en-us Setup.wixobj -out Earth9-Creator.msi
+#         shell: cmd
+#       - name: Upload the installer as an artifact
+#         uses: actions/upload-artifact@v2
+#         if: ${{ github.event_name != 'pull_request' }}
+#         with:
+#           path: "Earth9-Creator.msi"
+#           name: Earth9-Creator
           
 #   builForMacOS:
 #     name: Build for MacOS
