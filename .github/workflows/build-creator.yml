@@ -44,7 +44,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: Earth9-Creator
-          path: creator/build/Earth9-Creator.exe
+          path: creator/build
 #       - name: Building the installer
 #         run: | 
 #           dir build /S
