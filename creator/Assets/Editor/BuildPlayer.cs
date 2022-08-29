@@ -1,10 +1,10 @@
 using UnityEditor;
-namespace Editor {          
+namespace BuildPlayer {          
      class MyEditorScript
      {
           static void PerformBuild ()
           {
-//                PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "CREATOR");
+               PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "Player;FBXSDK_RUNTIME");
                BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
                buildPlayerOptions.scenes = new[] { "Assets/Scenes/Main.unity" };
                buildPlayerOptions.locationPathName = "build/Earth9-Creator.exe";
