@@ -4,10 +4,13 @@ namespace Editor {
      {
           static void PerformBuild ()
           {
-             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
-             buildPlayerOptions.scenes = new[] { "Assets/Main.unity" };
-             PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "CREATOR");
-             BuildPipeline.BuildPlayer(buildPlayerOptions);
+               PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "CREATOR");
+               BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
+               buildPlayerOptions.scenes = new[] { "Assets/Main.unity" };
+               buildPlayerOptions.locationPathName = "build";
+               buildPlayerOptions.target = BuildTarget.StandaloneWindows64;
+               buildPlayerOptions.options = BuildOptions.None;
+               BuildPipeline.BuildPlayer(buildPlayerOptions);
           }
      }
 }
