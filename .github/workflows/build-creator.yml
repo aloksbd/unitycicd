@@ -43,15 +43,12 @@ jobs:
           customParameters:  -quit -batchmode
       - name: Find Build
         run: | 
-          dir /S
+          dir build /S
         shell: cmd
       - uses: actions/upload-artifact@v2
         with:
           name: Earth9-Creator
           path: build/Earth9-Creator.exe
-      - name: Find Build creator
-        run: | 
-          dir /S
 #       - name: Building the installer
 #         run: | 
 #           dir build /S
