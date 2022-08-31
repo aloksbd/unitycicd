@@ -155,7 +155,6 @@ jobs:
   buildPlayForMacOS:
     name: Build Play for MacOS
     runs-on: macos-latest
-    needs: builCreatorForMacOS
     strategy:
       fail-fast: false
       matrix:
