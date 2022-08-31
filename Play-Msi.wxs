@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="5f72a567-ba4d-4652-9602-b193b74f92f7" Name="Earth9" Language="1033" Version="1.0.0.0" Manufacturer="WhiteHat Inc." UpgradeCode="586b6e95-5b80-4a4b-a118-0740574dcc91">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Description="Earth9" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+
+
+        <Media Id='1' Cabinet='Sample.cab' EmbedCab='yes' />
+
+		<WixVariable Id="WixUILicenseRtf" Value="lic.rtf"/>
+
+
+
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+		<UIRef Id="WixUI_InstallDir" />
+
+		<Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Thank you for installing Earth9" />
+
+		<Feature Id="ProductFeature" Title="Earth9" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="ParentFolder" Name="Earth9" >
+				  <Directory Id="INSTALLFOLDER" Name="Earth9" />
+                </Directory>
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<!-- <Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<Component Id='MainExecutable' Guid='0b8e16ab-016f-41a9-828b-7b251915158e'>
+        <File Id='Earth9' Name='Earth9.exe' Source='build\Earth9\Earth9.exe'>
+          </File>
+      </Component>
+      <Component Id='HelperLibrary' Guid='b5cfd45d-b1a5-4088-b226-6380c6dd1f02'>
+        <File Id='HelperDLL' Name='UnityPlayer.dll' Source='build\Earth9\UnityPlayer.dll'/>
+      </Component>
+		</ComponentGroup>
+	</Fragment> -->
+  <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirE801C19C9E30436AD9BEC33067C62D0D" Name="MonoBleedingEdge" />
+            <Directory Id="dirA02A818FD7ED3C40D7534DA96ADE9343" Name="Earth9_Data" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="ProductComponents">
+
+
+            <Component Id="cmpA281395FE4BD691F417F886B389318AC" Directory="INSTALLFOLDER" Guid="{17AB75A3-6E62-480E-871D-61B588FAF886}">
+                <File Id="fil603913DE24FCC714475C10536EF9AD13" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9.exe" />
+            </Component> 
+            <Component Id="cmp6F5096CB39BC376A6DABE5D956F73996" Directory="INSTALLFOLDER" Guid="{81661662-0DD4-478D-ACA7-A76CB34BC6F2}">
+                <File Id="fil3F969EA955265E473D152029F208EB3F" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\UnityPlayer.dll" />
+            </Component>
+            <Component Id="cmp8A7FF3577B801BB6F39E68D7E83021B7" Directory="dir07AD08F96EDACC147728212146419E28" Guid="{24F9BDC4-AC57-4186-8F83-7C64DE744596}">
+                <File Id="fil9C16C5A80B10E3C4B4C8117170EEDBCA" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\EmbedRuntime\mono-2.0-bdwgc.dll" />
+            </Component>
+            <Component Id="cmpDC50B09EDB1EB4A4DBD891EA301E114A" Directory="dir07AD08F96EDACC147728212146419E28" Guid="{71651B9C-6248-4C61-85CE-0E31D26E9A1E}">
+                <File Id="fil7DB1D5002E1DA91E14ED63613AF0DE5A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\EmbedRuntime\MonoPosixHelper.dll" />
+            </Component>
+            <Component Id="cmpCDFAEE51F655A049F584B1CAA5E290A5" Directory="dir84FCFE794A6A8F932B30FDEE81956232" Guid="{2D12CB1F-5336-4B1A-B46B-F6D54FBFE1BE}">
+                <File Id="filAF181AF50F2B21FA2CC57C78A22E858A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\browscap.ini" />
+            </Component>
+            <Component Id="cmp335B7F289FBD9F13131A240CDAB1BD12" Directory="dir84FCFE794A6A8F932B30FDEE81956232" Guid="{97B25FA1-BC8D-4794-A833-83F1356E7534}">
+                <File Id="filED92AE3F968608E5A1BC63DCF267F9AE" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\config" />
+            </Component>
+            <Component Id="cmpEC3BFEB44782D747C01A744334515A71" Directory="dirB798D0BA52A0A5A88901DB43190D2014" Guid="{76D25945-B75F-4409-8546-F09361B8D3B8}">
+                <File Id="fil5F3B3DF7CF8C41E6801397164BD8893D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\2.0\DefaultWsdlHelpGenerator.aspx" />
+            </Component>
+            <Component Id="cmpD8F3AB98AC1AB4B1884F12EFD167C5F0" Directory="dirB798D0BA52A0A5A88901DB43190D2014" Guid="{7F628831-845C-43EC-B3CC-8D43762B17A7}">
+                <File Id="fil5CAAA32B2C9FE0BB3C666BD0FB5B3A6A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\2.0\machine.config" />
+            </Component>
+            <Component Id="cmp03A9D58E8EE15165D15FB1ADC5548F60" Directory="dirB798D0BA52A0A5A88901DB43190D2014" Guid="{4782B1D9-3FD7-4457-B471-438E3AF0FCC1}">
+                <File Id="filE2EB075E91587D2235D66AB3A6161000" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\2.0\settings.map" />
+            </Component>
+            <Component Id="cmpD87BA2A5AFABC5FBA9E22873D0AED29F" Directory="dirB798D0BA52A0A5A88901DB43190D2014" Guid="{FC29B012-F77D-4D36-8A36-D8D8DE9B6669}">
+                <File Id="filF402D8EEBB0C512773308092DB21292F" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\2.0\web.config" />
+            </Component>
+            <Component Id="cmp6644857B95ED53E026F6AB3D684B3502" Directory="dir61418034769F6EDF579E2BD14CA2F6A4" Guid="{BBF8EF39-EA25-4909-8EF9-51B34B97A153}">
+                <File Id="fil54103363E68EE4925D06900E07E1D45B" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\2.0\Browsers\Compat.browser" />
+            </Component>
+            <Component Id="cmpC8B073CC4CB32284C67858FD6420B4DD" Directory="dir95B4487A800828C24F51876DCEADA3A3" Guid="{7AF9BF3D-6E02-4305-AC74-318188E4EA1C}">
+                <File Id="filA1F13AE5080DF946DB187E839E0807C7" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.0\DefaultWsdlHelpGenerator.aspx" />
+            </Component>
+            <Component Id="cmpD9EE473FB4875296E31D187928F2C77E" Directory="dir95B4487A800828C24F51876DCEADA3A3" Guid="{ED5F3058-2BB6-438E-8002-67D623F22BA7}">
+                <File Id="filB2408EADC48BCE23D360E0E3ABE5A4CB" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.0\machine.config" />
+            </Component>
+            <Component Id="cmp03D04E96DD47F6C41A88ABB2505E75A3" Directory="dir95B4487A800828C24F51876DCEADA3A3" Guid="{F6602A7C-6B8B-4E14-BEC3-BD3D72A046CF}">
+                <File Id="fil2C88CD45AAEEBF366363A4375177341F" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.0\settings.map" />
+            </Component>
+            <Component Id="cmp31A269488B85400D7FC8C514AF8DFBEE" Directory="dir95B4487A800828C24F51876DCEADA3A3" Guid="{47E712EE-4D37-461A-94A8-C66A4A95DDC5}">
+                <File Id="fil09F7D43AA92A3AC056186103211493FA" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.0\web.config" />
+            </Component>
+            <Component Id="cmpAFCB6A7165E0197EB678988ED7EDC2BF" Directory="dirFFC8E93BD048B49AB868C8B8855481BF" Guid="{FB78BC8E-A560-4A71-8675-7D6181C2353E}">
+                <File Id="filFFDFAD3993C48E24265A3C8245A0B878" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.0\Browsers\Compat.browser" />
+            </Component>
+            <Component Id="cmp0A24311DD68C153C58ADB240276F2C95" Directory="dir071C19208D56D113F9F3D5976FB46BF1" Guid="{35BE543B-F739-4587-BB15-D2A8D47900C3}">
+                <File Id="filEF0C4CF20D0E6C52E4C5C17E927A0C78" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.5\DefaultWsdlHelpGenerator.aspx" />
+            </Component>
+            <Component Id="cmpEC22366B3DBD9425C256CFD8D9A8A412" Directory="dir071C19208D56D113F9F3D5976FB46BF1" Guid="{6E39540A-F265-4E0D-86D8-BFA956022D61}">
+                <File Id="fil4776B926DD220BC7C6F1F782A86AD320" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.5\machine.config" />
+            </Component>
+            <Component Id="cmpC0563FABD3FCF19D9BBEFA44B4A44530" Directory="dir071C19208D56D113F9F3D5976FB46BF1" Guid="{4E5774B9-EDFE-41C4-A145-E17509AB74D1}">
+                <File Id="filA0EA0A82DFCC550397D475242395F5FB" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.5\settings.map" />
+            </Component>
+            <Component Id="cmp476FC7105F6317BDD3AC163F00F0EFA2" Directory="dir071C19208D56D113F9F3D5976FB46BF1" Guid="{585A2161-0449-4E86-837F-492B2A997581}">
+                <File Id="fil2D6D0FB0907DD740F56118DE42D5E869" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.5\web.config" />
+            </Component>
+            <Component Id="cmp687F22ED739A1A11CEF6AF63DA9F9E8A" Directory="dir3A154CADCA4DC0E68C506175F7DC6693" Guid="{CC64F57F-11E5-441F-A701-CEE95C255AE6}">
+                <File Id="filC6DD56318AA527DCF5DB7FD310AA7EAD" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\4.5\Browsers\Compat.browser" />
+            </Component>
+            <Component Id="cmp297343D05054941A7348F72C19B4B896" Directory="dirD3F3232D5DEDAE43545F4B3ADCFB80BA" Guid="{E4FD3B83-A305-4D6D-9E46-9A1B4B374359}">
+                <File Id="fil66F9343903590E70F555AA193919D703" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\MonoBleedingEdge\etc\mono\mconfig\config.xml" />
+            </Component>
+            <Component Id="cmp8D3E072F22FF3899B52CC2A5ECFFB8A2" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{D81F4EBE-DF5C-4D65-92F5-835C595FD04B}">
+                <File Id="filC2781B1F3797DA0B4F6FF71E35B388C8" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\app.info" />
+            </Component>
+            <Component Id="cmp12DA31DECA16B473C844B36FA63024D6" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{CAC61DF9-121D-4E33-A41A-572C0A2F25C7}">
+                <File Id="filF9F196C50DDEE48E922403051BD0EB65" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\boot.config" />
+            </Component>
+            <Component Id="cmpD39D6712AA9CCB5EDD8582ACA11BED56" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{991DE026-F8B8-403E-BED7-8CC8FB45D069}">
+                <File Id="fil74BD769510AA2A0684AC2FE4FDB61772" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\globalgamemanagers" />
+            </Component>
+            <Component Id="cmpA9684724C35CBEFE1508DF7AAD3953B1" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{4AC0D59E-CA28-430E-A11B-60CC8E061704}">
+                <File Id="filAFFE9DDE27A79880092116712B36DF33" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\globalgamemanagers.assets" />
+            </Component>
+		
+            <Component Id="cmp0B3E006EDD1902C500EAAD9EAF1640E9" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{66812E41-F63A-4ACD-9BE8-6DFC60AD75E7}">
+                <File Id="fil4B92DB3E40EC4B8FD7E28F0E17329176" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\level0" />
+            </Component>
+            <Component Id="cmp88CC0F6513C44C8FA2DD197A0A404F45" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{8E6E7677-5815-4FE8-BD12-4F6BD4A8C5A9}">
+                <File Id="fil9BE43887D7A7BD0C0697C75301FC3518" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\resources.assets" />
+            </Component>
+            <Component Id="cmp1AFBD252334B90D4DBC4F1A40EFFD1DB" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{C248254F-2E5A-4459-A599-46B754D470B2}">
+                <File Id="fil6A31CAF4AB1F3B5CA89997BB61759249" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\resources.assets.resS" />
+            </Component>
+            <Component Id="cmp6A8C64A59D65B351E368C0EC7ADCD1E8" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{544E144F-E46B-4711-948E-474DCF80E7B2}">
+                <File Id="filD5ADF715FE50D509C149C050CC0BB328" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\RuntimeInitializeOnLoads.json" />
+            </Component>
+            <Component Id="cmp398E44143DF2E2BB8CAD7730A8EA2FDB" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{5A6699DA-8CA1-49A2-A197-CA6F79822551}">
+                <File Id="filB1C64D2F8449E25F4150C156EBB3AFEC" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\ScriptingAssemblies.json" />
+            </Component>
+            <Component Id="cmp4DDD71103CAFBB4B3DEBC5665E6A3B3D" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{7491D3F9-2E7A-40A7-98BC-AE9DCA94C5EB}">
+                <File Id="fil3796504C343A3FB5C6536CEF8F93FC8D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\sharedassets0.assets" />
+            </Component>
+            <Component Id="cmp163ADF94138B2769F78ECA9FA2A6636E" Directory="dirA02A818FD7ED3C40D7534DA96ADE9343" Guid="{C10092D0-0A77-4C9C-A9DB-07DD16CABDEC}">
+                <File Id="filC58CB64FA81888EA78674B57DAF691BC" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\sharedassets0.assets.resS" />
+            </Component>
+            <Component Id="cmp62821814777E0AD641FE18335892283E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{07D98723-F5DD-4774-A871-EFEC05078B62}">
+                <File Id="fil5EE7B6799FD2CF908A1F63549CD2DFF9" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Assembly-CSharp.dll" />
+            </Component>
+            <Component Id="cmpA992A77256BC1986D8EBF97D99249168" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9AE544B2-8EBF-497F-A0EA-E0DC73E1F175}">
+                <File Id="filF3BEB7BD210CF61CB15E1345DFEC88D5" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Mono.Security.dll" />
+            </Component>
+            <Component Id="cmp2E706C56DBB2207C14E561D7BF02FC34" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{B033EEF4-F6C8-457D-B905-58A229AA3C69}">
+                <File Id="fil2E7724FB63722164B37B4D4C97036E37" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\mscorlib.dll" />
+            </Component>
+            <Component Id="cmpBA2AB2522CB1C9748933FC3ED1D15EAE" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{101A8AA8-2209-4B43-8E4D-AFEEA7FEB189}">
+                <File Id="fil9DB8938C72427421CACE02425EA8386D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\netstandard.dll" />
+            </Component>
+            <Component Id="cmpDE1441068B440657C28CDB85098C1EF5" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{4906D64C-301C-4455-8B07-A547D1E42561}">
+                <File Id="fil7434A5F6D618760430F663D9B918224E" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Newtonsoft.Json.dll" />
+            </Component>
+            <Component Id="cmp6B78215AC7CAA48C3544F06EE5A53627" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{361ED151-3EB7-43DE-AB01-CC5852EE1964}">
+                <File Id="fil8DFAA87F5324D08E3075E3685BA887EE" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.ComponentModel.Composition.dll" />
+            </Component>
+            <Component Id="cmp3476BABB55EA78423134864EFBA264F6" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{594C6080-CF7D-4A46-86C1-B8F574581A43}">
+                <File Id="fil45D9273FDCEFA4A910959631388E4784" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Configuration.dll" />
+            </Component>
+            <Component Id="cmp8F327634F7DFADDE82D75FF63F010A14" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{D33AA4BA-E38F-4A42-A085-95BED8861C11}">
+                <File Id="fil864B52B001C3E724D2B344D4CBF7E168" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Core.dll" />
+            </Component>
+            <Component Id="cmp62B54A20AD4DFE9750A29BAE3B729839" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{AE46BB48-523A-4F6B-BFFF-A17AEAD4D3F9}">
+                <File Id="fil1FD69382765E87943BED58CDAE5DDAD1" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Data.DataSetExtensions.dll" />
+            </Component>
+            <Component Id="cmpF7A56A4663B47B591C2353548C917B20" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{934D21A9-E909-4050-9355-F1D15C4DC6BE}">
+                <File Id="filC3DA9D2BEFA60D3448D7AA4512915918" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Data.dll" />
+            </Component>
+            <Component Id="cmpCB35DF29DFF9ABE5F3776F79D3F43E46" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{6326E9A1-2D75-43E7-847B-6D04EA2A104F}">
+                <File Id="fil1A9F06C03588DD8B1E37A74A1014DD55" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.dll" />
+            </Component>
+            <Component Id="cmp39D8D7A3AB4372B86B994C697B3101B5" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{4F5E0279-5590-4CB9-A12F-5719F4D25A7C}">
+                <File Id="fil7FF564C5122A2B6070D1B0FA88673E26" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Drawing.dll" />
+            </Component>
+            <Component Id="cmp8123EBD9683C6AA5294B8AD47729C13B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{520589F0-5463-45AA-97BF-461250633AB9}">
+                <File Id="fil47C0530106C8688758F5533E54D54B81" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.EnterpriseServices.dll" />
+            </Component>
+            <Component Id="cmp1CD223A600B22B981988C9D6C8A02785" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9F70E80C-FA5E-49A1-89AD-8360A66325EE}">
+                <File Id="fil9C7E30561D5EFA9B8B7153C5657CA26C" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.IO.Compression.dll" />
+            </Component>
+            <Component Id="cmpED983BEC1E15EACBE4580BF11AE0ECEF" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FBCC5182-B8C3-48AF-902B-A28F72E049AD}">
+                <File Id="filF004BD02D18E9181F4DD28490A13A9CC" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.IO.Compression.FileSystem.dll" />
+            </Component>
+            <Component Id="cmpDD83878DEAC83D00809FC8CB8CAD8E0A" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{034FB544-D86F-4830-A4B5-DFF67706D90D}">
+                <File Id="fil158F86F1C2A87236140BC9C4EE3AC2B8" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Net.Http.dll" />
+            </Component>
+            <Component Id="cmp238B24A9215C88C8B8C735C7DAACFA17" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{DA107E36-B6D8-44C2-8397-97A29EBF9503}">
+                <File Id="fil3E96935EEAB401FB9319DE37BEAB94C7" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Numerics.dll" />
+            </Component>
+            <Component Id="cmp814011EDF17708F1719C27BE9FE55640" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FDA481F0-87DD-4938-84FA-6F6CFE66B7CC}">
+                <File Id="filC051579980F5EDB8D5E9F1AE440A5091" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Runtime.Serialization.dll" />
+            </Component>
+            <Component Id="cmpA31664AA0D8872E3851EAAF644E81A4B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{2C8AF8E1-1930-4C28-808D-D96A675B700D}">
+                <File Id="fil5FEEC6778EC917FD7E6A1F8004F8DC2E" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Security.dll" />
+            </Component>
+            <Component Id="cmp0C41A1E36CE5CD7502F0FADD7DEB09EC" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FECF7BA0-5188-4EBA-8CF8-F433D10A09AC}">
+                <File Id="fil03208CA573B843743ADA3EAD515D8EFC" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.ServiceModel.Internals.dll" />
+            </Component>
+            <Component Id="cmpDB0B6B6BFF80B848DC2B193368D371F9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{85ED4833-46C4-4F39-9FEF-B1C437F0424A}">
+                <File Id="fil2CBB70E22334F77A682525B48999F921" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Transactions.dll" />
+            </Component>
+            <Component Id="cmp1350B7C2C79A7BA7E6F1FEE02E16B1FE" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{50B9331A-F462-41CC-BBB3-B03B1ECA655E}">
+                <File Id="fil6D495157422582B08181F045CDBE16E9" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Xml.dll" />
+            </Component>
+            <Component Id="cmp627694A346DAA8E087A39A006EA0A4BB" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{2C9528A0-0177-42FE-A017-A2C1344B0ED4}">
+                <File Id="filCF2EB38BAFD395E05951F1899A8D3AE6" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\System.Xml.Linq.dll" />
+            </Component>
+            
+            <Component Id="cmp11CB12E7989035DFB0EE74B43804E0AB" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9228C2F8-2FD7-4262-91DA-FF2D5F00C85F}">
+                <File Id="filC1F9B7292CAEA8A0A1C402FB05FD0436" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.InputSystem.dll" />
+            </Component>
+           
+            <Component Id="cmp293D12A1E8A439F0A290B8ADF69AF468" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{B5C9EECB-EDD3-41C1-B71D-441C50D9C4F8}">
+                <File Id="filA7EE2A7B5E6AEF7EB325885C9B66788E" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Analytics.dll" />
+            </Component>
+            <Component Id="cmp16A6AA1DE447944304025664DA37FBA7" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{EB6DD16E-4909-4351-9587-331ABF4B2D75}">
+                <File Id="fil215B90B2C4E2955D0ED7F5156F6C0E7A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Configuration.dll" />
+            </Component>
+            <Component Id="cmpDAEE50DC357F2A1ED238B3C193B40FD8" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{3EEE2895-57FC-4D39-9BFB-35870AD41F2D}">
+                <File Id="filE96C8F1816F43A5A46C32589A2EF5704" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Device.dll" />
+            </Component>
+            <Component Id="cmpD965A31C22CF375D4D2160F265E01758" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{09BC242E-24E9-409F-B5E9-D3F6014476AD}">
+                <File Id="fil6BF938AED4C70491F3FFDBAC6F5B9F93" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.dll" />
+            </Component>
+            <Component Id="cmpCBC51CCC75051E2EF672569ED5D95A32" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F934F032-CED7-4E61-B0D2-B77FC694F347}">
+                <File Id="fil69C91ED67A68F95545DFA1D6A930950D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Environments.dll" />
+            </Component>
+            <Component Id="cmp26B8D2B9E2C5CFCB7D03BB4C662E3411" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{E8236ECF-3B5C-4965-B63C-A1F5E7BBF5E2}">
+                <File Id="filCE248AB18CF1487F3CA665ED0FD9FBB8" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Environments.Internal.dll" />
+            </Component>
+            <Component Id="cmp01F9D07431F4778BFD4191AA40FB95CB" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{408591FB-18A7-42DA-830F-C12A61C7824F}">
+                <File Id="fil617C17BE1BD7919B595FBE96863A3118" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Internal.dll" />
+            </Component>
+            <Component Id="cmp10FAA8818385A5E03E5AF5CFF7F48421" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{92B7D4FB-3E81-4619-AEE4-F4212968038E}">
+                <File Id="filE4C24F17FDED908FC54AD94D640DFC08" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Networking.dll" />
+            </Component>
+            <Component Id="cmp2A427DEF9B4B62D9A9BA7B416B56D77D" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F3B275FF-ADC0-4346-9BF8-D97DE31652F7}">
+                <File Id="filB1F5CB3D7BF707963D924D3D5E838C1B" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Registration.dll" />
+            </Component>
+            <Component Id="cmp2E3A326F1B3ED67BD2C1F712B8156CC8" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FECB6F1C-BCF5-416B-8927-E02CDD4D6140}">
+                <File Id="fil11A4806D0E3EA07623332A76F8DE8FE6" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Scheduler.dll" />
+            </Component>
+            <Component Id="cmpF935BC58AF4D52935F66BCB8D7E9FBA9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{912C429C-0B35-4F46-9BBC-5645348123B3}">
+                <File Id="fil0AEC1560629903E22F7E9BCD5EDF931A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Telemetry.dll" />
+            </Component>
+            <Component Id="cmp3507BEFA2B070A67D09F6F461F386A39" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7734FB60-CC64-464B-8D2C-63C00EC519FF}">
+                <File Id="filD56E8585BDAB4A66671BCA78A8538F47" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Services.Core.Threading.dll" />
+            </Component>
+            <Component Id="cmp38DC284D43EAB0A17AB04C6D15163DFC" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{C40EC9FC-7E1F-4B23-B377-FFA57C99F6F2}">
+                <File Id="fil8D9640AE613A090A613B6E01D95773E0" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.TextMeshPro.dll" />
+            </Component>
+            <Component Id="cmpBFC33F9CD3BF7E9E73052ED4318FAE37" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{CD5C2AEE-7645-4D59-8858-2A34485DA090}">
+                <File Id="fil0F9875A474FF0D34EB16A58B4D455C89" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.Timeline.dll" />
+            </Component>
+            <Component Id="cmpBFD7060381B7C3D13CF72B482F0BE661" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{87EB51FF-FE4D-42B9-9AA1-89319BA5FD14}">
+                <File Id="fil20A03503C23EFA79E5BF322A7D52063F" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.VisualScripting.Antlr3.Runtime.dll" />
+            </Component>
+            <Component Id="cmpEC0B960B153DDFF242779FAC6321D9C9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{A433EAC4-2D20-4431-ABC1-455690A0876D}">
+                <File Id="fil943E9934CEFEBC8174E0920E196A3253" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.VisualScripting.Core.dll" />
+            </Component>
+            <Component Id="cmpF6D14266DD9BB38C77E519E33DC4DAAD" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{E1847730-0912-40D6-A6E7-D84AEBE2435A}">
+                <File Id="filDA0359E31759409B792813D7A6C1BF6A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.VisualScripting.Flow.dll" />
+            </Component>
+            <Component Id="cmp393E8FDBCCEC06730F6E7449707C3DDA" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{EAEF2670-3842-4C10-894A-0E0CF5CC8F4F}">
+                <File Id="fil5B8AC16D73A87882866F627F654F3C3E" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\Unity.VisualScripting.State.dll" />
+            </Component>
+            <Component Id="cmp74BCBABE5893456EAEAF9ADD503E87D0" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9509812F-19DA-46C4-AD0E-A1F4D0F70C5D}">
+                <File Id="filF9DB2CA40B371992A69F0CD42EE72A72" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.AccessibilityModule.dll" />
+            </Component>
+            <Component Id="cmpB68404D3EB716B0DF3ECFD591098BF52" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{41DFECEF-4CEF-4558-B743-8E191E300875}">
+                <File Id="fil22F8DB95917D020F155D4FF21F41FA8A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.AIModule.dll" />
+            </Component>
+            <Component Id="cmpB9C1AE4470231A68CBCD1C361BF6E64C" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{BE15FC0C-87C1-4822-81AB-542F77ADFAEA}">
+                <File Id="fil7D43F030ECA04B08B0D596653F26B9E0" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.AndroidJNIModule.dll" />
+            </Component>
+            <Component Id="cmp16CB0287AAC15C8ADEB4B94E970100C8" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F6FDEF2B-F6FB-42AF-B362-C0442727258C}">
+                <File Id="fil50701F94AFF8B8DD983D158A0EA84B61" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.AnimationModule.dll" />
+            </Component>
+            <Component Id="cmpD8CDBB55A1F1A83AE1C8F05F7A569FD3" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{D770476F-5E53-46B4-ABC7-5D8DBD8A5721}">
+                <File Id="filF457E7AD920DCC32735A48815F3D4B08" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ARModule.dll" />
+            </Component>
+            <Component Id="cmp589D284F16C5FCD162D1D5E0BB379EFA" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{8FB18B1F-1226-4D6F-AD99-85DD1B638FD3}">
+                <File Id="fil258693EB841C89B1D9115B80B647A8B8" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.AssetBundleModule.dll" />
+            </Component>
+            <Component Id="cmp4E9EEE1AB6D6DB1F8D8C8881CDCE0939" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{5B9AF00F-C328-4CCC-B94F-74B7DCD62B69}">
+                <File Id="fil1EA0CE818C4FE914C87C699C0D95977C" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.AudioModule.dll" />
+            </Component>
+            <Component Id="cmp02CA7CDEA4879973D262FFF011D07A31" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{CCC91CBB-3CB8-4809-8790-C4CB5DF05AF1}">
+                <File Id="fil023AA047CABE26E738BC8E480E287C62" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ClothModule.dll" />
+            </Component>
+            <Component Id="cmpA6237B5F133A8848EA7F4DEDBCCE600B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{28592F5C-7BCB-4C0D-A588-1D94E0E250DD}">
+                <File Id="fil9FBE914D27275C2265610B817372D48B" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ClusterInputModule.dll" />
+            </Component>
+            <Component Id="cmpA00A8BCF2459FED2E1CED1B8F172B2A7" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7C2FF159-A77A-43C8-B808-4DEDB83CAEDC}">
+                <File Id="fil55963460C06F7F75CAAA95D9EC0275DF" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ClusterRendererModule.dll" />
+            </Component>
+            <Component Id="cmpC04271E6FFF944A48C0DB2CE53B47E7F" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7C64DECB-C0CB-4FBF-A96A-1965525CD560}">
+                <File Id="fil59A88F42CDF51453A3D1F8384F315B9D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.CoreModule.dll" />
+            </Component>
+            <Component Id="cmp3532505E444AF7CDF1A818587027B969" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{3982CCA8-0DE6-469E-95CE-A32C53790BD0}">
+                <File Id="fil1FEFF545FBBC3A0077C182801DF7116D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.CrashReportingModule.dll" />
+            </Component>
+            <Component Id="cmp891984E7583A226C7B4BF1D2A0EDD02C" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{B211FE9B-A2D9-480F-906E-CD8E7E637345}">
+                <File Id="filD19A68F5CF06F9CAE5A4F97D29060969" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.DirectorModule.dll" />
+            </Component>
+            <Component Id="cmpC52F65EC8063E5150754D0EC7983E74E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F6F590DC-7B03-40BA-A424-3DE7D28799EF}">
+                <File Id="fil6121C0237988D77FDB92BF1DBCB21ED4" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.dll" />
+            </Component>
+            <Component Id="cmpD96C03228FC0FC7EF3D82BB96A668FC9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F83AAFD9-A25D-4D40-8E88-50B518B8CEC0}">
+                <File Id="fil37AD107123B7C698072DED526DE6461D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.DSPGraphModule.dll" />
+            </Component>
+            <Component Id="cmpC483DA67A9D44C35A8924697EFCAE41C" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{A34BA912-39F1-4EDE-9E3A-78E9EC4ADEEC}">
+                <File Id="fil5E2244736BB51BC8B8660120BEE4BF69" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.GameCenterModule.dll" />
+            </Component>
+            <Component Id="cmpA0528F696A9794EA356CB0D0254BDF36" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{2C1146E8-F78C-4B09-B297-60BB9D1BA41E}">
+                <File Id="filECA7DBD8D29F9E98671FE9889F691002" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.GIModule.dll" />
+            </Component>
+            <Component Id="cmp80B470EE73D6E30AF0174F561D9FCD89" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{59BAA8D5-A2DB-4548-BFB0-A970AFEE9E0B}">
+                <File Id="fil4D0BF0C121E072D094C460B68193B3B4" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.GridModule.dll" />
+            </Component>
+            <Component Id="cmp77AA3BFED348E239D29BCF27E0FC805B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FC26B5FB-E7D5-46A5-AEED-9A9A82B1D07C}">
+                <File Id="fil301EBAA91A5405651E877BC37305728B" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.HotReloadModule.dll" />
+            </Component>
+            <Component Id="cmp67404A9664B8B9ABDD5972CBB7E1AD81" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{40C71C06-2249-4A28-B682-DE072FDD0A38}">
+                <File Id="filBB3587E0B1BA67E7D494FD08F5C8060A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ImageConversionModule.dll" />
+            </Component>
+            <Component Id="cmp316835A575F50648BB9B17616EC87B9A" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{6B5CEEC1-BD37-419A-8082-250778C91AD9}">
+                <File Id="fil5127B897642E5EB526461665BC9B2D76" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.IMGUIModule.dll" />
+            </Component>
+            <Component Id="cmp0B5FD19BCAF76CFE42C2BC28FFEEF7B3" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{DEAEA7AE-3DAC-484E-B47D-7A0DF76E3EA4}">
+                <File Id="filE6D4A7A5538B0D758088264946A5ED80" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.InputLegacyModule.dll" />
+            </Component>
+            <Component Id="cmpD170B14B0CC6903EC88774B0179B4593" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{A4715551-6E10-4716-A665-8E3335BCCC05}">
+                <File Id="fil8625F1DDE525D4B5A55EFDF8A22DA472" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.InputModule.dll" />
+            </Component>
+            <Component Id="cmpD63548A0BBC4D56D08BE90045946B8AF" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{08478D31-98BC-4108-91C3-D2C6E83EB32F}">
+                <File Id="fil6E7866710C7EB03AAE522BB9E7F25B93" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.JSONSerializeModule.dll" />
+            </Component>
+            <Component Id="cmp3DA01647C2989D74E48C0AEC07C47BD4" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{D48D2CDC-5550-441C-96F2-DE06E2B52F12}">
+                <File Id="fil79B622C776CB4CD0688247C2103AEA43" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.LocalizationModule.dll" />
+            </Component>
+            <Component Id="cmp71844AC12976CF61B2E531CC81845E4B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{74C21863-C970-4AFC-A802-44F6C76503FD}">
+                <File Id="fil7BA5928BB70CDF31D1A8E606F63AC1AB" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.NVIDIAModule.dll" />
+            </Component>
+            <Component Id="cmp88BDB4578211BE8F420BF410FFDDC1D6" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{11E46B62-9FCA-44E0-AE28-086259FEDBCA}">
+                <File Id="fil1DFF6B2D64EB8DA223F55ABF90B3C9B8" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ParticleSystemModule.dll" />
+            </Component>
+            <Component Id="cmp8E720C3EAB2B0C0DCFF34D48D6D1143E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F4B16D7B-BCAB-433A-8D14-ED320D138C39}">
+                <File Id="fil6BF89E7FA18B77088407F70E241FE3E5" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.PerformanceReportingModule.dll" />
+            </Component>
+            <Component Id="cmp6177C01D8D314CFC3D1133F9044B6C5E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{42804466-6C3E-4350-9922-7C1A51F92ACB}">
+                <File Id="fil5C96A51B68A0DF073C66C8F3027C781A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.Physics2DModule.dll" />
+            </Component>
+            <Component Id="cmpCCB403C9D9D629C140CD8BDC4C00D01B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7085CB01-CF60-4CD4-8F63-D24C6ACC4874}">
+                <File Id="fil6380BE21C81E39D41D6FB516A50A44C6" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.PhysicsModule.dll" />
+            </Component>
+            <Component Id="cmpC681A4412609E03CD1F5F96AFDFFBF09" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{0D7EF58B-7E87-45DB-83C6-106073B5080E}">
+                <File Id="fil50972E0B5BCED0E2D87397BF22DEE0CC" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ProfilerModule.dll" />
+            </Component>
+            <Component Id="cmp3D37F102BD57A451CB392266A90AB2D1" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9438B20E-A483-4F1B-A77F-19C5EB46ED75}">
+                <File Id="fil2674A828293EC9A4027BEE5F62398F0A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll" />
+            </Component>
+            <Component Id="cmpB6D6ED11D17E6876CCCD495632D98D0E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{6C06946F-682A-452E-B1EB-02556FAC88A9}">
+                <File Id="fil69A31D44D64263C07385E9C84B57A641" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.ScreenCaptureModule.dll" />
+            </Component>
+            <Component Id="cmp4E46EECA48E94E33CF5C5DD5FB679EB9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{69C0A083-0989-455E-B0A7-331C46CEDF1B}">
+                <File Id="fil0DF2C2207ADD1D0D307292E71F471092" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.SharedInternalsModule.dll" />
+            </Component>
+            <Component Id="cmp81CA39F6DC7E654A848A382AE57EFFD7" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FD52AB76-8092-4CF0-9761-881021E15AF6}">
+                <File Id="fil225F33A252CA26AC0983F0003546FDC6" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.SpriteMaskModule.dll" />
+            </Component>
+            <Component Id="cmp8110BF9C96CD1CAC2990DED4CE5EC4A3" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7BF7321D-B43D-4BD5-8DFE-39F46CC65C9F}">
+                <File Id="fil50EB06074B8B54DFDACBE01508A3F6EB" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.SpriteShapeModule.dll" />
+            </Component>
+            <Component Id="cmpE7306F21CBE1261C22BCC84D69F73821" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F126084E-0A52-49F6-9801-517D030C6813}">
+                <File Id="fil6F55D8BD3B7552D21F2E351D31F9BFD7" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.StreamingModule.dll" />
+            </Component>
+            <Component Id="cmp4C7C4C5B46DA9310DA16906B3C71B8E5" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9A7DD642-12DE-432E-932A-B7BDF018FFF7}">
+                <File Id="fil9AF847BF84E839134EFAA3E606D7F0AA" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.SubstanceModule.dll" />
+            </Component>
+            <Component Id="cmp538F03D8CF55BE8162FAB73390CB8CFF" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{1A21DE7E-6A16-4426-931F-8C81484F60B8}">
+                <File Id="fil188F55C299E341896A429B8C07D443EE" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.SubsystemsModule.dll" />
+            </Component>
+            <Component Id="cmpFA8D28CF2F25DF61F85C759C0E64DCE4" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{8C68FD28-AF88-4A14-9994-6048C73D8B67}">
+                <File Id="fil527F2254D5A53E0AA3DC8C403DCA7D95" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TerrainModule.dll" />
+            </Component>
+            <Component Id="cmpD5863768437EC162787194F6A6268881" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FE2EAAED-149B-4152-9F0E-74C2F2876ABF}">
+                <File Id="filDD335DAE0B9DC4DF766B38554451A1BE" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TerrainPhysicsModule.dll" />
+            </Component>
+            <Component Id="cmpFBB4BF9F976E1369342E2842DAF9A1F2" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{8716EFBD-E3B7-481A-94B1-CDB7638D9E87}">
+                <File Id="filBC0890CEF32D26D32940256B5EF07A38" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TextCoreFontEngineModule.dll" />
+            </Component>
+            <Component Id="cmp5F7C37D748A037408EBDCC4A4E3F3DBA" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{6D06AAEC-4D47-4D68-9F6C-77D2585E5671}">
+                <File Id="fil633C0CBD5360C20734D15FFF16604CF4" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TextCoreTextEngineModule.dll" />
+            </Component>
+            <Component Id="cmpE0943C6D0E29A015036409A92D1E72CE" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{CACEFDE6-0C39-49C6-8D97-0AB2F19B3A32}">
+                <File Id="filC6FB21992B25533E637B09001E8C8BC9" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TextRenderingModule.dll" />
+            </Component>
+            <Component Id="cmp002361B228078D9ABCCF8F692A536EC9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{A68F65D9-7BAF-4DCF-9420-E205417499AA}">
+                <File Id="fil25773541F32AD9DBC7900A3698051FBF" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TilemapModule.dll" />
+            </Component>
+            <Component Id="cmp5CB8EEB60F0473F7DC4C22A6FC46E27E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{391EC896-6035-45B8-BA7D-17FF19807547}">
+                <File Id="fil8DD63F1CFDBB87E1990312B07F1523FE" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.TLSModule.dll" />
+            </Component>
+            <Component Id="cmp7E8D4FC2A109D4A8B8F6C2BB4ED5930A" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{832E882C-2B1B-4A17-A48D-C167A4177466}">
+                <File Id="filF108AF3B3A8D3D5BC92548656C6E760F" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UI.dll" />
+            </Component>
+            <Component Id="cmp048627B8BF1155BC86CC6C5A7C2ECA8E" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{C9639EDE-0D16-4FBE-AB8F-99FD7B46EC82}">
+                <File Id="fil72FF2BA40D08A69412F760C31C8FD970" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UIElementsModule.dll" />
+            </Component>
+            <Component Id="cmpBE42EF31AD3EFE427DE8EFDEE9B51D58" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{EF6CB289-D7F5-4E5B-9286-F6A33999DA1A}">
+                <File Id="filAE9917B156817DFD81E2300135DA2338" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UIElementsNativeModule.dll" />
+            </Component>
+            <Component Id="cmp1F9C6E9FEF55BB56E971C5A364AC7789" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{6DFF7D72-5DE2-4AE5-B830-CB1D13061250}">
+                <File Id="filF5074BE744824180F3674D96108E6695" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UIModule.dll" />
+            </Component>
+            <Component Id="cmpC92FA8A018B0402A94A1F5B8D675F710" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7B0B6B4C-D78D-438B-81B4-2994656CC5A0}">
+                <File Id="fil696E580CFEB7807D33D814F3885FCEAF" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UmbraModule.dll" />
+            </Component>
+            <Component Id="cmp69050CF74712B871F3E4FA7F25A1FFFD" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{7F386BE6-A9D4-4A54-BD91-BA42D0CBE9C3}">
+                <File Id="fil7D42810672763194450E0C104CD690E3" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UNETModule.dll" />
+            </Component>
+            <Component Id="cmp160A60694ACD936DFEE9F33A3D195817" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F9EFBACF-E16D-4F3B-9387-8965977C91C2}">
+                <File Id="filC8C764646356C1F0AD9E7A05E6257191" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityAnalyticsModule.dll" />
+            </Component>
+            <Component Id="cmp8AE1020D02E33854B2D7669E9E8EE7BD" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{0BE02074-4780-43EE-944C-97FD069D640F}">
+                <File Id="filF5049148C4D21A0D3D400460623DF78C" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityConnectModule.dll" />
+            </Component>
+            <Component Id="cmp5BF8CEDFCAF822E1D61284CCDF01C20A" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{44E8FC01-D7BD-457B-A038-E2C57F1285A1}">
+                <File Id="fil6FD3C9D6B71771FC6910173AD925F60D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityCurlModule.dll" />
+            </Component>
+            <Component Id="cmpB0C72CB80A5A594F568B8DA096CC36D1" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F80DC6EE-2F1D-4AC4-9741-524963EFE9A2}">
+                <File Id="filC918E576BB7581A99110DE9467822006" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityTestProtocolModule.dll" />
+            </Component>
+            <Component Id="cmpA5D7628B6BC8D6D3336E42D2E222F0C9" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{1A487868-2E85-435A-AA43-0D2BF78A1A76}">
+                <File Id="fil2EB5410A97CEA90B784E32A6593A4EE1" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityWebRequestAssetBundleModule.dll" />
+            </Component>
+            <Component Id="cmpBCCC88881A2595D29F717C5B13F632F7" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{91DFFB3B-023C-4BFB-BCF4-BB486DC3BCE8}">
+                <File Id="filF18C26B4683899AE9C984878CA38D9EB" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll" />
+            </Component>
+            <Component Id="cmp61F658CB544DE4CC00A2B493E1939BD0" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{39B80FE7-D3E6-451E-8E20-9FE96CC265C4}">
+                <File Id="fil181A468F2ADF48EFE8AB8B8D55192C59" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityWebRequestModule.dll" />
+            </Component>
+            <Component Id="cmpB6E64CA5472960ACD159FD2E9F82712B" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{3D3C8A23-B2AB-4B2D-9901-CCD7FF7AF62E}">
+                <File Id="filAC927F86D79A42350A31DFEDEFDD320A" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll" />
+            </Component>
+            <Component Id="cmpB82A07614E86DBAFDA5C06DA4D6A46AD" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{FA7147CC-3E2E-489F-BA5B-A90D8BA49624}">
+                <File Id="filFCA7C916EFB56F97BF8CBE326E80C055" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll" />
+            </Component>
+            <Component Id="cmpD75D8613FF4EC603EBAA150E90150E8C" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{0078FDC3-94EB-4ECE-919E-7C4D2AEE72B6}">
+                <File Id="fil400EA9E4C734ACBF67CA7595E7948EAB" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.VehiclesModule.dll" />
+            </Component>
+            <Component Id="cmp04B9A70169FD5440387350C9E10952EA" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{F94E1233-88F6-4B8C-95BB-2BBCBFDEEFF9}">
+                <File Id="filC23A62CE5D099F8F7A88DD227ECBF46D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.VFXModule.dll" />
+            </Component>
+            <Component Id="cmpAF6C43948550D89FE172C6F7C93A85A2" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{5D4A6B63-9942-49F4-BB75-98FC9298A623}">
+                <File Id="filBD398DFE668F00ED7C1ECF6ACD2952DE" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.VideoModule.dll" />
+            </Component>
+            <Component Id="cmp40D52569DC9D91C587C85FC1CA818921" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{6E7AEEB3-4C9B-41CB-8A85-C11824F4718D}">
+                <File Id="fil4450A69BBB49C07772B46E0A1A09905E" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.VirtualTexturingModule.dll" />
+            </Component>
+            <Component Id="cmpBD538ECACC35418B5231ACF095953EC1" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{3F42C55A-4314-4ED2-9F30-B5C19A4F073C}">
+                <File Id="filFAE6193A9326CC6838DF256C64A752E7" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.VRModule.dll" />
+            </Component>
+            <Component Id="cmp458ED8ED01DADFCAF34A483BD2B21D16" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{9C25FDC0-9991-4890-B0EE-4F3E4644D637}">
+                <File Id="fil8FE35FC3CF67FC15D179D02E846BAFFF" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.WindModule.dll" />
+            </Component>
+            <Component Id="cmpA52F9658F6B1D7E304E0D87FB6F1B4ED" Directory="dirB86CC6B0DA8E8311835644CACB04601F" Guid="{491EAD5B-DA8F-43E5-8EAF-19109DEEAE8E}">
+                <File Id="fil6D4311490FADBB24DC337B769080D66D" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Managed\UnityEngine.XRModule.dll" />
+            </Component>
+            
+            <Component Id="cmp9C28707F40FF6194F9D58FD2FC23A9B9" Directory="dirE9943C285CF537BE5B9ADB6B66DF3DCF" Guid="{31C6B9C6-5FB2-4D93-8861-1EDEB3BE222C}">
+                <File Id="fil76F6A1E51B13761905875A27FD80E619" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Resources\unity default resources" />
+            </Component>
+            <Component Id="cmp88D766467B6CDE009DC585B6094A25CE" Directory="dirE9943C285CF537BE5B9ADB6B66DF3DCF" Guid="{ED0E114C-5501-4B23-B61E-D7E28A0FFA86}">
+                <File Id="fil860AA17C65572F4C62ACE9BA8AABD197" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\Resources\unity_builtin_extra" />
+            </Component>
+            <Component Id="cmp66039231B8D3C2AE9C60C10A12ABF54C" Directory="dir6921EBA4A036856E9442406D0880B495" Guid="{80437866-2C06-4471-ADFE-CA2F947C9B2B}">
+                <File Id="filCCCAA198AE01A08F4DA16B01D680F051" KeyPath="yes" Source="SourceDir\creator\build\windows\Earth9\Earth9_Data\StreamingAssets\UnityServicesProjectConfiguration.json" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir84FCFE794A6A8F932B30FDEE81956232">
+            <Directory Id="dir071C19208D56D113F9F3D5976FB46BF1" Name="4.5" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirE801C19C9E30436AD9BEC33067C62D0D">
+            <Directory Id="dir07AD08F96EDACC147728212146419E28" Name="EmbedRuntime" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA02A818FD7ED3C40D7534DA96ADE9343">
+            <Directory Id="dir1229E556C7A133AC78BEE9AE6A862ED6" Name="Plugins" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir071C19208D56D113F9F3D5976FB46BF1">
+            <Directory Id="dir3A154CADCA4DC0E68C506175F7DC6693" Name="Browsers" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir1229E556C7A133AC78BEE9AE6A862ED6">
+            <Directory Id="dir55380559CD1A1B1A091708588CA5B18A" Name="x86_64" />
+        </DirectoryRef>
+    </Fragment>
+
+    <Fragment>
+        <DirectoryRef Id="dirB798D0BA52A0A5A88901DB43190D2014">
+            <Directory Id="dir61418034769F6EDF579E2BD14CA2F6A4" Name="Browsers" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA02A818FD7ED3C40D7534DA96ADE9343">
+            <Directory Id="dir6921EBA4A036856E9442406D0880B495" Name="StreamingAssets" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirE001AA9BD26159F186F2F41B78809F75">
+            <Directory Id="dir84FCFE794A6A8F932B30FDEE81956232" Name="mono" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir84FCFE794A6A8F932B30FDEE81956232">
+            <Directory Id="dir95B4487A800828C24F51876DCEADA3A3" Name="4.0" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir84FCFE794A6A8F932B30FDEE81956232">
+            <Directory Id="dirB798D0BA52A0A5A88901DB43190D2014" Name="2.0" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA02A818FD7ED3C40D7534DA96ADE9343">
+            <Directory Id="dirB86CC6B0DA8E8311835644CACB04601F" Name="Managed" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir84FCFE794A6A8F932B30FDEE81956232">
+            <Directory Id="dirD3F3232D5DEDAE43545F4B3ADCFB80BA" Name="mconfig" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirE801C19C9E30436AD9BEC33067C62D0D">
+            <Directory Id="dirE001AA9BD26159F186F2F41B78809F75" Name="etc" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA02A818FD7ED3C40D7534DA96ADE9343">
+            <Directory Id="dirE9943C285CF537BE5B9ADB6B66DF3DCF" Name="Resources" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir95B4487A800828C24F51876DCEADA3A3">
+            <Directory Id="dirFFC8E93BD048B49AB868C8B8855481BF" Name="Browsers" />
+        </DirectoryRef>
+    </Fragment>
+
+</Wix>
