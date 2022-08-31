@@ -136,14 +136,14 @@ jobs:
           customParameters:  -quit -batchmode
       - name: Run xattr
         run: | 
-          chmod +x creator/build/mac/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/Earth
+          chmod +x creator/build/mac/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/*
           xattr -cr creator/build/mac/Earth9-Creator/Earth9-Creator.app
         shell: sh
       
       - uses: actions/upload-artifact@v2
         with:
           name: Earth9Mac-Creator
-          path: creator/build/mac
+          path: creator/build/mac/Earth9-Creator/Earth9-Creator.app
           
 #   buildPlayForMacOS:
 #     name: Build Play for MacOS
