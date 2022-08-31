@@ -39,12 +39,27 @@ jobs:
         with:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: ${{ matrix.targetPlatform }}
-          buildMethod: BuildPlayer.MyEditorScript.PerformBuild
+          buildMethod: Earth9Builder.BuildScript.BuildCreator
+          customParameters:  -quit -batchmode
+#       - uses: actions/upload-artifact@v2
+#         with:
+#           name: Earth9-Creator
+#           path: creator/build
+          
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
           customParameters:  -quit -batchmode
       - uses: actions/upload-artifact@v2
         with:
-          name: Earth9-Creator
-          path: creator/build
+          name: Earth9Windows
+          path: creator/build/windows
 #       - name: Building the installer
 #         run: | 
 #           dir build /S
@@ -58,44 +73,56 @@ jobs:
 #           path: "Earth9-Creator.msi"
 #           name: Earth9-Creator
           
-#   builForMacOS:
-#     name: Build for MacOS
-#     runs-on: macos-latest
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         projectPath:
-#           - creator
-#         targetPlatform:
-#           - StandaloneOSX 
-#     steps:
-#       - uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-#           lfs: true
-#       - uses: actions/cache@v2
-#         with:
-#           path: ${{ matrix.projectPath }}/Library
-#           key:
-#             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
-#             hashFiles(matrix.projectPath) }}
-#           restore-keys: |
-#             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
-#             Library-${{ matrix.projectPath }}-
-#             Library-
-#       - uses: game-ci/unity-builder@v2
-#         env:
-#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#         with:
-#           projectPath: ${{ matrix.projectPath }}
-#           targetPlatform: ${{ matrix.targetPlatform }}
-#           buildMethod: BuildPlayer.MyEditorScript.PerformBuild
-#       - uses: actions/upload-artifact@v2
-#         with:
-#           name: Build-${{ matrix.targetPlatform }}
-#           path: build/${{ matrix.targetPlatform }}
+  builForMacOS:
+    name: Build for MacOS
+    runs-on: macos-latest
+    needs: buildForWindows
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - creator
+        targetPlatform:
+          - StandaloneOSX 
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}/Library
+          key:
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
+            hashFiles(matrix.projectPath) }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
+            Library-${{ matrix.projectPath }}-
+            Library-
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildMethod: Earth9Builder.BuildScript.BuildCreator
+          customParameters:  -quit -batchmode
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
+          customParameters:  -quit -batchmode
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Earth9Mac
+          path: creator/build/mac
 
 #       - name: Building the installer
 #         run: | 
