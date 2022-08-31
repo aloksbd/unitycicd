@@ -124,7 +124,8 @@ jobs:
             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
             Library-${{ matrix.projectPath }}-
             Library-
-      - uses: game-ci/unity-builder@v2
+      - name: Building game 
+        uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -139,61 +140,67 @@ jobs:
           chmod +x creator/build/mac/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/*
           xattr -cr creator/build/mac/Earth9-Creator/Earth9-Creator.app
         shell: sh
-      
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Earth9Mac-Creator
-          path: creator/build/mac/Earth9-Creator/Earth9-Creator.app
-          
-#   buildPlayForMacOS:
-#     name: Build Play for MacOS
-#     runs-on: macos-latest
-#     needs: builCreatorForMacOS
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         projectPath:
-#           - creator
-#         targetPlatform:
-#           - StandaloneOSX 
-#     steps:
-#       - uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-#           lfs: true
-#       - uses: actions/cache@v2
-#         with:
-#           path: ${{ matrix.projectPath }}/Library
-#           key:
-#             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
-#             hashFiles(matrix.projectPath) }}
-#           restore-keys: |
-#             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
-#             Library-${{ matrix.projectPath }}-
-#             Library-
-#       - uses: game-ci/unity-builder@v2
-#         env:
-#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#         with:
-#           projectPath: ${{ matrix.projectPath }}
-#           targetPlatform: ${{ matrix.targetPlatform }}
-#           buildMethod: Earth9Builder.BuildScript.BuildPlay
-#           customParameters:  -quit -batchmode
-#       - uses: actions/upload-artifact@v2
-#         with:
-#           name: Earth9Mac-Play
-#           path: creator/build/mac
-
-#       - name: Building the installer
-#         run: | 
-#           brew install create-dmg
-#           create-dmg --volname "Application Installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "StandaloneOSX.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "StandaloneOSX.dmg" "build/StandaloneOSX/StandaloneOSX.app"
+      - name: Building the installer
+        run: | 
+          brew install create-dmg
+          create-dmg --volname "Earth9-Creator installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "Earth9-Creator.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9-Creator.dmg" "creator\build\mac\Earth9-Creator"
         
-#       - name: Upload the installer as an artifact
-#         uses: actions/upload-artifact@v2
-#         if: ${{ github.event_name != 'pull_request' }}
-#         with:
-#           path: StandaloneOSX.dmg
-#           name: StandaloneOSX
+      - name: Upload installer
+        uses: actions/upload-artifact@v2
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          path: Earth9-Creator.dmg
+          name: Earth9-Creator.dmg
+          
+  buildPlayForMacOS:
+    name: Build Play for MacOS
+    runs-on: macos-latest
+    needs: builCreatorForMacOS
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - creator
+        targetPlatform:
+          - StandaloneOSX 
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}/Library
+          key:
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
+            hashFiles(matrix.projectPath) }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
+            Library-${{ matrix.projectPath }}-
+            Library-
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
+          customParameters:  -quit -batchmode
+      - name: Run xattr
+        run: | 
+          chmod +x creator/build/mac/Earth9/Earth9.app/Contents/MacOS/*
+          xattr -cr creator/build/mac/Earth9/Earth9.app
+        shell: sh
+      - name: Building the installer
+        run: | 
+          brew install create-dmg
+          create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "Earth9.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9.dmg" "creator\build\mac\Earth9"
+        
+      - name: Upload installer
+        uses: actions/upload-artifact@v2
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          path: Earth9.dmg
+          name: Earth9-Play.dmg
