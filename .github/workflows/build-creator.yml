@@ -6,8 +6,8 @@ on:
 #     branches: [release-test]
 
 jobs:
-  buildForWindows:
-    name: Build for Windows
+  buildCreatorForWindows:
+    name: Build Creator for Windows
     runs-on: windows-2019
     strategy:
       fail-fast: false
@@ -41,11 +41,36 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           customParameters:  -quit -batchmode
-#       - uses: actions/upload-artifact@v2
-#         with:
-#           name: Earth9-Creator
-#           path: creator/build
-          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Earth9Windows-Creator
+          path: creator/build/windows
+  buildPlayForWindows:
+    name: Build Play for Windows
+    runs-on: windows-2019
+    needs: buildCreatorForWindows
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - creator
+        targetPlatform:
+          - StandaloneWindows64 # Build a Windows 64-bit standalone.
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}/Library
+          key:
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
+            hashFiles(matrix.projectPath) }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
+            Library-${{ matrix.projectPath }}-
+            Library-
       - uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -58,7 +83,7 @@ jobs:
           customParameters:  -quit -batchmode
       - uses: actions/upload-artifact@v2
         with:
-          name: Earth9Windows
+          name: Earth9Windows-Play
           path: creator/build/windows
 #       - name: Building the installer
 #         run: | 
@@ -73,10 +98,9 @@ jobs:
 #           path: "Earth9-Creator.msi"
 #           name: Earth9-Creator
           
-  builForMacOS:
-    name: Build for MacOS
+  builCreatorForMacOS:
+    name: Build Creator for MacOS
     runs-on: macos-latest
-    needs: buildForWindows
     strategy:
       fail-fast: false
       matrix:
@@ -109,6 +133,38 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           customParameters:  -quit -batchmode
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Earth9Mac-Creator
+          path: creator/build/mac
+          
+  buildPlayForMacOS:
+    name: Build Play for MacOS
+    runs-on: macos-latest
+    needs: builCreatorForMacOS
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - creator
+        targetPlatform:
+          - StandaloneOSX 
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          lfs: true
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}/Library
+          key:
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
+            hashFiles(matrix.projectPath) }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
+            Library-${{ matrix.projectPath }}-
+            Library-
       - uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -121,7 +177,7 @@ jobs:
           customParameters:  -quit -batchmode
       - uses: actions/upload-artifact@v2
         with:
-          name: Earth9Mac
+          name: Earth9Mac-Play
           path: creator/build/mac
 
 #       - name: Building the installer
