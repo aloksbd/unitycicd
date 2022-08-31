@@ -136,6 +136,7 @@ jobs:
           customParameters:  -quit -batchmode
       - name: Run xattr
         run: | 
+          chmod +x creator/build/mac/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/Earth9
           xattr -cr creator/build/mac/Earth9-Creator/Earth9-Creator.app
         shell: sh
       
