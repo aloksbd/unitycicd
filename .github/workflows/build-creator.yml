@@ -6,51 +6,51 @@ on:
 #     branches: [main]
 
 jobs:
-  buildCreatorForWindows:
-    name: Build Creator for Windows
-    runs-on: windows-2019
-    strategy:
-      fail-fast: false
-      matrix:
-        projectPath:
-          - creator
-        targetPlatform:
-          - StandaloneWindows64 # Build a Windows 64-bit standalone.
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          lfs: true
-      - uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key:
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
-            hashFiles(matrix.projectPath) }}
-          restore-keys: |
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
-            Library-${{ matrix.projectPath }}-
-            Library-
-      - name: Build game
-        uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: ${{ matrix.projectPath }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildMethod: Earth9Builder.BuildScript.BuildCreator
-      - name: Building the installer
-        run: | 
-          "c:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" Creator-Msi.wxs
-          "c:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixUIExtension -cultures:en-us Creator-Msi.wixobj -out Earth9-Creator.msi
-        shell: cmd
-      - name: Upload the installer as an artifact
-        uses: actions/upload-artifact@v2
-        with:
-          path: "Earth9-Creator.msi"
-          name: Earth9-Creator
+#   buildCreatorForWindows:
+#     name: Build Creator for Windows
+#     runs-on: windows-2019
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         projectPath:
+#           - creator
+#         targetPlatform:
+#           - StandaloneWindows64 # Build a Windows 64-bit standalone.
+#     steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 0
+#           lfs: true
+#       - uses: actions/cache@v2
+#         with:
+#           path: ${{ matrix.projectPath }}/Library
+#           key:
+#             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
+#             hashFiles(matrix.projectPath) }}
+#           restore-keys: |
+#             Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
+#             Library-${{ matrix.projectPath }}-
+#             Library-
+#       - name: Build game
+#         uses: game-ci/unity-builder@v2
+#         env:
+#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+#         with:
+#           projectPath: ${{ matrix.projectPath }}
+#           targetPlatform: ${{ matrix.targetPlatform }}
+#           buildMethod: Earth9Builder.BuildScript.BuildCreator
+#       - name: Building the installer
+#         run: | 
+#           "c:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" Creator-Msi.wxs
+#           "c:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixUIExtension -cultures:en-us Creator-Msi.wixobj -out Earth9-Creator.msi
+#         shell: cmd
+#       - name: Upload the installer as an artifact
+#         uses: actions/upload-artifact@v2
+#         with:
+#           path: "Earth9-Creator.msi"
+#           name: Earth9-Creator
           
 #   buildPlayForWindows:
 #     name: Build Play for Windows
@@ -192,14 +192,23 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildPlay
-      - name: Run chmod
-        run: | 
-          chmod +x creator/build/mac/Earth9/Earth9.app/Contents/MacOS/*
-        shell: sh
-      - name: Run xattr
-        run: | 
-          xattr -cr creator/build/mac/Earth9/Earth9.app
-        shell: sh
+      - name: Fix File Permissions and Code-Sign
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_TEAM_NAME: ${{ secrets.APPLE_TEAM_NAME }}
+          APPLE_DISTRIBUTION_CERTIFICATE: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE }}
+          APPLE_DISTRIBUTION_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_PASSWORD }}
+          MAC_INSTALLER_CERTIFICATE: ${{ secrets.MAC_INSTALLER_CERTIFICATE }}
+          MAC_INSTALLER_PASSWORD: ${{ secrets.MAC_INSTALLER_PASSWORD }}
+          MAC_APP_BUNDLE_PATHS: Contents/PlugIns/StandaloneFileBrowser.bundle
+          MAC_BUILD_PATH: ${{ format('{0}/build/StandaloneOSX', github.workspace) }}
+          PROJECT_NAME: Card Game Simulator
+        run: |
+          bundle install
+          bundle exec fastlane mac fixversion
+          find $MAC_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
+          chmod +x fastlane/sign-mac-build.sh
+          ./fastlane/sign-mac-build.sh
       - name: Building the installer
         run: | 
           brew install create-dmg
