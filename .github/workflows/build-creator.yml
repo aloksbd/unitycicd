@@ -201,22 +201,23 @@ jobs:
           MAC_INSTALLER_CERTIFICATE: ${{ secrets.MAC_INSTALLER_CERTIFICATE }}
           MAC_INSTALLER_PASSWORD: ${{ secrets.MAC_INSTALLER_PASSWORD }}
           MAC_APP_BUNDLE_PATHS: Contents/PlugIns/StandaloneFileBrowser.bundle
-          MAC_BUILD_PATH: ${{ format('{0}/build/StandaloneOSX', github.workspace) }}
-          PROJECT_NAME: Card Game Simulator
+          MAC_BUILD_PATH: creator/build/mac/Earth9/
+          PROJECT_NAME: Earth9
         run: |
           bundle install
           bundle exec fastlane mac fixversion
           find $MAC_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
-          chmod +x fastlane/sign-mac-build.sh
-          ./fastlane/sign-mac-build.sh
-      - name: Building the installer
-        run: | 
-          brew install create-dmg
-          create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "Earth9.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9.dmg" "creator/build/mac/Earth9/Earth9.app"
+          chmod +x sign-mac-build.sh
+          ./sign-mac-build.sh
+          
+      
+#       - name: Building the installer
+#         run: | 
+#           brew install create-dmg
+#           create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "Earth9.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9.dmg" "creator/build/mac/Earth9/Earth9.app"
         
       - name: Upload installer
         uses: actions/upload-artifact@v2
-        if: ${{ github.event_name != 'pull_request' }}
         with:
-          path: Earth9.dmg
-          name: Earth9-Play.dmg
+          path: creator/build/mac/Earth9/
+          name: Earth9-Play
