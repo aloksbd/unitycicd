@@ -192,21 +192,43 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildPlay
-      - name: Fix File Permissions and Code-Sign
-        env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_TEAM_NAME: ${{ secrets.APPLE_TEAM_NAME }}
-          APPLE_DISTRIBUTION_CERTIFICATE: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE }}
-          APPLE_DISTRIBUTION_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_PASSWORD }}
-          MAC_INSTALLER_CERTIFICATE: ${{ secrets.MAC_INSTALLER_CERTIFICATE }}
-          MAC_INSTALLER_PASSWORD: ${{ secrets.MAC_INSTALLER_PASSWORD }}
-          MAC_APP_BUNDLE_PATHS: Contents/PlugIns/StandaloneFileBrowser.bundle
-          MAC_BUILD_PATH: creator/build/mac/Earth9/
-          PROJECT_NAME: Earth9
-        run: |
-          find $MAC_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
-          chmod +x sign-mac-build.sh
-          ./sign-mac-build.sh
+          
+      - name: "Notarize Release Build"
+        uses: devbotsxyz/xcode-notarize@v1
+        with:
+          product-path: "Export/Rings.app"
+          appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
+          appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
+
+      - name: "Staple Release Build"
+        uses: devbotsxyz/xcode-staple@v1
+        with:
+          product-path: "creator/build/mac/Earth9/Earth9.app"
+
+      #
+      # Zip up the app and add it to the GitHub Release as a
+      # downloadable asset.
+      #
+
+      - name: Package for Distribution
+        run: ditto -V -c -k --keepParent "creator/build/mac/Earth9/Earth9.app" "Earth9.zip"
+        
+        
+#       - name: Fix File Permissions and Code-Sign
+#         env:
+#           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+#           APPLE_TEAM_NAME: ${{ secrets.APPLE_TEAM_NAME }}
+#           APPLE_DISTRIBUTION_CERTIFICATE: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE }}
+#           APPLE_DISTRIBUTION_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_PASSWORD }}
+#           MAC_INSTALLER_CERTIFICATE: ${{ secrets.MAC_INSTALLER_CERTIFICATE }}
+#           MAC_INSTALLER_PASSWORD: ${{ secrets.MAC_INSTALLER_PASSWORD }}
+#           MAC_APP_BUNDLE_PATHS: Contents/PlugIns/StandaloneFileBrowser.bundle
+#           MAC_BUILD_PATH: creator/build/mac/Earth9/
+#           PROJECT_NAME: Earth9
+#         run: |
+#           find $MAC_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
+#           chmod +x sign-mac-build.sh
+#           ./sign-mac-build.sh
           
       
 #       - name: Building the installer
@@ -217,5 +239,5 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v2
         with:
-          path: creator/build/mac/Earth9/
+          path: Earth9.zip
           name: Earth9-Play
