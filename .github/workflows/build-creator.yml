@@ -196,7 +196,7 @@ jobs:
       - name: "Notarize Release Build"
         uses: devbotsxyz/xcode-notarize@v1
         with:
-          product-path: "Export/Rings.app"
+          product-path: "creator/build/mac/Earth9/Earth9.app"
           appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
           appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
 
