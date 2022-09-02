@@ -205,7 +205,6 @@ jobs:
           PROJECT_NAME: Earth9
         run: |
           bundle install
-          bundle exec fastlane mac fixversion
           find $MAC_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
           chmod +x sign-mac-build.sh
           ./sign-mac-build.sh
