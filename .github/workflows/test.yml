@@ -31,52 +31,58 @@ jobs:
           projectPath: creator
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildPlay
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: creator
-          targetPlatform: StandaloneOSX
-          buildMethod: Earth9Builder.BuildScript.BuildCreator
-          allowDirtyBuild: true
+#       - uses: game-ci/unity-builder@v2
+#         env:
+#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+#         with:
+#           projectPath: creator
+#           targetPlatform: StandaloneOSX
+#           buildMethod: Earth9Builder.BuildScript.BuildCreator
+#           allowDirtyBuild: true
       
       
-      - uses: actions/cache@v2
+#       - uses: actions/cache@v2
+#         with:
+#           path: ${{ matrix.projectPath }}/Library
+#           key:
+#             Library-creator-StandaloneWindows64-${{
+#             hashFiles('creator/**') }}
+#           restore-keys: |
+#             Library-creator-StandaloneWindows64-
+#             Library-creator-
+#             Library-
+#       - uses: game-ci/unity-builder@v2
+#         env:
+#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+#         with:
+#           projectPath: creator
+#           targetPlatform: StandaloneWindows64
+#           buildMethod: Earth9Builder.BuildScript.BuildPlay
+#           allowDirtyBuild: true
+#       - uses: game-ci/unity-builder@v2
+#         env:
+#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+#         with:
+#           projectPath: creator
+#           targetPlatform: StandaloneWindows64
+#           buildMethod: Earth9Builder.BuildScript.BuildCreator
+#           allowDirtyBuild: true
+          
+      - name: copy file
+        uses: canastro/copy-file-action@master
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key:
-            Library-creator-StandaloneWindows64-${{
-            hashFiles('creator/**') }}
-          restore-keys: |
-            Library-creator-StandaloneWindows64-
-            Library-creator-
-            Library-
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: creator
-          targetPlatform: StandaloneWindows64
-          buildMethod: Earth9Builder.BuildScript.BuildPlay
-          allowDirtyBuild: true
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: creator
-          targetPlatform: StandaloneWindows64
-          buildMethod: Earth9Builder.BuildScript.BuildCreator
-          allowDirtyBuild: true
-      - name: Building the installer
-        run: | 
-          cp sign-bypass.sh creator/build/
-        shell: sh
+          source: "sign-bypass.sh"
+          target: "creator/build/"
+#       - name: Building the installer
+#         run: | 
+#           cp sign-bypass.sh creator/build/
+#         shell: sh
       - uses: actions/upload-artifact@v2
         with:
           name: builds
