@@ -44,6 +44,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildCreator
+          allowDirtyBuild: true
       - uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -53,6 +54,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneWindows64
           buildMethod: Earth9Builder.BuildScript.BuildPlay
+          allowDirtyBuild: true
       - uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -62,6 +64,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneWindows64
           buildMethod: Earth9Builder.BuildScript.BuildCreator
+          allowDirtyBuild: true
       - name: Building the installer
         run: | 
           ls -R
