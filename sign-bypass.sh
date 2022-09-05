@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 chmod +x StandaloneOSX/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/*
 xattr -cr StandaloneOSX/Earth9-Creator/Earth9-Creator.app
 
