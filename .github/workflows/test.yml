@@ -13,9 +13,9 @@ jobs:
           - creator
         targetPlatform:
           - StandaloneOSX 
-          - StandaloneWindows64 
+#           - StandaloneWindows64 
         method:
-          - Earth9Builder.BuildScript.BuildCreator
+#           - Earth9Builder.BuildScript.BuildCreator
           - Earth9Builder.BuildScript.BuildPlay
     steps:
       - uses: actions/checkout@v2
@@ -41,6 +41,10 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: ${{ matrix.method }}
+      - name: Building the installer
+        run: | 
+          ls -R
+        shell: sh
       - uses: actions/upload-artifact@v2
         with:
           name: Build-${{ matrix.targetPlatform }}
