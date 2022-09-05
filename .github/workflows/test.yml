@@ -17,7 +17,7 @@ jobs:
           path: creator/Library
           key:
             Library-creator-StandaloneOSX-${{
-            hashFiles(creator) }}
+            hashFiles("creator") }}
           restore-keys: |
             Library-creator-StandaloneOSX-
             Library-creator-
@@ -48,7 +48,7 @@ jobs:
           path: ${{ matrix.projectPath }}/Library
           key:
             Library-creator-StandaloneWindows64-${{
-            hashFiles(creator) }}
+            hashFiles("creator") }}
           restore-keys: |
             Library-creator-StandaloneWindows64-
             Library-creator-
