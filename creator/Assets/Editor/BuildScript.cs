@@ -26,12 +26,12 @@ namespace Earth9Builder {
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
                 case BuildTarget.StandaloneWindows64: {
-                    buildPlayerOptions.locationPathName = "build/windows/"+runner+"/"+runner+".exe";
+                    buildPlayerOptions.locationPathName = "build/StandaloneWindows64/"+runner+"/"+runner+".exe";
                     buildPlayerOptions.target = BuildTarget.StandaloneWindows64;
                     break;
                 }
                 case BuildTarget.StandaloneOSX:
-                    buildPlayerOptions.locationPathName = "build/mac/"+runner+"/"+runner+".app";
+                    buildPlayerOptions.locationPathName = "build/StandaloneOSX/"+runner+"/"+runner+".app";
                     buildPlayerOptions.target = BuildTarget.StandaloneOSX;
                     break;
             }
