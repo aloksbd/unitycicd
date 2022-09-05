@@ -17,7 +17,7 @@ jobs:
           path: creator/Library
           key:
             Library-creator-StandaloneOSX-${{
-            hashFiles("creator") }}
+            hashFiles('creator') }}
           restore-keys: |
             Library-creator-StandaloneOSX-
             Library-creator-
