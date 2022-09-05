@@ -4,19 +4,13 @@ on: [push]
 
 jobs:
   buildForAllSupportedPlatforms:
-    name: Build for ${{ matrix.targetPlatform }}
+    name: Build for all supported platform
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
         projectPath:
           - creator
-        targetPlatform:
-          - StandaloneOSX 
-#           - StandaloneWindows64 
-        method:
-#           - Earth9Builder.BuildScript.BuildCreator
-          - Earth9Builder.BuildScript.BuildPlay
     steps:
       - uses: actions/checkout@v2
         with:
@@ -26,10 +20,10 @@ jobs:
         with:
           path: ${{ matrix.projectPath }}/Library
           key:
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
+            Library-${{ matrix.projectPath }}-StandaloneOSX-${{
             hashFiles(matrix.projectPath) }}
           restore-keys: |
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
+            Library-${{ matrix.projectPath }}-StandaloneOSX-
             Library-${{ matrix.projectPath }}-
             Library-
       - uses: game-ci/unity-builder@v2
@@ -39,13 +33,40 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ matrix.projectPath }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildMethod: ${{ matrix.method }}
+          targetPlatform: StandaloneOSX
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: StandaloneOSX
+          buildMethod: Earth9Builder.BuildScript.BuildCreator
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: StandaloneWindows64
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: StandaloneWindows64
+          buildMethod: Earth9Builder.BuildScript.BuildCreator
       - name: Building the installer
         run: | 
           ls -R
         shell: sh
       - uses: actions/upload-artifact@v2
         with:
-          name: Build-${{ matrix.targetPlatform }}
-          path: creator/build/${{ matrix.targetPlatform }}
+          name: builds
+          path: creator/build
