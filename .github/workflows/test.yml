@@ -75,7 +75,7 @@ jobs:
           allowDirtyBuild: true
       - name: Building the installer
         run: | 
-          cp sign-bypass.sh /creator/build/
+          cp sign-bypass.sh creator/build/
         shell: sh
       - uses: actions/upload-artifact@v2
         with:
