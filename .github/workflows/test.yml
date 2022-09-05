@@ -74,15 +74,16 @@ jobs:
 #           buildMethod: Earth9Builder.BuildScript.BuildCreator
 #           allowDirtyBuild: true
           
+      - name: Make sh runnable
+        run: | 
+          chmod +x sign-bypass.sh 
+        shell: sh
       - name: copy file
         uses: canastro/copy-file-action@master
         with:
           source: "sign-bypass.sh"
           target: "creator/build/"
-#       - name: Building the installer
-#         run: | 
-#           cp sign-bypass.sh creator/build/
-#         shell: sh
+      
       - uses: actions/upload-artifact@v2
         with:
           name: builds
