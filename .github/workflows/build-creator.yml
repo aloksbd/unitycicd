@@ -192,26 +192,6 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildPlay
-          
-      - name: "Notarize Release Build"
-        uses: devbotsxyz/xcode-notarize@v1
-        with:
-          product-path: "creator/build/mac/Earth9/Earth9.app"
-          appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
-          appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
-
-      - name: "Staple Release Build"
-        uses: devbotsxyz/xcode-staple@v1
-        with:
-          product-path: "creator/build/mac/Earth9/Earth9.app"
-
-      #
-      # Zip up the app and add it to the GitHub Release as a
-      # downloadable asset.
-      #
-
-      - name: Package for Distribution
-        run: ditto -V -c -k --keepParent "creator/build/mac/Earth9/Earth9.app" "Earth9.zip"
         
         
 #       - name: Fix File Permissions and Code-Sign
@@ -236,8 +216,9 @@ jobs:
 #           brew install create-dmg
 #           create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "Earth9.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9.dmg" "creator/build/mac/Earth9/Earth9.app"
         
-      - name: Upload installer
-        uses: actions/upload-artifact@v2
+      - name: Upload public folder to Google Drive
+        uses: Jodebu/upload-to-drive@master
         with:
-          path: Earth9.zip
-          name: Earth9-Play
+          target: creator/build
+          credentials: secrets.<GOOGLE_DRIVE_CREDENTIALS>
+          folder: <GOOGLE_DRIVE_FOLDER>
