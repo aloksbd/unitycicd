@@ -237,7 +237,7 @@ jobs:
           MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
         run: |
           # Turn our base64-encoded certificate back to a regular .p12 file
-
+          ls -lahR ./creator/build/StandaloneOSX
           echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12 
 
           # We need to create a new keychain, otherwise using the certificate will prompt
@@ -251,6 +251,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
           # We finally codesign our app bundle, specifying the Hardened runtime option
+          echo
           find /creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle -name "*.meta" -delete
           
           chmod -R a+xr "creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle"
