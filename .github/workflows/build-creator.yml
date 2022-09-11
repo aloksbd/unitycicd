@@ -269,9 +269,9 @@ jobs:
           
           xcrun altool --notarize-app --username $PROD_MACOS_NOTARIZATION_APPLE_ID --password $PROD_MACOS_NOTARIZATION_PWD --asc-provider $PROD_MACOS_NOTARIZATION_TEAM_ID --primary-bundle-id com.DefaultCompany.Earth9 --file ./Earth9.zip --wait
           
-#           echo "Attach staple"
-#           spctl -a -v ./creator/build/StandaloneOSX/Earth9/Earth9.app
-#           xcrun stapler staple "creator/build/StandaloneOSX/Earth9/Earth9.app"
+          echo "Attach staple"
+          spctl -a -v ./creator/build/StandaloneOSX/Earth9/Earth9.app
+          xcrun stapler staple "creator/build/StandaloneOSX/Earth9/Earth9.app"
           
           
           
