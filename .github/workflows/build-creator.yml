@@ -1,9 +1,9 @@
 name: Build creator project
 
 on: 
-  workflow_dispatch
-#   push:
-#     branches: [main]
+#   workflow_dispatch
+  push:
+    branches: [main]
 
 jobs:
 #   buildCreatorForWindows:
@@ -215,7 +215,80 @@ jobs:
 #         run: | 
 #           brew install create-dmg
 #           create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "Earth9.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9.dmg" "creator/build/mac/Earth9/Earth9.app"
-        
+                  
+                  
+      - name: Codesign app bundle
+  # Extract the secrets we defined earlier as environment variables
+        env: 
+          MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
+          MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
+          MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+        run: |
+          # Turn our base64-encoded certificate back to a regular .p12 file
+
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12 
+
+          # We need to create a new keychain, otherwise using the certificate will prompt
+          # with a UI dialog asking for the certificate password, which we can't
+          # use in a headless CI environment
+
+          security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain 
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+
+          # We finally codesign our app bundle, specifying the Hardened runtime option
+          find /creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle -name "*.meta" -delete
+          
+          chmod -R a+xr "creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle"
+
+          /usr/bin/codesign --deep --force --verify --verbose --timestamp --options runtime --sign "$MACOS_CERTIFICATE_NAME" "creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle"
+    
+          chmod -R a+xr "creator/build/StandaloneOSX/Earth9/Earth9.app"
+          
+          /usr/bin/codesign --deep --force --verify --verbose --timestamp --options runtime --entitlements "Earth9.entitlements" --sign "$MACOS_CERTIFICATE_NAME" "creator/build/StandaloneOSX/Earth9/Earth9.app"
+    
+          
+
+      - name: "Notarize app bundle"
+        # Extract the secrets we defined earlier as environment variables
+        env:
+          PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+          PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+          PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+        run: |
+          # Store the notarization credentials so that we can prevent a UI password dialog
+          # from blocking the CI
+
+          echo "Create keychain profile"
+          xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
+
+          # We can't notarize an app bundle directly, but we need to compress it as an archive.
+          # Therefore, we create a zip file containing our app bundle, so that we can send it to the
+          # notarization service
+
+          echo "Creating temp notarization archive"
+          ditto -c -k --sequesterRsrc --keepParent "creator/build/StandaloneOSX/Earth9/Earth9.app" "Earth9.zip"
+
+          # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+          # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
+          # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
+          # you're curious
+
+          echo "Notarize app"
+          xcrun notarytool submit "Earth9.zip" --keychain-profile "notarytool-profile" --wait
+
+          # Finally, we need to "attach the staple" to our executable, which will allow our app to be
+          # validated by macOS even when an internet connection is not available.
+          echo "Attach staple"
+          xcrun stapler staple "creator/build/StandaloneOSX/Earth9/Earth9.app"
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: builds
+          path: creator/build
       - name: Upload public folder to Google Drive
         uses: Jodebu/upload-to-drive@master
         with:
