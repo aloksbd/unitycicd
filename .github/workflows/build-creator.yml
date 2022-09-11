@@ -252,7 +252,7 @@ jobs:
 
           # We finally codesign our app bundle, specifying the Hardened runtime option
           echo
-          find /creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle -name "*.meta" -delete
+          find ./creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle -name "*.meta" -delete
           
           chmod -R a+xr "creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle"
 
