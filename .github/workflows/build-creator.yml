@@ -238,14 +238,14 @@ jobs:
           PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
           PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
           PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
-          MACOS_INSTALLER_CERTIFICATE: ${{ secrets.PROD_MACOS_INSTALLER_CERTIFICATE }}
-          MACOS_INSTALLER_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_INSTALLER_CERTIFICATE_PWD }}
-          MACOS_INSTALLER_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_INSTALLER_CERTIFICATE_NAME }}
+#           MACOS_INSTALLER_CERTIFICATE: ${{ secrets.PROD_MACOS_INSTALLER_CERTIFICATE }}
+#           MACOS_INSTALLER_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_INSTALLER_CERTIFICATE_PWD }}
+#           MACOS_INSTALLER_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_INSTALLER_CERTIFICATE_NAME }}
         run: |
           # Turn our base64-encoded certificate back to a regular .p12 file
           ls -lahR ./creator/build/StandaloneOSX
           echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12 
-          echo $MACOS_INSTALLER_CERTIFICATE | base64 --decode > installer_certificate.p12 
+          # echo $MACOS_INSTALLER_CERTIFICATE | base64 --decode > installer_certificate.p12 
 
           # We need to create a new keychain, otherwise using the certificate will prompt
           # with a UI dialog asking for the certificate password, which we can't
@@ -255,7 +255,7 @@ jobs:
           security default-keychain -s build.keychain
           security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
           security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-          security import installer_certificate.p12 -k build.keychain -P "$MACOS_INSTALLER_CERTIFICATE_PWD" -T /usr/bin/codesign
+          # security import installer_certificate.p12 -k build.keychain -P "$MACOS_INSTALLER_CERTIFICATE_PWD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
           # We finally codesign our app bundle, specifying the Hardened runtime option
@@ -289,9 +289,9 @@ jobs:
           # you're curious
 
           echo "Notarize app"
-          xcrun notarytool submit "Earth9.zip" --keychain-profile "notarytool-profile" --wait
+          # xcrun notarytool submit "Earth9.zip" --keychain-profile "notarytool-profile" --wait
           
-          echo "Create keychain profile for install er"
+          echo "Create keychain profile for installer"
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
           
           unzip Earth9.zip
@@ -299,14 +299,14 @@ jobs:
           # Finally, we need to "attach the staple" to our executable, which will allow our app to be
           # validated by macOS even when an internet connection is not available.
           echo "Attach staple"
-          xcrun stapler staple "Earth9.app"
+          # xcrun stapler staple "Earth9.app"
           
-          productbuild --component "Earth9.app" /Applications --sign "$MACOS_INSTALLER_CERTIFICATE_NAME" "Earth9.pkg"
+          # productbuild --component "Earth9.app" /Applications --sign "$MACOS_INSTALLER_CERTIFICATE_NAME" "Earth9.pkg"
 
-          xcrun notarytool submit "Earth9.pkg" --keychain-profile "notarytool-install-profile" --wait
+          # xcrun notarytool submit "Earth9.pkg" --keychain-profile "notarytool-install-profile" --wait
           
-          echo "Attach staple"
-          xcrun stapler staple "Earth9.pkg"
+          # echo "Attach staple"
+          # xcrun stapler staple "Earth9.pkg"
           
       - uses: actions/upload-artifact@v2
         with:
