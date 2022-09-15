@@ -67,14 +67,25 @@ jobs:
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           allowDirtyBuild: true
       
-      - name: Upload public folder to Google Drive
-        uses: Jodebu/upload-to-drive@master
-        with:
-          target: creator/build
-          credentials: secrets.<GOOGLE_DRIVE_CREDENTIALS>
-          folder: <GOOGLE_DRIVE_FOLDER>
-          
-#       - uses: actions/upload-artifact@v2
+#       - name: Upload public folder to Google Drive
+#         uses: Jodebu/upload-to-drive@master
 #         with:
-#           name: builds
-#           path: creator/build
+#           target: creator/build
+#           credentials: secrets.<GOOGLE_DRIVE_CREDENTIALS>
+#           folder: <GOOGLE_DRIVE_FOLDER>
+
+      - name: Make sh runnable
+        run: | 
+          chmod +x sign-bypass.sh 
+          ditto -c -k --keepParent "sign-bypass.sh" "sign-bypass.zip"
+        shell: sh
+      - name: copy file
+        uses: canastro/copy-file-action@master
+        with:
+          source: "sign-bypass.zip"
+          target: "creator/build/"
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: builds
+          path: creator/build
