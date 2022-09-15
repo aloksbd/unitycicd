@@ -40,32 +40,32 @@ jobs:
           allowDirtyBuild: true
       
       
-      - uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key:
-            Library-creator-StandaloneWindows64-${{
-            hashFiles('creator/**') }}
-          restore-keys: |
-            Library-creator-StandaloneWindows64-
-            Library-creator-
-            Library-
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          projectPath: creator
-          targetPlatform: StandaloneWindows64
-          buildMethod: Earth9Builder.BuildScript.BuildPlay
-          allowDirtyBuild: true
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          projectPath: creator
-          targetPlatform: StandaloneWindows64
-          buildMethod: Earth9Builder.BuildScript.BuildCreator
-          allowDirtyBuild: true
+#       - uses: actions/cache@v2
+#         with:
+#           path: ${{ matrix.projectPath }}/Library
+#           key:
+#             Library-creator-StandaloneWindows64-${{
+#             hashFiles('creator/**') }}
+#           restore-keys: |
+#             Library-creator-StandaloneWindows64-
+#             Library-creator-
+#             Library-
+#       - uses: game-ci/unity-builder@v2
+#         env:
+#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#         with:
+#           projectPath: creator
+#           targetPlatform: StandaloneWindows64
+#           buildMethod: Earth9Builder.BuildScript.BuildPlay
+#           allowDirtyBuild: true
+#       - uses: game-ci/unity-builder@v2
+#         env:
+#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#         with:
+#           projectPath: creator
+#           targetPlatform: StandaloneWindows64
+#           buildMethod: Earth9Builder.BuildScript.BuildCreator
+#           allowDirtyBuild: true
       
 #       - name: Upload public folder to Google Drive
 #         uses: Jodebu/upload-to-drive@master
