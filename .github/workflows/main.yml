@@ -1,9 +1,10 @@
 name: Build Installer
 
 on:
+  workflow_dispatch
   push:
     branches:
-      - alok/META-1321
+      - main
 
 jobs:
 #   buildInstallerForWindows:
