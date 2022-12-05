@@ -1,0 +1,63 @@
+{
+    "_steamId": "",
+    "_displayName": "earth9",
+    "_globalConfiguration": {
+        "_domainProtocols": [
+            {
+                "_scheme": "https",
+                "_host": "testing.app.earth9.net",
+                "_path": ""
+            },
+            {
+                "_scheme": "https",
+                "_host": "app.earth9.net",
+                "_path": ""
+            }
+        ],
+        "_deepLinkingProtocols": [
+            {
+                "_scheme": "earth9",
+                "_host": "",
+                "_path": ""
+            }
+        ],
+        "_initialized": false
+    },
+    "_customDeepLinkingProtocols": [
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        },
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        },
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        },
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        },
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        },
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        },
+        {
+            "_domainProtocols": [],
+            "_deepLinkingProtocols": [],
+            "_initialized": false
+        }
+    ]
+}

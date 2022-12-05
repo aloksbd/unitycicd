@@ -15,7 +15,7 @@
 /[Mm]emoryCaptures/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
-!/[Aa]ssets/**/*.meta
+# /[Aa]ssets/**/*.meta
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # /[Aa]ssets/AssetStoreTools*
@@ -62,7 +62,6 @@ sysinfo.txt
 *.apk
 *.aab
 *.app
-*.exe
 *.unitypackage
 
 # Crashlytics generated file
@@ -85,3 +84,6 @@ crashlytics-build.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+#p4merge backups
+*.orig

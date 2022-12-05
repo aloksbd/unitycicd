@@ -1,0 +1,38 @@
+#tabs {
+    flex-basis: auto;
+    flex-direction: row;
+    background-color: rgb(229, 223, 223);
+    -unity-font-style: bold;
+    font-size: 14px;
+    -unity-font: url('project://database/Assets/Fonts/Rubik-Bold.ttf?fileID=12800000&guid=e9af8f671dbefe44a9295451247448dc&type=3#Rubik-Bold');
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.tab {
+    flex-grow: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+    -unity-text-align: middle-left;
+}
+
+.currentlySelectedTab {
+    background-color: rgb(173, 166, 166);
+}
+
+#tabContent {
+    flex-basis: 90%;
+    background-color: rgb(255, 255, 255);
+    font-size: 20px;
+}
+
+.unselectedContent {
+    display: none;
+}

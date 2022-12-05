@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb418ed4e4d2fef47ab824d4935a65a6, type: 3}
+  m_Name: Room Door
+  m_EditorClassIdentifier: 
+  BlockName: Room Door
+  BlockSprite: {fileID: 21300000, guid: 8c9225cbc22ad6e42aeac94cdc7fad55, type: 3}
+  BlockTexture: {fileID: 2800000, guid: 53fe2101efe874149bb2c46111b639a0, type: 3}
+  BlockObject: {fileID: 4446376727712562976, guid: 98e547f4a6cc6d64ab94a8a9fcb4f537, type: 3}
+  AssetType: Door
+  CategoryName: Build
+  Amount: 30 USD
+  IconName: Room Door
+  TwoDViewIcon: 

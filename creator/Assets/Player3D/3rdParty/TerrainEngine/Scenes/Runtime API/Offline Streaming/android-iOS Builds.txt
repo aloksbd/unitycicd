@@ -1,0 +1,38 @@
+
+TerraLand now supports streaming scenes with runtime model placement (either procedural or geo-referenced) on android and iOS builds:
+
+- While in android build settings as target platform, go to Player section in Project Settings and set "Write Permission"
+	to External (SDCard) if your application needs to be installed on SD Card or change "Install Location" and "Write Permission"
+	options based on your decision
+
+- Make sure to add Nature/Terrain/Standard shader in Project Settings => Graphics => Always Included Shaders list and under
+	Shader Stripping select Keep All in Instancing Variants drop down menu
+
+- Make sure your device has enough space to build apps on it
+
+- Create your server as you would normally do and place it somewhere on your hard drive
+
+- In your scene, find RuntimeOffline script, type the name of the server directory which has been created by TerraLand Downloader
+	(e.g. MyTerraLandServer_USA)
+
+- On RuntimeOffline script, enable "Android Build" checkbox
+
+- (Optional) Remove the component "Extended Fly Cam" on camera if existing and add "MobileTouchControls" script instead which is
+	for mobile touch controls
+
+- Build and run the scene on your device (You will receive errors regarding not found server directory at first run)
+
+- Based on the setup in Project Settings whether if it is on Internal drive or SD Card and based on the "Package Name" in Player
+	settings, a directory should be created under your phone's address: /storage/emulated/0/Android/data/<packagename>/files. In
+	our case <packagename> is com.DefaultCompany.TerraLandAssetStore
+
+- You should copy the server directory from your PC into the above path on your device. We used AirDroid to copy the server
+	folder onto our android device (with write access on its settings)
+
+- The final path on our phone is something like this:
+	...\Android\data\com.DefaultCompany.TerraLandAssetStore\files\MyTerraLandServer_USA
+	so that sub folders of "Elevation", "Imagery" & "Info" with all of their content are under this folder on device to be
+	accessible by TerraLand's Streaming system
+
+- Build the scene again without uninstalling the previous one and this time TerraLand can find the server on your device and will
+	stream the tiles around camera while navigating the scene

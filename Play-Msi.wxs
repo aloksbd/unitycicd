@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="5f72a567-ba4d-4652-9602-b193b74f92f7" Name="Earth9" Language="1033" Version="1.0.0.0" Manufacturer="WhiteHat Inc." UpgradeCode="586b6e95-5b80-4a4b-a118-0740574dcc91">
+	<Product Id="5f72a567-ba4d-4652-9602-b193b74f92f8" Name="Earth9" Language="1033" Version="1.0.0.0" Manufacturer="WhiteHat Inc." UpgradeCode="586b6e95-5b80-4a4b-a118-0740574dcc91">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Description="Earth9" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

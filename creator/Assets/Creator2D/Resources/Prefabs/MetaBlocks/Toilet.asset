@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb418ed4e4d2fef47ab824d4935a65a6, type: 3}
+  m_Name: Toilet
+  m_EditorClassIdentifier: 
+  BlockName: Toilet
+  BlockSprite: {fileID: 21300000, guid: f764c9705c8d34b4ab232a671e6c7733, type: 3}
+  BlockTexture: {fileID: 2800000, guid: 53fe2101efe874149bb2c46111b639a0, type: 3}
+  BlockObject: {fileID: 4446376727712562976, guid: f326e703b9374b444925ccc2dac1821d, type: 3}
+  AssetType: Toilet
+  CategoryName: Build
+  Amount: 30 USD
+  IconName: Toilet
+  TwoDViewIcon: 

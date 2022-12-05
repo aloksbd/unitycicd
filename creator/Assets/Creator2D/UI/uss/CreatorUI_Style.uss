@@ -1,0 +1,538 @@
+.row-container {
+    flex-direction: row;
+}
+
+.top-panel {
+    background-color: white;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.left-top-panel {
+    height: 100%;
+}
+
+.right-top-panel {
+    height: 100%;
+}
+
+.buttons-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.toptool-button {
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(244, 239, 244);
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+}
+
+.toptool-button-icon {
+    width: 20px;
+    height: 20px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.meta-button-icon:hover {
+    opacity: 1;
+}
+
+.meta-button:active > .meta-button-icon {
+    background-color: rgb(255, 176, 92);
+    opacity: 0.6;
+}
+
+.grow {
+    transition: all 0.2s ease-in-out;
+}
+
+.grow:hover {
+    scale: 1.2;
+    background-color: #E6E1E5;
+}
+
+.user-frame {
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+}
+
+.avatar-frame {
+    width: 32px;
+    height: 32px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+    border-left-width: 1px;
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    border-left-color: rgb(51, 148, 255);
+    border-right-color: rgb(51, 148, 255);
+    border-top-color: rgb(51, 148, 255);
+    border-bottom-color: rgb(51, 148, 255);
+}
+
+.avatar-label {
+    font-size: 14px;
+    -unity-font: url('project://database/Assets/Common/Resources/Fonts/Rubik-Bold.ttf?fileID=12800000&guid=e9af8f671dbefe44a9295451247448dc&type=3#Rubik-Bold');
+    color: rgb(10, 10, 10);
+    -unity-font-style: bold;
+}
+
+.token-frame {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: rgb(228, 242, 255);
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.label {
+    font-size: 14px;
+    -unity-font: url('project://database/Assets/Common/Resources/Fonts/Rubik-Regular.ttf?fileID=12800000&guid=e5da74d0a01a7624d83192b5b7d70cfe&type=3#Rubik-Regular');
+    color: rgb(10, 10, 10);
+}
+
+.token-button {
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.main-panel {
+    background-color: rgba(192, 192, 192, 0);
+    align-items: flex-start;
+    flex-direction: row;
+}
+
+.two-d-panel {
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.fly-out-panel {
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    align-items: center;
+    height: 100%;
+}
+
+.fly-out-frame {
+    flex-direction: column;
+    align-items: flex-start;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    height: 100%;
+}
+
+.right-panel {
+    height: 100%;
+    background-color: rgb(251, 251, 251);
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    right: 0;
+}
+
+.scale-label-size {
+    font-size: 12px;
+}
+
+.scale-container {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.bottom-panel {
+    background-color: white;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    position: absolute;
+    bottom: 0;
+    width: 85%;
+    height: 36px;
+}
+
+.action-button-container {
+    position: absolute;
+    bottom: 0;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.meta-button {
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-left-color: rgb(51, 148, 255);
+    border-right-color: rgb(51, 148, 255);
+    border-top-color: rgb(51, 148, 255);
+    border-bottom-color: rgb(51, 148, 255);
+    background-color: rgb(244, 239, 244);
+    color: rgb(147, 144, 148);
+}
+
+.submit {
+    background-color: rgb(51, 148, 255);
+    color: rgb(255, 255, 255);
+}
+
+.metablock-scroll {
+    background-color: rgb(244, 239, 244);
+    margin-top: 2px;
+    margin-bottom: 2px;
+    height: 300px;
+    align-items: center;
+}
+
+.scroll-foldout {
+    height: 300px;
+}
+
+.metablock-item {
+    width: 33.33%;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.metablock-button {
+    height: auto;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(255, 255, 255);
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+    margin-left: 1px;
+    margin-right: 1px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.metablock-button-icon {
+    height: 40px;
+    width: 40px;
+    opacity: 0.8;
+}
+
+.metablock-label {
+    font-size: 9px;
+    -unity-font: url('project://database/Assets/Common/Resources/Fonts/Rubik-Bold.ttf?fileID=12800000&guid=e9af8f671dbefe44a9295451247448dc&type=3#Rubik-Bold');
+    color: rgb(10, 10, 10);
+}
+
+.metablock-button-border {
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+    border-left-width: 2px;
+    border-left-color: #3394FF;
+    border-right-color: #3394FF;
+    border-top-color: #3394FF;
+    border-bottom-color: #3394FF;
+}
+
+.unity-popup-field__input {
+    background-color: rgb(255, 255, 255);
+}
+
+.floor-height-input .unity-text-field__label {
+    min-width: 30px;
+}
+
+.floor-height-input .unity-text-field__input {
+    background-color: rgb(255, 255, 255);
+    min-width: 80px;
+}
+
+.hide {
+    display: none;
+}
+
+.show {
+    display: block;
+}
+
+.threed-panel {
+    background-color: white;
+    height: 100%;
+    width: 33%;
+}
+
+.back-to-game-panel {
+    justify-content: center;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.back-to-game-button {
+    background-color: rgba(244, 239, 244, 0);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    color: rgb(51, 148, 255);
+}
+
+.main-menu-button {
+    background-color: rgb(255, 255, 255);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    color: rgb(255, 176, 92);
+    border-left-color: rgb(255, 176, 92);
+    border-right-color: rgb(255, 176, 92);
+    border-top-color: rgb(255, 176, 92);
+    border-bottom-color: rgb(255, 176, 92);
+}
+
+.compass-panel {
+    position: absolute;
+    right: 0;
+    align-items: center;
+}
+
+.compass-button {
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-left-color: rgb(51, 148, 255);
+    border-right-color: rgb(51, 148, 255);
+    border-top-color: rgb(51, 148, 255);
+    border-bottom-color: rgb(51, 148, 255);
+    background-color: rgba(255, 255, 255, 0);
+    color: rgb(147, 144, 148);
+    background-image: resource('Icons/compass_icon');
+    width: 124px;
+    height: 120px;
+}
+
+.message-label {
+    position: absolute;
+    right: 0;
+    top: 45px;
+    background-color: rgb(51, 148, 255);
+    color: rgb(253, 253, 253);
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.floot-height-input {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.add-floor-container {
+    padding-left: 5px;
+    padding-right: 2px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.add-floor-drop-down {
+    font-size: 11px;
+}
+
+.add-floor-drop-down .unity-base-popup-field__text {
+    margin-right: 10px;
+}
+
+.add-floor-button-element {
+    background-color: rgb(51, 148, 255);
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    height: 20px;
+    width: 20px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.add-floor-button {
+    background-image: resource('Icons/add');
+    background-color: rgb(51, 148, 255);
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    -unity-background-scale-mode: scale-to-fit;
+    height: 20px;
+    width: 20px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    justify-content: flex-start;
+    align-items: stretch;
+    border-left-color: rgb(51, 148, 255);
+    border-right-color: rgb(51, 148, 255);
+    border-top-color: rgb(51, 148, 255);
+    border-bottom-color: rgb(51, 148, 255);
+}
+
+.bg-pink {
+    background-color: rgb(244, 239, 244);
+}
+
+.bg-white {
+    background-color: white;
+}
+
+.button-active {
+    background-color: #3394FF;
+}
+
+.floorplan-delete-button {
+    background-image: resource('Icons/floorplan-delete');
+    background-color: white;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    height: 20px;
+    width: 20px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-left: 3px;
+    margin-right: 3px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.position-label {
+    font-size: 12px;
+    -unity-font: url('project://database/Assets/Common/Resources/Fonts/Rubik-Bold.ttf?fileID=12800000&guid=e9af8f671dbefe44a9295451247448dc&type=3#Rubik-Bold');
+    color: rgb(10, 10, 10);
+    -unity-font-style: bold;
+}
+
+.link-floor-icon {
+    background-image: resource('Icons/link_icon');
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    height: 20px;
+    width: 20px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-left: 3px;
+    margin-right: 3px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.link-floor-label {
+    font-size: 8px;
+    -unity-font: url('project://database/Assets/Common/Resources/Fonts/Rubik-Bold.ttf?fileID=12800000&guid=e9af8f671dbefe44a9295451247448dc&type=3#Rubik-Bold');
+    color: rgb(10, 10, 10);
+}
+
+.bold-font {
+    -unity-font-style: bold;
+}
+
+.normal-font {
+    -unity-font-style: normal;
+}
+
+.category-label {
+    font-size: 14px;
+    -unity-font: url('project://database/Assets/Common/Resources/Fonts/Rubik-Bold.ttf?fileID=12800000&guid=e9af8f671dbefe44a9295451247448dc&type=3#Rubik-Bold');
+}

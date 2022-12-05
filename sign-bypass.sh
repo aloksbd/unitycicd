@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
-chmod +x StandaloneOSX/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/*
-xattr -cr StandaloneOSX/Earth9-Creator/Earth9-Creator.app
+#! /bin/bash
 
-chmod +x StandaloneOSX/Earth9/Earth9.app/Contents/MacOS/*
-xattr -cr StandaloneOSX/Earth9/Earth9.app
+pwd=$(dirname -- $(readlink -fn -- "$0"))
+
+chmod +x "$pwd/mac/Earth9-Creator/Earth9-Creator.app/Contents/MacOS/Earth9"
+xattr -cr "$pwd/mac/Earth9-Creator/Earth9-Creator.app"
