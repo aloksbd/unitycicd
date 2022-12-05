@@ -254,6 +254,7 @@ jobs:
           # Store the notarization credentials so that we can prevent a UI password dialog
           # from blocking the CI
 
+
 #           echo "Create keychain profile"
 #           xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
 
@@ -311,8 +312,6 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
           # We finally codesign our app bundle, specifying the Hardened runtime option
-
-          /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime target/mac/Espanso.app -v
           echo
           find ./creator/build/StandaloneOSX/Earth9/Earth9.app/Contents/Plugins/UnityFbxSdkNative.bundle -name "*.meta" -delete
           
