@@ -357,6 +357,11 @@ jobs:
           echo "Attach staple"
           xcrun stapler staple "creator/build/StandaloneOSX/Earth9/Earth9.app"
           
+      - name: Building the installer
+        run: | 
+          brew install create-dmg
+          create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/StandaloneOSX/Earth9/Earth9.app" 200 190 --app-drop-link 600 185 --eula "lic.rtf" "Earth9.dmg" "creator/build/StandaloneOSX/Earth9/Earth9.app"
+          
       - uses: actions/upload-artifact@v2
         with:
           name: builds
@@ -366,7 +371,12 @@ jobs:
         with:
           name: archive
           path: Earth9.zip
-          
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: archive
+          path: Earth9.dmg
+
 #       - name: Upload public folder to Google Drive
 #         uses: Jodebu/upload-to-drive@master
 #         with:
