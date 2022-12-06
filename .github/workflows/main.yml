@@ -142,7 +142,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: creator
+          projectPath: "creator"
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           
@@ -153,7 +153,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: creator
+          projectPath: "creator"
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildPlay
           allowDirtyBuild: true
@@ -165,7 +165,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: creator
+          projectPath: "creator"
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           allowDirtyBuild: true
@@ -177,7 +177,7 @@ jobs:
 #           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
 #           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 #         with:
-#           projectPath: creator
+#           projectPath: "creator"
 #           targetPlatform: StandaloneOSX
 #           buildMethod: Earth9Builder.BuildScript.BuildAdmin
 #           allowDirtyBuild: true
