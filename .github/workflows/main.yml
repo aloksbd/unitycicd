@@ -144,7 +144,7 @@ jobs:
         with:
           projectPath: "creator"
           targetPlatform: StandaloneOSX
-          buildMethod: Earth9Builder.BuildScript.BuildCreator
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
           
       - name: Build Play for Mac
         uses: game-ci/unity-builder@v2
