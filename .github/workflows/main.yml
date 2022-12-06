@@ -113,6 +113,9 @@ jobs:
 #     needs: buildInstallerForWindows
     strategy:
       fail-fast: false
+      matrix:
+        projectPath:
+          - creator
       
     steps:
       - uses: actions/checkout@v2
@@ -142,7 +145,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: "creator"
+          projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildPlay
           
@@ -153,7 +156,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: "creator"
+          projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildPlay
           allowDirtyBuild: true
@@ -165,7 +168,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: "creator"
+          projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           allowDirtyBuild: true
@@ -177,7 +180,7 @@ jobs:
 #           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
 #           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 #         with:
-#           projectPath: "creator"
+#           projectPath: ${{ matrix.projectPath }}
 #           targetPlatform: StandaloneOSX
 #           buildMethod: Earth9Builder.BuildScript.BuildAdmin
 #           allowDirtyBuild: true
