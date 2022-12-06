@@ -159,7 +159,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildCreator
-          allowDirtyBuild: true
+#          allowDirtyBuild: true
 
 #       - name: Build Admin for Mac
 #         uses: game-ci/unity-builder@v2
