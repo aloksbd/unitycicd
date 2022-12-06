@@ -116,6 +116,8 @@ jobs:
       matrix:
         projectPath:
           - creator
+        targetPlatform:
+          - StandaloneOSX 
       
     steps:
       - uses: actions/checkout@v2
@@ -146,7 +148,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ matrix.projectPath }}
-          targetPlatform: StandaloneOSX
+          targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildPlay
           
       - name: Build Creator for Mac
@@ -156,7 +158,8 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: StandaloneOSX
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: ${{ matrix.targetPlatform }}
           buildMethod: Earth9Builder.BuildScript.BuildCreator
           allowDirtyBuild: true
 
