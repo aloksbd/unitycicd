@@ -110,7 +110,7 @@ jobs:
   buildInstallerForMacOS:
     name: Build Installer for MacOS
     runs-on: macos-latest
-#     needs: buildInstallerForWindows
+    needs: buildInstallerForCreatorMacOS
     strategy:
       fail-fast: false
       matrix:
