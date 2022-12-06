@@ -149,18 +149,6 @@ jobs:
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildPlay
           
-      - name: Build Play for Mac
-        uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: ${{ matrix.projectPath }}
-          targetPlatform: StandaloneOSX
-          buildMethod: Earth9Builder.BuildScript.BuildPlay
-          allowDirtyBuild: true
-          
       - name: Build Creator for Mac
         uses: game-ci/unity-builder@v2
         env:
@@ -171,7 +159,6 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildCreator
-          allowDirtyBuild: true
 
 #       - name: Build Admin for Mac
 #         uses: game-ci/unity-builder@v2
@@ -183,7 +170,6 @@ jobs:
 #           projectPath: ${{ matrix.projectPath }}
 #           targetPlatform: StandaloneOSX
 #           buildMethod: Earth9Builder.BuildScript.BuildAdmin
-#           allowDirtyBuild: true
 
       - name: Codesign Play mode app bundle
         # Extract the secrets we defined earlier as environment variables
