@@ -22,7 +22,8 @@ public class WallTransformHandler : ITransformHandler
 
         AttachResizeHarness();
 
-        eventHandler = go.AddComponent<HarnessEventHandler>();
+        eventHandler = go.GetComponent<HarnessEventHandler>() == null ? go.AddComponent<HarnessEventHandler>() : go.GetComponent<HarnessEventHandler>();
+
         eventHandler.drag += Dragged;
         eventHandler.mouseHover += Hovered;
         eventHandler.mouseExit += Exit;
@@ -47,37 +48,32 @@ public class WallTransformHandler : ITransformHandler
     {
         _state = state.dragging;
 
-        var position0 = _wallRenderer.GetPosition(0);
-        var position1 = _wallRenderer.GetPosition(1);
-        var points = new Vector3[2];
+        if (eventHandler.isInsideCanvas())
+        {
+            var position0 = _wallRenderer.GetPosition(0);
+            var position1 = _wallRenderer.GetPosition(1);
+            var points = new Vector3[2];
 
-        var x = Input.GetAxis("Mouse X");
-        var y = Input.GetAxis("Mouse Y");
+            var x = Input.GetAxis("Mouse X");
+            var y = Input.GetAxis("Mouse Y");
 
-        Vector3 moveDirection = new Vector3(x, y, 0.0f);
-        moveDirection = Quaternion.AngleAxis(eventHandler._camera.transform.eulerAngles.z, Vector3.forward) * moveDirection;
-        moveDirection *= eventHandler._camera.orthographicSize / 10.0f;
+            Vector3 moveDirection = new Vector3(x, y, 0.0f);
+            moveDirection = Quaternion.AngleAxis(eventHandler._camera.transform.eulerAngles.z, Vector3.forward) * moveDirection;
+            moveDirection *= eventHandler._camera.orthographicSize / 10.0f;
 
-        points[0] = new Vector3(position0.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY, position0.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY, -0.2f);
-        points[1] = new Vector3(position1.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY, position1.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY, -0.2f);
+            points[0] = new Vector3(position0.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY, position0.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY, -0.2f);
+            points[1] = new Vector3(position1.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY, position1.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY, -0.2f);
 
-        this._wallRenderer.SetPositions(points);
-        this._wallGO.transform.position = points[0];
+            this._wallRenderer.SetPositions(points);
+            this._wallGO.transform.position = points[0];
 
-        float angle = Mathf.Atan2(points[1].y - points[0].y, points[1].x - points[0].x) * 180 / Mathf.PI;
-        Update3DPos(points[0], points[1], angle);
-    }
-
-    private void Update3DPos(Vector3 pos0, Vector3 pos1, float angle)
-    {
-        this._wallItem.SetDimension(Vector3.Distance(pos0, pos1), WHConstants.DefaultWallHeight, WHConstants.DefaultWallBreadth);
-        this._wallItem.SetPosition(pos0);
-        this._wallItem.SetRotation(0, -angle, 0);
+            float angle = Mathf.Atan2(points[1].y - points[0].y, points[1].x - points[0].x) * 180 / Mathf.PI;
+            NewBuildingController.UpdateWall(this._wallItem.name, points[0], points[1], angle);
+        }
     }
 
     public void Hovered()
     {
-        Trace.Log($"WallHovered :: HarnessEventHandler.selected = {HarnessEventHandler.selected} Over UI :: {!CreatorUIController.isInputOverVisualElement()}");
         if (!HarnessEventHandler.selected && !CreatorUIController.isInputOverVisualElement())
         {
             Highlight();
@@ -106,7 +102,6 @@ public class WallTransformHandler : ITransformHandler
     {
         if (this._wallRenderer != null)
         {
-            Trace.Log("HighLight WALL");
             this._wallRenderer.material.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
         }
     }

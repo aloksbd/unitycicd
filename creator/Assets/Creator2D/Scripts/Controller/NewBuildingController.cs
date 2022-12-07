@@ -32,23 +32,19 @@ public class NewBuildingController
 
     public static CreatorItem CreateFloorPlan(string SelectedFloorPlanName)
     {
-        float z = 0;
-        float height = 0;
-        if (floorPlan != null)
+        float posZ = 0;
+        CreatorItem belowFloorPlan = GetPreviousFloorPlan();
+        if (belowFloorPlan != null)
         {
-            z = floorPlan.GetComponent<NewIHasPosition>().Position.z;
-            height = floorPlan.GetComponent<NewIHasDimension>().Dimension.Height;
+            var z = belowFloorPlan.GetComponent<NewIHasPosition>().Position.z;
+            var floorHeight = belowFloorPlan.GetComponent<NewIHasDimension>().Dimension.Height;
+            posZ = z + floorHeight;
         }
-        CreatorItem BaseItem = null;
-        if (SelectedFloorPlanName != null && SelectedFloorPlanName != CreatorUIController._copy_from_below)
-        {
-            BaseItem = CreatorItemFinder.FindByName(SelectedFloorPlanName);
-            height = BaseItem.GetComponent<NewIHasDimension>().Dimension.Height;
-        }
+
         string name = NamingController.GetName("FloorPlan", GetBuilding().uiItem.Foldout.Children());
         var createCommand = new CreatorItemCreateCommand(new CreatorFloorPlanFactory(), name);
         var createAndAddParentCommand = new CreateCreatorItemWithParentCommand(createCommand, GetBuilding().Id);
-        var SetPosition = new SetPositionCommand(createCommand.Id, new Vector3(0, 0, z + height));
+        var SetPosition = new SetPositionCommand(createCommand.Id, new Vector3(0, 0, posZ));
         var SetDimension = new ResizeCommand(createCommand.Id, new Dimension(0, WHConstants.DefaultWallHeight, 0));
         var setFloorPlanCommand = new SetCurrentFloorPlanCommand(name, floorPlan != null ? floorPlan.name : "", true);
         var multiCommand = new MultipleCommand(new List<ICommand>() { createAndAddParentCommand, SetPosition, SetDimension, setFloorPlanCommand });
@@ -56,7 +52,14 @@ public class NewBuildingController
 
         if (SelectedFloorPlanName != null && SelectedFloorPlanName != CreatorUIController._copy_from_below)
         {
-            LinkFloorPlan(floorPlan, BaseItem);
+            LinkFloorPlan(floorPlan, CreatorItemFinder.FindByName(SelectedFloorPlanName));
+        }
+        else if (belowFloorPlan != null)
+        {
+            CreatorItem floorItem = CreatorItemFinder.FindByName("Floor001", belowFloorPlan);
+            CreatorItem ceilingItem = CreatorItemFinder.FindByName("Ceiling001", belowFloorPlan);
+            floorPlan.AddChild(floorItem.Clone());
+            floorPlan.AddChild(ceilingItem.Clone());
         }
         return floorPlan;
     }
@@ -95,6 +98,20 @@ public class NewBuildingController
         LinkedFloorPlan.UnLink(floorPlan, baseItem);
         label.RemoveFromHierarchy();
         unLinkButton.RemoveFromHierarchy();
+    }
+
+    private static CreatorItem GetPreviousFloorPlan()
+    {
+        CreatorItem previousFloorPlan = null;
+
+        foreach (var child in GetBuilding().children)
+        {
+            if (child.name.Contains("FloorPlan"))
+            {
+                previousFloorPlan = child;
+            }
+        }
+        return previousFloorPlan;
     }
 
     public static void CreateFloor(List<Vector3> boundary)
@@ -146,6 +163,85 @@ public class NewBuildingController
         }
     }
 
+
+    public static void UpdateWall3DPos(CreatorItem parentItem, Vector3 pos0, Vector3 pos1, float angle)
+    {
+        parentItem.GetComponent<NewIHasDimension>().SetDimension(Vector3.Distance(pos0, pos1), WHConstants.DefaultWallHeight, WHConstants.DefaultWallBreadth);
+        parentItem.SetPosition(pos0);
+        parentItem.GetComponent<NewIHasRotation>().SetRotation(0, -angle, 0);
+    }
+
+    public static void UpdateWall(string ItemName, Vector3 pos0, Vector3 pos1, float angle)
+    {
+        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        foreach (CreatorItem floorPlanItem in linkedFloors)
+        {
+            CreatorItem parentItem = CreatorItemFinder.FindByName(ItemName, floorPlanItem);
+
+            UpdateWall3DPos(parentItem, pos0, pos1, angle);
+
+            parentItem.gameObject.transform.position = pos0;
+            parentItem.gameObject.GetComponent<LineRenderer>().SetPositions(new Vector3[] { pos0, pos1 });
+        }
+    }
+
+    public static void UpdateWallHandle(string ItemName, GameObject handleGO, int index, Vector3 pos0, Vector3 pos1, float angle)
+    {
+        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        foreach (CreatorItem floorPlanItem in linkedFloors)
+        {
+            CreatorItem parentItem = CreatorItemFinder.FindByName(ItemName, floorPlanItem);
+
+            UpdateWall3DPos(parentItem, pos0, pos1, angle);
+
+            var length = Vector3.Distance(pos0, pos1);
+            LineRenderer wallRenderer = parentItem.gameObject.GetComponent<LineRenderer>();
+            float lineWidth = wallRenderer.endWidth;
+            wallRenderer.SetPositions(new Vector3[] { pos0, pos1 });
+
+            BoxCollider lineCollider = parentItem.gameObject.GetComponent<BoxCollider>();
+            lineCollider.transform.parent = wallRenderer.transform;
+            lineCollider.center = new Vector3(length / 2, 0.0f, 0.0f);
+            lineCollider.size = new Vector3(length, lineWidth, 1f);
+
+            parentItem.gameObject.transform.position = pos0;
+            parentItem.gameObject.transform.eulerAngles = new Vector3(0, 0, angle);
+
+            for (int i = 0; i < 2; i++)
+            {
+                var handle = parentItem.gameObject.transform.GetChild(i).gameObject;
+                var points = wallRenderer.GetPosition(i);
+                handle.transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_HANDLE_ZOFFSET);
+                handle.transform.localScale = new Vector3((wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, (wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, 0.05f);
+                handle.transform.rotation = new Quaternion(0, 0, 0, 0);
+            }
+        }
+    }
+
+
+    public static void UpdateObject(string itemName, Vector3 pos0, Vector3 localPos, GameObject parent, string type)
+    {
+        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        foreach (CreatorItem floorPlanItem in linkedFloors)
+        {
+            CreatorItem parentItem = CreatorItemFinder.FindByName(itemName, floorPlanItem);
+            if (type == "window")
+            {
+                parentItem.GetComponent<NewIHasDimension>().SetDimension(WHConstants.DefaultWindowLength, WHConstants.DefaultWindowHeight, WHConstants.DefaultWindowBreadth);
+                parentItem.SetPosition(new Vector3(Mathf.Abs(pos0.x - parent.gameObject.transform.position.x), 0, WHConstants.DefaultWindowY));
+            }
+            if (type == "door")
+            {
+                parentItem.GetComponent<NewIHasDimension>().SetDimension(WHConstants.DefaultDoorLength, WHConstants.DefaultDoorHeight, WHConstants.DefaultDoorBreadth);
+                parentItem.SetPosition(new Vector3(Mathf.Abs(pos0.x - parent.gameObject.transform.position.x), 0, WHConstants.DefaultDoorY));
+            }
+            parentItem.GetComponent<NewIHasRotation>().SetRotation(0, 0, 0);
+
+            parentItem.gameObject.transform.localPosition = localPos;
+        }
+        DeselectAll();
+    }
+
     public static void CreateDoor(string wallName, Vector3 startPosition)
     {
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
@@ -162,7 +258,9 @@ public class NewBuildingController
             var position = createCommand.createdItem.gameObject.transform.localPosition;
             createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, 0);
         }
+        DeselectAll();
     }
+
     public static void CreateWindow(string wallName, Vector3 startPosition)
     {
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
@@ -179,6 +277,7 @@ public class NewBuildingController
             var position = createCommand.createdItem.gameObject.transform.localPosition;
             createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, 0);
         }
+        DeselectAll();
     }
 
     public static void DeleteFloorPlan(ClickEvent evt, string floorPlanName)
@@ -234,5 +333,12 @@ public class NewBuildingController
                 Trace.Error("Item Name doesnot have numbered suffix");
             }
         }
+    }
+
+    private static void DeselectAll()
+    {
+        BuildingInventoryController buildingInventoryController = BuildingInventoryController.Get();
+        buildingInventoryController.currentBlock = null;
+        buildingInventoryController.DeSelectAllObject();
     }
 }

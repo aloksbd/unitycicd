@@ -32,7 +32,7 @@ public class DeleteItemCommand : ICommand
                 }
             }
         }
-        catch (CreatorItemNotFounndException)
+        catch (CreatorItemNotFoundException)
         {
             Trace.Log("Creator Item with given Name not found");
         }

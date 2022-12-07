@@ -46,8 +46,8 @@ public class CreatorItemFinder
             }
             i++;
         }
-        throw new CreatorItemNotFounndException();
+        throw new CreatorItemNotFoundException();
     }
 }
 
-public class CreatorItemNotFounndException : Exception { }
+public class CreatorItemNotFoundException : Exception { }

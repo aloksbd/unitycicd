@@ -43,6 +43,7 @@ namespace TerrainEngine
         private Dictionary<string, List<GameObject>> _pylonGameObjects;
         private MeshFilter _meshFilter;    
 
+
         public MeshFilter meshFilter
         {
             get
@@ -52,6 +53,7 @@ namespace TerrainEngine
             }
         }
 
+        [RuntimeAsync("CreateRoofDome")]
         private void CreateRoofDome(List<Vector3> vertices, List<int> triangles)
         {
             Vector3 roofTopPoint = Vector3.zero;
@@ -71,6 +73,7 @@ namespace TerrainEngine
             vertices.Add(roofTopPoint);
         }
 
+        [RuntimeAsync("CreateRoofMesh")]
         private void CreateRoofMesh(List<Vector3> vertices, out List<Vector2> uv, out List<int> triangles)
         {
             List<Vector2> roofPoints = CreateRoofVertices(vertices);
@@ -88,6 +91,7 @@ namespace TerrainEngine
             uv = vertices.Select(v => new Vector2((v.x - minX) / offX, (v.z - minZ) / offZ)).ToList();
         }
 
+        [RuntimeAsync("CreateRoofTriangles")]
         private List<int> CreateRoofTriangles(List<Vector3> vertices, List<Vector2> roofPoints)
         {
             List<int> triangles = new List<int>();
@@ -103,6 +107,7 @@ namespace TerrainEngine
             return triangles;
         }
 
+        [RuntimeAsync("CreateRoofVertices")]
         private List<Vector2> CreateRoofVertices(List<Vector3> vertices)
         {
             Vector3[] targetVertices = new Vector3[localFootprint.Length];
@@ -144,6 +149,7 @@ namespace TerrainEngine
             return roofPoints;
         }
 
+        [RuntimeAsync("CreateWallMesh")]
         private void CreateWallMesh(List<Vector3> vertices, List<Vector2> uv, out List<int> triangles)
         {
             List<Vector3> wv = new List<Vector3>();
@@ -155,6 +161,7 @@ namespace TerrainEngine
             uv.AddRange(wuv);
         }
 
+        [RuntimeAsync("CreateWallTriangles")]
         private List<int> CreateWallTriangles(List<Vector3> vertices, int offset, bool reversed)
         {
             List<int> triangles = new List<int>();
@@ -185,6 +192,7 @@ namespace TerrainEngine
             return triangles;
         }
 
+        [RuntimeAsync("CreateWallVertices")]
         private bool CreateWallVertices(List<Vector3> vertices, List<Vector2> uv)
         {
             Vector3[] targetVertices = new Vector3[localFootprint.Length];

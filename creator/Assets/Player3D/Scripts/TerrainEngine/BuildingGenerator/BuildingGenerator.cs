@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Text.RegularExpressions;
 using System.Net;
 using UnityEngine;
@@ -11,9 +12,9 @@ namespace TerrainEngine
 {
     public class BuildingGenerator : MonoBehaviour
     {
-        const float DEFAULT_BUILDING_HEIGHT = 15f;
-        const int   BUILDING_COUNT_MAX = 400;
-        const int   BUILDINGS_PER_UPDATE = 12;
+        private const int    LOADING_GRID_CELLS_X = 25;
+        private const int    LOADING_GRID_CELLS_Y = LOADING_GRID_CELLS_X;
+        const float          DEFAULT_BUILDING_HEIGHT = 15f;
 
         //  Configureable via Inspector
         public TerrainPlayer player;
@@ -23,19 +24,55 @@ namespace TerrainEngine
         public Material      pylonMaterial;
 
         public int buildingsToGenerate = 0;
-        public int buildingsGenerated = 0;
+        public int buildingsGenerated  = 0;
 
         //  Private members
         //
-        private object s_datalock = new object();
-        private TerrainController controller;
-        private AreaBuildingData areaBuildingData;
-        private BuildingsInProgress buildingsInProgress;
+        private object              s_datalock = new object();
+        private TerrainController   controller;
+        private RangeGrid           loadingGrid = new RangeGrid();
 
+        enum CellTag    
+        {
+            //  Tags for cells of the building loading grid
+            CellStatus = 0, // value type: CellStatus
+        };
+        
+        enum CellStatus
+        {
+            //  Values for the CellStatus tag
+            None = 0,
+            ToDownload,
+            Downloading,
+            Processing,
+            Processed
+        };
+        
+        private BuildingsInProgress  buildingsInProgress;    // tracks buildings that are already being processed
+
+        //  Game-ready data from which a building is generated
+        private class GameReadyBuilding
+        {
+            public string        buildingObjectId;
+            public BuildingData  buildingData;      // OSM building data
+            public int           iGeometry;         // polygon index (for multi-polygon buildings)
+            public Wgs84Bounds   bbox;              // building's bounding box
+            public List<Vector3> worldVertices;     // wall vertices in world coordinates
+            public Vector3[]     localVertices;     // wall vertices in local coordinates (relative to its geometric centerpoint)
+            public Vector3       localCenterPt;     
+            public float         baseHeight;        
+            public ProceduralBuilding.RoofType roofType;
+            public float         roofHeight;
+        };
+        Dictionary<string, GameReadyBuilding> gameReadyBuildingData;
+
+        //  BuildingGenerator task queue. Worker threads enqueue, main thread dequeues.
+        Queue<Dictionary<string, GameReadyBuilding>> taskQueue = new Queue<Dictionary<string, GameReadyBuilding>>();
+
+        //  GameObject parenting and tracking
         GameObject buildingsParent;
         GameObject pylonsParent;
         Dictionary<string, GameObject> buildingGameObjects;
-       
 
         private void Awake()
         {
@@ -48,29 +85,104 @@ namespace TerrainEngine
         // Start is called before the first frame update
         void Start()
         {
-
         }
 
         // Update is called once per frame
         void Update()
         {
-
+            //  Todo: load additional buildings based on player travel.
         }
+
+        //--------------------------------------------------------------------------------//
+        //  Service cient entrypoint (main thread)
 
         public void GenerateBuildings()
         {
             Abortable abortable = new Abortable("BuildingGenerator.GetBuildingCoordinates");
 
-            controller.RunAsync(() =>
+            Vector3 playerPostion = player.transform.position;
+            int rangeId = 0;
+
+            if (loadingGrid != null)
             {
-                if (abortable.shouldAbort)
+                loadingGrid = new RangeGrid();
+                loadingGrid.InitializeFromArea(
+                    ref TerrainRuntime.NearMetrics.worldBounds,
+                    ref TerrainRuntime.NearMetrics.wgs84Bounds,
+                    LOADING_GRID_CELLS_X, LOADING_GRID_CELLS_Y);
+
+                // For now, we only have one range to compute. In the future we may
+                // discriminate among multiple distance ranges
+                loadingGrid.SetRange(rangeId, 0 /* near */, distanceFilter /* far */);
+            }
+
+            List<RangeGrid.Cell> areasInRange;
+
+            lock (s_datalock)
+            {
+                //  Retrieve the cells that match criteria specified by rangeId
+                if (loadingGrid.GetCellsInRange(playerPostion, rangeId, out areasInRange) > 0 &&
+                    !abortable.shouldAbort)
+                {
+                    //  Strip out the cells that we've already processed or are processing
+                    areasInRange.RemoveAll(p =>
+                    {
+                        RangeGrid.Cell.Status cellStatus;
+                        return loadingGrid.TryGetStatus(p.row, p.col, out cellStatus) ?
+                            cellStatus != RangeGrid.Cell.Status.None :
+                            false;
+                    });
+
+                    //  Mark surviving cells as 'ToDownload'
+                    foreach (RangeGrid.Cell cell in areasInRange)
+                    {
+                        loadingGrid.TrySetStatus(cell.row, cell.col, RangeGrid.Cell.Status.ToDownload);
+                    }
+                }
+                else
                 {
                     return;
                 }
-                WebExceptionStatus status = WebRequestRetries.WebRequestMethodFar(DownloadBuildings);
-                if (status != WebExceptionStatus.Success)
+            }
+
+            controller.RunAsync(() =>
+            {
+                foreach (RangeGrid.Cell cell in areasInRange)
                 {
-                    controller.ReportFatalWebServiceError(status);
+                    if (abortable.shouldAbort)
+                    {
+                        return;
+                    }
+
+                    lock (s_datalock)
+                    {
+                        loadingGrid.TrySetStatus(cell.row, cell.col, RangeGrid.Cell.Status.Downloading);
+                    }
+
+                    AreaBuildingData osmBuildingData;
+                    WebExceptionStatus status = DownloadBuildings(ref cell.wgs84Bounds, out osmBuildingData);
+                    if (status != WebExceptionStatus.Success)
+                    {
+                        controller.ReportFatalWebServiceError(status);
+                        return;
+                    }
+
+                    if (abortable.shouldAbort)
+                    {
+                        return;
+                    }
+
+                    lock (s_datalock)
+                    {
+                        loadingGrid.TrySetStatus(cell.row, cell.col, RangeGrid.Cell.Status.Processing);
+                    }
+
+                    AsyncPreProcessData(cell, osmBuildingData, playerPostion);
+
+                    lock (s_datalock)
+                    {
+                        loadingGrid.TrySetStatus(cell.row, cell.col, RangeGrid.Cell.Status.Processed);
+                    }
                 }
             });
 
@@ -86,14 +198,35 @@ namespace TerrainEngine
                 {
                     return;
                 }
-                TerrainController.RunCoroutine(CreateBuildings(), "CreateBuildings()");
+                StartCoroutine(CreateBuildings());
             });
         }
 
+        private void InitShared()
+        {
+            lock (s_datalock)
+            {
+                if (buildingGameObjects == null)
+                {
+                    buildingGameObjects = new Dictionary<string, GameObject>();
+                }
+
+                if (buildingsInProgress == null)
+                {
+                    buildingsInProgress = new BuildingsInProgress();
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------------//
+        //  Worker thread Processing
+
         [RuntimeAsync(nameof(DownloadBuildings))]
-        public WebExceptionStatus DownloadBuildings()
+        public WebExceptionStatus DownloadBuildings(ref Wgs84Bounds area, out AreaBuildingData osmData)
         {
             Abortable abortable = new Abortable("BuildingGenerator.DownloadBuildings");
+
+            osmData = null;
 
             if (abortable.shouldAbort)
             {
@@ -105,10 +238,10 @@ namespace TerrainEngine
                 var buildingCoordinates = new BoundryBoxCoordinates()
                 {
                     bbox = new double[] {
-                        TerrainRuntime.NearMetrics.wgs84Bounds.bottom,
-                        TerrainRuntime.NearMetrics.wgs84Bounds.left,
-                        TerrainRuntime.NearMetrics.wgs84Bounds.top,
-                        TerrainRuntime.NearMetrics.wgs84Bounds.right }
+                        area.bottom,
+                        area.left,
+                        area.top,
+                        area.right }
                 };
 
                 List<BuildingData> buildingData = Buildings.GetBuildingByBoundryBox(buildingCoordinates).Result;
@@ -120,7 +253,7 @@ namespace TerrainEngine
 
                 try
                 {
-                    areaBuildingData = new AreaBuildingData()
+                    osmData = new AreaBuildingData()
                     {
                         buildingData = buildingData,
                         areaBounds = new Wgs84Bounds(TerrainRuntime.NearMetrics.wgs84Bounds)
@@ -130,6 +263,7 @@ namespace TerrainEngine
                 {
                     if (abortable.shouldAbort)
                     {
+                        osmData = null;
                         return WebExceptionStatus.RequestCanceled;
                     }
                     Trace.Exception(e);
@@ -151,162 +285,100 @@ namespace TerrainEngine
             return WebExceptionStatus.Success;
         }
 
-        private IEnumerator<float> CreateBuildings()
+        [RuntimeAsync(nameof(AsyncPreProcessData))]
+        private void AsyncPreProcessData(RangeGrid.Cell area, AreaBuildingData osmBuildingData, Vector3 playerPosition)
         {
-            int buildings_generated = 0;
+            Abortable abortable = new Abortable("BuildingGenerator.AsyncPreProcessData");
 
-            while (areaBuildingData == null)
-            {
-                if (Abortable.ShouldAbortRoutine())
-                {
-                    yield break;
-                }
-                yield return Timing.WaitForSeconds(.25f);
-            }
+            gameReadyBuildingData = new Dictionary<string, GameReadyBuilding>();
+            InitShared();
 
-            if (Abortable.ShouldAbortRoutine())
-            {
-                yield break;
-            }
-
-            if (buildingsParent == null)
-            {
-                buildingsParent = SceneObject.Create(
-                    SceneObject.Mode.Player, ObjectName.GENERATED_BUILDING_CONTAINER);
-            }
-
-            if (pylonsParent == null)
-            {
-                pylonsParent = SceneObject.Create(
-                SceneObject.Mode.Player, ObjectName.GENERATED_BUILDING_PYLONS_CONTAINER);
-            }
-
-            if (buildingGameObjects == null)
-            {
-                buildingGameObjects = new Dictionary<string, GameObject>();
-            }
-
-            if (buildingsInProgress == null)
-            {
-                buildingsInProgress = new BuildingsInProgress();
-            }
-
-            buildingsGenerated = 0;
-
+            //  Enumerate building data records
             for (int iBuilding = 0;
-                !Abortable.ShouldAbortRoutine() && 
-                    iBuilding < areaBuildingData.buildingData.Count /* && buildingsGenerated < BUILDING_COUNT_MAX */; 
-                iBuilding++)
+                !abortable.shouldAbort && osmBuildingData != null && iBuilding < osmBuildingData.buildingData.Count;
+                 iBuilding++)
             {
-                if (Abortable.ShouldAbortRoutine())
+                //  Enumerate footprint geometries
+                for (int iGeometry = 0;
+                     iGeometry < osmBuildingData.buildingData[iBuilding].geometry.coordinates.Count;
+                     iGeometry++ )
                 {
-                    yield break;
-                }
-
-                foreach (List<List<float>> buildingFootprint in areaBuildingData.buildingData[iBuilding].geometry.coordinates)
-                {
-                    if (Abortable.ShouldAbortRoutine())
+                    if (abortable.shouldAbort)
                     {
-                        yield break;
+                        return;
                     }
 
-                    //  Check if building is already created or in progress
-                    lock (s_datalock)
-                    {
-                        if (buildingGameObjects.ContainsKey(areaBuildingData.buildingData[iBuilding].id))
-                        {
-                            continue;
-                        }
-                        if (buildingsInProgress.Exists(areaBuildingData.buildingData[iBuilding].id))
-                        {
-                            continue;
-                        }
-                    }
-
-                    //  Add to buildings-in-progress
-                    buildingsInProgress.Add(areaBuildingData.buildingData[iBuilding].id);
-
-                    //  Curate the OSM data
-                    Wgs84Bounds bbox;
-                    List<Vector3> worldVertices = FilterAndGeoLocateFootprint(
+                    //  Curate the raw OSM building data
+                    GameReadyBuilding building = FilterAndGeoLocateFootprint(
                         ref TerrainRuntime.s_nearGridMetrics,
                         ref TerrainRuntime.s_nearGridMetrics.wgs84Bounds, // TODO: moving window for buildings
-                        areaBuildingData.buildingData[iBuilding].center,
-                        buildingFootprint,
-                        out bbox);
+                        playerPosition,
+                        osmBuildingData.buildingData[iBuilding],
+                        iGeometry);
 
-                    if (Abortable.ShouldAbortRoutine())
+                    if (abortable.shouldAbort)
                     {
-                        yield break;
+                        return;
                     }
 
-                    if (worldVertices != null)
+                    if (building != null)
                     {
-                        CreateBuilding(
-                                buildingsParent.transform,
-                                pylonsParent.transform,
-                                areaBuildingData.buildingData[iBuilding],
-                                worldVertices);
-
-                        if (Abortable.ShouldAbortRoutine())
-                        {
-                            yield break;
-                        }
-
-                        buildingsGenerated++;
+                        gameReadyBuildingData.Add(building.buildingObjectId, building);
                     }
-
-                    //  Remove from buildings-in-progress
-                    buildingsInProgress.Remove(areaBuildingData.buildingData[iBuilding].id);
-                }
-
-                if (Abortable.ShouldAbortRoutine())
-                {
-                    yield break;
-                }
-                else if ((buildings_generated % BUILDINGS_PER_UPDATE) == 0)
-                {
-                    yield return 0;
                 }
             }
 
-            Trace.Log("BuidingGenerator: buildings generated = {0}", buildingsGenerated);
+            if (gameReadyBuildingData != null && gameReadyBuildingData.Count > 0)
+            {
+                lock (s_datalock)
+                {
+                    taskQueue.Enqueue(gameReadyBuildingData);
+                }
+            }
 
-            controller.UpdateState(TerrainController.TerrainState.BuildingsGenerated);
+            osmBuildingData = null;
         }
 
-        public List<Vector3> FilterAndGeoLocateFootprint(
+        [RuntimeAsync("BuildingGenerator.FilterAndGeoLocateFootprint)")]
+        private GameReadyBuilding FilterAndGeoLocateFootprint(
             ref GridMetrics gridMetrics,
-            ref Wgs84Bounds wgs84Bounds,
-            Point wgs84Center,
-            List<List<float>> buildingFootprint,
-            out Wgs84Bounds bbox)
+            ref Wgs84Bounds wgs84AreaBounds,
+            Vector3 playerPosition,
+            BuildingData buildingData,
+            int iGeometry)
         {
             Abortable abortable = new Abortable("BuildingGenerator.FilterAndGeoLocateFootprint");
 
-            bbox = null;
             List<Vector3> worldVertices = null;
-            bbox = null;
+            Wgs84Bounds bbox = null;
 
+            //  Generate game object ID
+            string buildingObjectID = String.Format("{0}[{1}]", buildingData.id, iGeometry);
+
+            //  Ignore if building is already created or in progress
+            lock (s_datalock)
+            {
+                if (buildingGameObjects.ContainsKey(buildingObjectID))
+                {
+                    return null;
+                }
+                if (buildingsInProgress.Exists(buildingObjectID))
+                {
+                    return null;
+                }
+
+                //  Add to buildings-in-progress
+                buildingsInProgress.Add(buildingObjectID);
+            }
+
+            //  Reject if fewer than three vertices
+            List<List<float>> buildingFootprint = buildingData.geometry.coordinates[iGeometry];
             if (buildingFootprint.Count < 3)
             {
                 return null;
             }
 
-            if (distanceFilter > 0)
-            {
-                Vector3 worldCenter = gridMetrics.GeoLocate(wgs84Center.coordinates[1], wgs84Center.coordinates[0]);
-                float d2 = (worldCenter.x - player.transform.position.x) * (worldCenter.x - player.transform.position.x) +
-                           (worldCenter.y - player.transform.position.y) * (worldCenter.y - player.transform.position.y) +
-                           (worldCenter.z - player.transform.position.z) * (worldCenter.z - player.transform.position.z);
-
-                if (d2 > distanceFilter * distanceFilter)
-                {
-                    return null;
-                }
-            }
-
-
+            // Bounds-check and geolocate each vertex
             foreach (List<float> point in buildingFootprint)
             {
                 if (abortable.shouldAbort)
@@ -317,15 +389,7 @@ namespace TerrainEngine
                 float lat = point[1];
                 float lon = point[0];
 
-                if (lat > wgs84Bounds.top || lat < wgs84Bounds.bottom)
-                {
-                    return null;
-                }
-                if (lon > wgs84Bounds.right || lon < wgs84Bounds.left)
-                {
-                    return null;
-                }
-
+                //  Generate building WGS84 bounding box
                 if (bbox == null)
                 {
                     bbox = new Wgs84Bounds();
@@ -343,86 +407,113 @@ namespace TerrainEngine
                     worldVertices = new List<Vector3>();
                 }
 
+                //  Geolocate the vertex on the terrain.
                 worldVertices.Add(gridMetrics.GeoLocate(lat, lon));
             }
 
-            if (worldVertices != null)
+            if (worldVertices == null || abortable.shouldAbort)
             {
-                for (int i = 0; i < worldVertices.Count; i++)
-                {
-                    if (abortable.shouldAbort)
-                    {
-                        return null;
-                    }
+                return null;
+            }
 
-                    int prev = i - 1;
-                    if (prev < 0)
-                    {
-                        prev = worldVertices.Count - 1;
-                    }
-
-                    int next = i + 1;
-                    if (next >= worldVertices.Count)
-                    {
-                        next = 0;
-                    }
-
-                    if ((worldVertices[prev] - worldVertices[i]).magnitude < 0.01f)
-                    {
-                        worldVertices.RemoveAt(i);
-                        i--;
-                        continue;
-                    }
-
-                    if ((worldVertices[next] - worldVertices[i]).magnitude < 0.01f)
-                    {
-                        worldVertices.RemoveAt(next);
-                        continue;
-                    }
-
-                    float a1 = Angle2D(worldVertices[prev], worldVertices[i]);
-                    float a2 = Angle2D(worldVertices[i], worldVertices[next]);
-
-                    if (Mathf.Abs(a1 - a2) < 5)
-                    {
-                        worldVertices.RemoveAt(i);
-                        i--;
-                    }
-                }
-
+            //  Remove noisy vertices
+            for (int i = 0; i < worldVertices.Count; i++)
+            {
                 if (abortable.shouldAbort)
                 {
                     return null;
                 }
 
-                if (worldVertices.Count < 3)
+                int prev = i - 1;
+                if (prev < 0)
                 {
-                    worldVertices = null;
-                }
-                else if (worldVertices.First() == worldVertices.Last())
-                {
-                    worldVertices.Remove(worldVertices[worldVertices.Count - 1]);
-                    if (worldVertices.Count < 3)
-                    {
-                        worldVertices = null;
-                    }
+                    prev = worldVertices.Count - 1;
                 }
 
-                if (abortable.shouldAbort)
+                int next = i + 1;
+                if (next >= worldVertices.Count)
                 {
-                    return null;
+                    next = 0;
                 }
 
-                if (worldVertices != null)
+                //  reject if too close to prior vertex
+                if ((worldVertices[prev] - worldVertices[i]).magnitude < 0.01f)
                 {
-                    if (IsReversed(worldVertices))
-                    {
-                        worldVertices.Reverse();
-                    }
+                    worldVertices.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
+                //  reject if too close to next vertex
+                if ((worldVertices[next] - worldVertices[i]).magnitude < 0.01f)
+                {
+                    worldVertices.RemoveAt(next);
+                    continue;
+                }
+
+                //  reject if angle between previous and next vertex is too acute
+                float a1 = Angle2D(worldVertices[prev], worldVertices[i]);
+                float a2 = Angle2D(worldVertices[i], worldVertices[next]);
+
+                if (Mathf.Abs(a1 - a2) < 5)
+                {
+                    worldVertices.RemoveAt(i);
+                    i--;
                 }
             }
 
-            return worldVertices;
+            if (worldVertices.Count < 3 || abortable.shouldAbort)
+            {
+                return null;
+            }
+
+            if (worldVertices.First() == worldVertices.Last())
+            {
+                worldVertices.Remove(worldVertices[worldVertices.Count - 1]);
+                if (worldVertices.Count < 3)
+                {
+                    return null;
+                }
+            }
+
+            //  Normalize vertex sort order
+            if (IsReversed(worldVertices))
+            {
+                worldVertices.Reverse();
+            }
+
+            float baseHeight = 0;
+            try
+            {
+                baseHeight = (float)Convert.ToDouble(Regex.Replace(buildingData.details.height, "[^0-9.]", ""));
+                if (baseHeight == 0.0f)
+                {
+                    baseHeight = DEFAULT_BUILDING_HEIGHT;
+                }
+            }
+            catch (Exception)
+            {
+                Trace.Warning("Bad OSM Height value '{0}' for building id {1}", buildingData.details.height, buildingData.id);
+                baseHeight = DEFAULT_BUILDING_HEIGHT;
+            }
+
+            Vector3 localCenterPt = Vector3.zero;
+            localCenterPt = worldVertices.Aggregate(localCenterPt, (current, point) => current + point) / worldVertices.Count;
+            localCenterPt.y = worldVertices.Min(p => p.y);
+
+            return new GameReadyBuilding()
+            {
+                buildingObjectId = buildingObjectID,
+                buildingData     = buildingData,
+                iGeometry        = iGeometry,
+                bbox             = bbox,
+                baseHeight       = baseHeight,
+                worldVertices    = worldVertices,
+                localCenterPt    = localCenterPt,
+                localVertices    = worldVertices.Select(p => p - localCenterPt).ToArray(),
+                roofType         = ProceduralBuilding.RoofType.flat,
+                roofHeight       = 0
+            };
         }
 
         public static float Angle2D(Vector3 point1, Vector3 point2)
@@ -476,36 +567,84 @@ namespace TerrainEngine
             return Vector3.Cross(side1, side2).y <= 0;
         }
 
+
+        //--------------------------------------------------------------------------------//
+        //  Main thread processing
+
+        private IEnumerator CreateBuildings()
+        {
+            Dictionary<string, GameReadyBuilding> gameReadyBuildings;
+
+            while (!Abortable.ShouldAbortRoutine())
+            {
+                bool haveTask;
+
+                lock (s_datalock)
+                {
+                    haveTask = taskQueue.TryDequeue(out gameReadyBuildings);
+                }
+
+                if (!haveTask)
+                {
+                    yield return Timing.WaitForSeconds(.333f);
+                    continue;
+                }
+
+                Trace.Assert(gameReadyBuildings.Count > 0, "There should be no empty building generation tasks in the queue");
+
+                InitShared();
+
+                if (buildingsParent == null)
+                {
+                    buildingsParent = SceneObject.Create(
+                        SceneObject.Mode.Player, ObjectName.GENERATED_BUILDING_CONTAINER);
+                }
+
+                if (pylonsParent == null)
+                {
+                    pylonsParent = SceneObject.Create(
+                    SceneObject.Mode.Player, ObjectName.GENERATED_BUILDING_PYLONS_CONTAINER);
+                }
+
+                buildingsGenerated = 0;
+                buildingsToGenerate = gameReadyBuildings.Count;
+
+                foreach(GameReadyBuilding building in gameReadyBuildings.Values)
+                {
+                    if (Abortable.ShouldAbortRoutine())
+                    {
+                        yield break;
+                    }
+
+                    if (CreateBuilding(
+                            buildingsParent.transform,
+                            pylonsParent.transform,
+                            building))
+                    {
+                        Interlocked.Increment(ref buildingsGenerated);
+                    }
+                    else
+                    {
+                        Interlocked.Decrement(ref buildingsToGenerate);
+                    }
+                    
+
+                    lock (s_datalock)
+                    {
+                        buildingsInProgress.Remove(building.buildingObjectId);
+                    }
+                }
+
+                controller.UpdateState(TerrainController.TerrainState.BuildingsGenerated);
+            }
+        }
+
         private bool CreateBuilding(
             Transform transformParent,
             Transform pylonsTransformParent,
-            BuildingData buildingData,
-            List<Vector3> worldVertices)
+            GameReadyBuilding building)
         {
             Abortable abortable = new Abortable("BuildingGenerator.CreateBuilding");
-
-            float baseHeight = 0;
-            try
-            {
-                baseHeight = (float)Convert.ToDouble(Regex.Replace(buildingData.details.height, "[^0-9.]", ""));
-            }
-            catch (Exception)
-            {
-                Trace.Warning("bad string");
-                return false;
-            }
-
-            if (baseHeight == 0.0f)
-            {
-                baseHeight = DEFAULT_BUILDING_HEIGHT;
-            }
-            ProceduralBuilding.RoofType roofType = ProceduralBuilding.RoofType.flat;
-            float roofHeight = 0;
-
-            Vector3 centerPoint = Vector3.zero;
-            centerPoint = worldVertices.Aggregate(centerPoint, (current, point) => current + point) / worldVertices.Count;
-            centerPoint.y = worldVertices.Min(p => p.y);
-            Vector3[] localFootprint = worldVertices.Select(p => p - centerPoint).ToArray();
 
 #if false   // future: support holes defined in OSM results
             if (way.holes != null) AddHoles(globalContainer, way, points);
@@ -516,16 +655,15 @@ namespace TerrainEngine
             }
 
             //  Create game object
-            GameObject buildingGameObject = SceneObject.Create(SceneObject.Mode.Player, ObjectName.GENERATED_BUILDING + "_" + buildingData.id);
-            buildingGameObject.transform.position = centerPoint;
+            GameObject buildingGameObject = SceneObject.Create(SceneObject.Mode.Player, ObjectName.GENERATED_BUILDING + "_" + building.buildingObjectId);
+            buildingGameObject.transform.position = building.localCenterPt;
             try
             {
-                buildingGameObjects.Add(buildingData.id, buildingGameObject);
-                buildingsInProgress.Add(buildingData.id);
+                buildingGameObjects.Add(building.buildingObjectId, buildingGameObject);
             }
             catch (ArgumentException)
             {
-                Trace.Warning("Duplicaate building ID '{0}' encountered in BuildingGenerator.CreatePylons", buildingData.id);
+                Trace.Warning("Duplicaate building ID '{0}' encountered in BuildingGenerator.CreatePylons", building.buildingObjectId);
                 Destroy(buildingGameObject);
                 return false;
             }
@@ -537,13 +675,13 @@ namespace TerrainEngine
             }
 
             //  Create mesh and add material
-            proceduralBuilding.id = buildingData.id;
-            proceduralBuilding.buildingData = buildingData;
-            proceduralBuilding.baseHeight = baseHeight;
-            proceduralBuilding.worldFootprint = worldVertices.ToArray();
-            proceduralBuilding.localFootprint = localFootprint;
-            proceduralBuilding.roofHeight = roofHeight;
-            proceduralBuilding.roofType = roofType;
+            proceduralBuilding.id = building.buildingObjectId;
+            proceduralBuilding.buildingData = building.buildingData;
+            proceduralBuilding.baseHeight = building.baseHeight;
+            proceduralBuilding.worldFootprint = building.worldVertices.ToArray();
+            proceduralBuilding.localFootprint = building.localVertices;
+            proceduralBuilding.roofHeight = building.roofHeight;
+            proceduralBuilding.roofType = building.roofType;
             proceduralBuilding.generateWall = true;
             proceduralBuilding.wallMaterial = wallMaterial;
             proceduralBuilding.roofMaterial = roofMaterial;
@@ -607,8 +745,7 @@ namespace TerrainEngine
                 buildingsParent = null;
             }
 
-            areaBuildingData = null;
-
+            loadingGrid.Dispose();
             buildingsInProgress.Dispose();
         }
     }

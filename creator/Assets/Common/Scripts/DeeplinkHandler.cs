@@ -34,8 +34,15 @@ public class DeeplinkHandler
 
         MonoBehaviour mono = GameObject.FindObjectOfType<MonoBehaviour>();
 
+        if (mode == "launch")
+        {
+            Trace.Log("launch");
+            NavigateToMode(SceneObject.Mode.Welcome);
+        }
         if (mode == "play")
         {
+            Trace.Log("play");
+
             PlayData.latitude = linkActivation.QueryString["latitude"];
             PlayData.longitude = linkActivation.QueryString["longitude"];
 
@@ -44,6 +51,8 @@ public class DeeplinkHandler
 
         if (mode == "build")
         {
+            Trace.Log("build");
+
             BuildData.building_id = linkActivation.QueryString["building_id"];
             Trace.Log("building_id: " + BuildData.building_id);
 
@@ -55,7 +64,7 @@ public class DeeplinkHandler
             //Admin
         }
 
-        UnLinkDeeplink();
+        //UnLinkDeeplink();
     }
 
     static void NavigateToMode(SceneObject.Mode mode)

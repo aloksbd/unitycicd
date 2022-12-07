@@ -22,7 +22,8 @@ public class ObjectTransformHandler : ITransformHandler
 
         this._originalColor = this._objectRenderer.color;
 
-        eventHandler = go.AddComponent<HarnessEventHandler>();
+        eventHandler = go.GetComponent<HarnessEventHandler>() == null ? go.AddComponent<HarnessEventHandler>() : go.GetComponent<HarnessEventHandler>();
+
         eventHandler.drag += Dragged;
         eventHandler.mouseHover += Hovered;
         eventHandler.mouseExit += Exit;
@@ -31,10 +32,6 @@ public class ObjectTransformHandler : ITransformHandler
 
         GameObject cam = SceneObject.GetCamera(SceneObject.Mode.Creator);
         _camera = cam.GetComponent<Camera>();
-
-        BuildingInventoryController buildingInventoryController = BuildingInventoryController.Get();
-        buildingInventoryController.currentBlock = null;
-        buildingInventoryController.DeSelectAllObject();
 
         this._objectType = type;
     }
@@ -50,7 +47,7 @@ public class ObjectTransformHandler : ITransformHandler
     {
         HarnessEventHandler.selected = true;
     }
-
+    Vector3 finalPos;
     public void Dragged(Vector3 data)
     {
         var parent = _objectGO.transform.parent;
@@ -60,51 +57,16 @@ public class ObjectTransformHandler : ITransformHandler
         float x = Input.GetAxis("Mouse X");
         float y = Input.GetAxis("Mouse Y");
 
-        Vector3 moveDirection = new Vector3(x + y, 0f, 0f);
+        Trace.Log($"CLAMP :: 0 {Mathf.Abs(bound.max.x) + Mathf.Abs(bound.min.x)}");
 
-        if (parent.transform.position.x >= 0)
-        {
-            moveDirection = new Vector3(-(x + y), 0f, 0f);
-        }
-        moveDirection = Quaternion.AngleAxis(_camera.transform.eulerAngles.z, Vector3.forward) * moveDirection;
+        var pos = new Vector3(data.x + (x * y) * HarnessConstant.MOVEMENT_SENSITIVITY, 0f, 0f);
+        pos.x = Mathf.Clamp(pos.x, 0, Mathf.Abs(bound.max.x) + Mathf.Abs(bound.min.x));
 
-        moveDirection.y = 0f;
-
-        if (this._objectGO.transform.localPosition.x > 0 && this._objectGO.transform.localPosition.x < (bound.size.x - this._objectRenderer.bounds.size.x))
-        {
-            this._objectGO.transform.localPosition += moveDirection;
-        }
-        else if (this._objectGO.transform.localPosition.x <= 0)
-        {
-            this._objectGO.transform.localPosition = new Vector3(0.1f, 0f, 0f);
-        }
-        else if (this._objectGO.transform.localPosition.x >= (bound.size.x - this._objectRenderer.bounds.size.x))
-        {
-            this._objectGO.transform.localPosition = new Vector3(bound.size.x - this._objectRenderer.bounds.size.x, this._objectGO.transform.localPosition.y, this._objectGO.transform.localPosition.z);
-        }
-        Update3DPos(this._objectGO.transform.position, parent.gameObject);
-    }
-
-    private void Update3DPos(Vector3 pos0, GameObject parent)
-    {
-        if (this._objectType == "window")
-        {
-
-            this._objectItem.SetDimension(WHConstants.DefaultWindowLength, WHConstants.DefaultWindowHeight, WHConstants.DefaultWindowBreadth);
-            this._objectItem.SetPosition(new Vector3(Mathf.Abs(pos0.x - parent.gameObject.transform.position.x), 0, WHConstants.DefaultWindowY));
-        }
-        if (this._objectType == "door")
-        {
-            this._objectItem.SetDimension(WHConstants.DefaultDoorLength, WHConstants.DefaultDoorHeight, WHConstants.DefaultDoorBreadth);
-            this._objectItem.SetPosition(new Vector3(Mathf.Abs(pos0.x - parent.gameObject.transform.position.x), 0, WHConstants.DefaultDoorY));
-        }
-        this._objectItem.SetRotation(0, 0, 0);
-
+        this._objectGO.transform.localPosition = pos;
     }
 
     public void Hovered()
     {
-        Trace.Log("ObjectHovered");
         BuildingInventoryController buildingInventoryController = BuildingInventoryController.Get();
         if (!HarnessEventHandler.selected && buildingInventoryController.currentBlock == null && !CreatorUIController.isInputOverVisualElement())
         {
@@ -114,14 +76,12 @@ public class ObjectTransformHandler : ITransformHandler
 
     public void Exit()
     {
-        Trace.Log("ObjectExit");
         HarnessEventHandler.selected = false;
         RemoveHighlight();
     }
 
     public void Released()
     {
-        Trace.Log("ObjectReleased");
         HarnessEventHandler.selected = false;
         if (_state == state.dragging)
         {
@@ -129,6 +89,8 @@ public class ObjectTransformHandler : ITransformHandler
             RemoveHighlight();
             return;
         }
+        NewBuildingController.UpdateObject(this._objectItem.name, this._objectGO.transform.position, this._objectGO.transform.localPosition, this._objectGO.transform.parent.gameObject, this._objectType);
+
         RemoveHighlight();
     }
 
@@ -136,7 +98,6 @@ public class ObjectTransformHandler : ITransformHandler
     {
         if (this._objectRenderer != null)
         {
-            Trace.Log("HighLight Object");
             this._objectRenderer.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
         }
     }
@@ -145,7 +106,6 @@ public class ObjectTransformHandler : ITransformHandler
     {
         if (this._objectRenderer != null)
         {
-            Trace.Log("RemoveHighLight Object");
             this._objectRenderer.color = this._originalColor;
         }
     }

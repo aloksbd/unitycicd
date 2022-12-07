@@ -39,9 +39,9 @@
     </ui:VisualElement>
     <ui:VisualElement name="mainPanel" class="row-container fly-out-panel">
         <ui:VisualElement class="right-panel col-xs-2">
-            <ui:VisualElement class="row-container back-to-game-panel">
-                <ui:Button display-tooltip-when-elided="true" name="main-menu-button" tooltip="Main Menu" text="Main Menu" class="col-xs-6 meta-button main-menu-button" style="-unity-font-style: bold;" />
-                <ui:Button display-tooltip-when-elided="true" name="back-to-game-button" tooltip="Explore" text="Explore" class="col-xs-6  meta-button back-to-game-button" style="-unity-font-style: bold;" />
+            <ui:VisualElement class="row-container action-button-panel">
+                <ui:Button display-tooltip-when-elided="true" name="draft-button" tooltip="Save" text="Save to Draft" class="col-xs-6 meta-button action-button grow border-round bold-font" />
+                <ui:Button display-tooltip-when-elided="true" name="submit-button" tooltip="Submit" text="Submit" class="col-xs-6 meta-button grow submit border-round bold-font" />
             </ui:VisualElement>
             <ui:ScrollView name="scroll-foldout" class="scroll-foldout">
                 <ui:VisualElement name="floor-panel" class="row-container bg-pink">
@@ -62,23 +62,21 @@
                     <ui:VisualElement name="inventoryContent" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="action-button-container row-container">
-                <ui:Button display-tooltip-when-elided="true" name="draft-button" tooltip="Save" text="Save" class="meta-button bold-font grow" />
-                <ui:Button display-tooltip-when-elided="true" name="submit-button" tooltip="Submit" text="Submit" class="meta-button submit bold-font grow" />
+            <ui:VisualElement class="row-container action-button-panel">
+                <ui:Button display-tooltip-when-elided="true" name="main-menu-button" tooltip="Main Menu" text="Main Menu" class="col-xs-6 meta-button action-button grow border-round bold-font" />
+                <ui:Button display-tooltip-when-elided="true" name="back-to-game-button" tooltip="Explore" text="Explore" class="col-xs-6 meta-button back-to-game-button grow border-round bold-font" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="main-panel" class="col-xs-10 main-panel" style="height: 100%; display: flex;">
-            <ui:VisualElement class="fly-out-frame buttons-container" name="fly-out-button">
+            <ui:VisualElement name="fly-out-button" class="fly-out-frame buttons-container">
                 <ui:Instance template="button-template" name="Selector" />
                 <ui:Instance template="button-template" name="Building Drag" />
                 <ui:Instance template="button-template" name="Video Camera" />
             </ui:VisualElement>
-            <ui:VisualElement name="2D-panel" class="two-d-panel col-xs-12">
-                <ui:VisualElement name="compass-panel" class="compass-panel">
-                    <ui:VisualElement class="buttons-container">
-                        <ui:Button display-tooltip-when-elided="true" name="compass-button" tooltip="Compass" class="compass-button" />
-                    </ui:VisualElement>
-                    <ui:Label tabindex="-1" display-tooltip-when-elided="true" name="position-label" />
+            <ui:VisualElement name="compass-panel" class="compass-panel">
+                <ui:Label tabindex="-1" text="Helloooo" display-tooltip-when-elided="true" name="position-label" />
+                <ui:VisualElement class="buttons-container">
+                    <ui:Button display-tooltip-when-elided="true" name="compass-button" tooltip="Compass" class="compass-button" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

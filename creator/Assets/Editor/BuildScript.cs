@@ -29,10 +29,11 @@ namespace Earth9Builder
 
         static void Build(String scriptingDefineSymbol, String runner)
         {
-            deeplink_configuration.DisplayName = runner;
-            deeplink_configuration.DeepLinkingProtocols[0].Scheme = runner;
+            deeplink_configuration.DisplayName = "earth9-launcher";
+            deeplink_configuration.DeepLinkingProtocols[0].Scheme = "earth9-launcher";
             ImaginationOverflow.UniversalDeepLinking.Storage.ConfigurationStorage.Save(deeplink_configuration);
 
+            PlayerSettings.forceSingleInstance = true;
             PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, scriptingDefineSymbol + ";FBXSDK_RUNTIME");
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();

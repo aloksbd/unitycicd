@@ -20,7 +20,7 @@ public class CreateCreatorItemWithParentCommand : ICreatorItemCommand
             var parent = CreatorItemFinder.FindById(_parentid);
             parent.AddChild(_decoratee.createdItem);
         }
-        catch (CreatorItemNotFounndException)
+        catch (CreatorItemNotFoundException)
         {
             Trace.Log("Creator Item with given id not found");
         }

@@ -32,6 +32,17 @@ namespace TerrainEngine
             set { this.bottom = this.top + value; }
         }
 
+        public Vector2d Center
+        {
+            get { 
+                return new Vector2d()
+                {
+                    x = left + ((right - left) / 2.0d),
+                    y = top  + ((bottom - top) / 2.0d)
+                }; 
+            }
+        }
+
         public void Offset(double offsetX, double offsetY)
         {
             this.top += offsetY;

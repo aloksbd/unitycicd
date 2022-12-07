@@ -3,6 +3,7 @@ public static class WHConstants
     public const float DefaultFloorHeight = 4.0f;
     public const string FeetUnit = "ft";
     public const string API_URL = "https://testingapi.app.earth9.net"; // TODO: use and fetch urls from environment 
+    public const string WEB_URL = "https://testing.app.earth9.net";
     public const string SUBMISSION_VERSION_ROUTE = "/creator-submissions/submissions/versions?buildingId=2aeb1d98-e772-4963-8ffc-192b6ccabdaf";
     public const string S3_BUCKET_PATH = "https://earth9.s3.amazonaws.com";
     public const string METABLOCK = "MetaBlock";

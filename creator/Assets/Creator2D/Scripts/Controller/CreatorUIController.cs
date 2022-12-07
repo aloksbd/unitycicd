@@ -273,29 +273,41 @@ public class CreatorUIController : MonoBehaviour
     void OnSave()
     {
         Debug.Log("On Save pressed");
-        messageLabel.RemoveFromClassList("hide");
-        messageLabel.AddToClassList("show");
-        messageLabel.text = "Generating FBX...";
-        GameObject structure = SceneObject.Find(SceneObject.Mode.Creator, ObjectName.CREATOR_STRUCTURE);
-        GameObject building = Item3d.getBuildingGameObject();
-        if (building != null)
+        GameObject building = null;
+        try
         {
-            building.transform.parent = structure.transform;
+            messageLabel.RemoveFromClassList("hide");
+            messageLabel.AddToClassList("show");
+            messageLabel.text = "Generating FBX...";
+            GameObject structure = SceneObject.Find(SceneObject.Mode.Creator, ObjectName.CREATOR_STRUCTURE);
+            building = Item3d.getBuildingGameObject();
+            if (building != null)
+            {
+                building.transform.parent = structure.transform;
+            }
+            string subPath = _getFBXSubPath();
+            string path = subPath + "\\myCreation.fbx";
+            bool subPathExists = System.IO.Directory.Exists(subPath);
+            if (!subPathExists)
+            {
+                System.IO.Directory.CreateDirectory(subPath);
+            }
+            WHFbxExporter.ExportObjects(path, path.Substring(0, path.LastIndexOf("\\")), structure);
+
+            messageLabel.text = "FBX Saved Successfully.";
+            StartCoroutine(HideMessage());
         }
-        string subPath = _getFBXSubPath();
-        string path = subPath + "\\myCreation.fbx";
-        bool subPathExists = System.IO.Directory.Exists(subPath);
-        if (!subPathExists)
+        catch (Exception e)
         {
-            System.IO.Directory.CreateDirectory(subPath);
+            Trace.Exception(e);
         }
-        WHFbxExporter.ExportObjects(path, path.Substring(0, path.LastIndexOf("\\")), structure);
-        if (building != null)
+        finally
         {
-            Destroy(building);
+            if (building != null)
+            {
+                Destroy(building);
+            }
         }
-        messageLabel.text = "FBX Saved Successfully.";
-        StartCoroutine(HideMessage());
     }
 
     IEnumerator HideMessage()
@@ -342,9 +354,9 @@ public class CreatorUIController : MonoBehaviour
         return (picked != null && picked.name != mainPanelName);
     }
 
-    public static VisualElement getVisualElement(Vector2 mousePos)
+    public static VisualElement getVisualElement()
     {
-        VisualElement picked = CreatorUIController.root.panel.Pick(RuntimePanelUtils.ScreenToPanel(CreatorUIController.root.panel, mousePos));
+        VisualElement picked = CreatorUIController.root.panel.Pick(RuntimePanelUtils.ScreenToPanel(CreatorUIController.root.panel, Input.mousePosition));
         return picked;
     }
 }

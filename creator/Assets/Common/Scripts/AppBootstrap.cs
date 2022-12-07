@@ -5,7 +5,6 @@ public class AppBootstrap : MonoBehaviour
 {
     //  Configured in inspector:
     public SceneObject.Mode DefaultStartupMode;
-    bool SettingUp;
 
     public void Awake()
     {
@@ -32,17 +31,14 @@ public class AppBootstrap : MonoBehaviour
     void Init()
     {
         AuthenticationHandler.Init();
+        SceneObject.Get().ActiveMode = DefaultStartupMode;
         StartCoroutine(AfterAuth());
     }
 
     IEnumerator AfterAuth()
     {
-        SceneObject.Get().ActiveMode = DefaultStartupMode;
-
         yield return new WaitUntil(() => AuthenticationHandler.IsAuthenticated);
-
         DeeplinkHandler.Instance.Init();
-        Trace.Assert(AuthenticationHandler.SecurelySaveToken(), "Failed to save token securely");
     }
 
     void OnApplicationQuit()

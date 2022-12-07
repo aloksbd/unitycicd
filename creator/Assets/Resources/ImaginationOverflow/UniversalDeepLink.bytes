@@ -1,6 +1,6 @@
 {
     "_steamId": "",
-    "_displayName": "earth9",
+    "_displayName": "earth9-launcher",
     "_globalConfiguration": {
         "_domainProtocols": [
             {
@@ -16,7 +16,7 @@
         ],
         "_deepLinkingProtocols": [
             {
-                "_scheme": "earth9",
+                "_scheme": "earth9-launcher",
                 "_host": "",
                 "_path": ""
             }

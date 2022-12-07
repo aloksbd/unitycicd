@@ -26,6 +26,9 @@ public class NewWindow : NewItemWithMesh, IHas3DObject, NewIFlipable
         clone.SetPosition(this.Position);
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
+
+        ObjectTransformHandler transformHandler = new ObjectTransformHandler(clone.gameObject, clone as NewWindow, "window");
+
         CloneChildren(clone);
         return clone;
     }

@@ -21,6 +21,9 @@ public static class ObjectName
 
     //  UI container 
     public const string UI_CONTAINER = "UI";
+    public const string WELCOME_UI = "WelcomeUI";
+    public const string AUTHENTICATION_UI = "AuthenticationUI";
+    public const string BOOTSTRAP_OBJECT = "Bootstrap";
     //  UI container chldren
     public const string CROSSHAIRS_IMAGE = UI_CONTAINER + "/Crosshairs";
     public const string CROSSHAIRS_HIT_IMAGE = UI_CONTAINER + "/Crosshairs_Hit";

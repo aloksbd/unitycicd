@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Security.Cryptography;
 using System;
 using System.Text;
+using System.Collections;
 
 public class TokenDecoded
 {
@@ -27,6 +28,10 @@ public class AuthenticationHandler
     private static string _key = "A60AB770FE12OV0024BA7Y0I3F1WE8B0";
     private static string _iv = "1234561237654321";
 
+    public static Action OnAuthenticated;
+    public static Action OnAuthenticationFailure;
+
+
     public static void Init()
     {
         Trace.Log("AuthenticationHandler.Initialize");
@@ -46,21 +51,40 @@ public class AuthenticationHandler
                 }
             }
         }
-        Authenticate();
     }
 
-    private static void Authenticate()
+    public static void Authenticate()
     {
-        Application.OpenURL("https://testing.app.earth9.net/auth");
+        IsAuthenticated = false;
+        Application.OpenURL(WHConstants.WEB_URL + "/auth");
         ServerSocket.StartServer((string token) => OnAuthenticationSuccess(token));
+
+        MonoBehaviour mono = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<MonoBehaviour>();
+        mono.StartCoroutine(SecurelySaveToken());
+        mono.StartCoroutine(TimerForFailure());
     }
 
     public static bool OnAuthenticationSuccess(string data)
     {
         AccessToken = data;
         IsAuthenticated = AccessToken != null;
-
+        if (IsAuthenticated)
+        {
+            if (OnAuthenticated != null)
+            {
+                OnAuthenticated();
+            }
+        }
         return IsAuthenticated;
+    }
+
+    static IEnumerator TimerForFailure()
+    {
+        yield return new WaitForSeconds(20);
+        if (!AuthenticationHandler.IsAuthenticated)
+        {
+            OnAuthenticationFailure();
+        }
     }
 
     public static bool IsExpired()
@@ -102,8 +126,9 @@ public class AuthenticationHandler
         return aes;
     }
 
-    public static bool SecurelySaveToken()
+    static IEnumerator SecurelySaveToken()
     {
+        yield return new WaitUntil(() => IsAuthenticated);
         AesCryptoServiceProvider AEScryptoProvider = GetAesCryptoServiceProvider();
         byte[] txtByteData = ASCIIEncoding.ASCII.GetBytes(AccessToken);
         ICryptoTransform trnsfrm = AEScryptoProvider.CreateEncryptor(AEScryptoProvider.Key, AEScryptoProvider.IV);
@@ -112,19 +137,10 @@ public class AuthenticationHandler
 
         string encryp_text = Convert.ToBase64String(result);
 
-        try
-        {
-            ServerSocket.CloseSocket();
+        ServerSocket.CloseSocket();
 
-            PlayerPrefs.SetString("access_token", encryp_text);
-            PlayerPrefs.Save();
-            return true;
-        }
-        catch
-        {
-            PlayerPrefs.DeleteKey("access_token");
-            return false;
-        }
+        PlayerPrefs.SetString("access_token", encryp_text);
+        PlayerPrefs.Save();
     }
 
     private static string DecodeToken(string inputData)

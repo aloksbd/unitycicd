@@ -211,7 +211,6 @@ class WHFbxImporter : System.IDisposable
     public void ProcessNode(FbxNode fbxNode, GameObject unityParentObj = null)
     {
         string name = fbxNode.GetName();
-        Debug.Log("Node Name::: " + name);
 
         GameObject unityGo;
 
@@ -221,7 +220,9 @@ class WHFbxImporter : System.IDisposable
         }
         else
         {
-            unityGo = SceneObject.Create(SceneObject.Mode.Player, name);
+            var tempGOName = name + unityParentObj != null ? ("_" + unityParentObj.name) : "";
+            unityGo = SceneObject.Create(SceneObject.Mode.Player, tempGOName);
+            unityGo.name = name;
         }
 
         NumNodes++;
@@ -367,10 +368,19 @@ class WHFbxImporter : System.IDisposable
 
         ProcessUVs(fbxMesh, unityMesh);
 
-        var unityMeshFilter = unityGo.AddComponent<MeshFilter>();
+        var unityMeshFilter = unityGo.GetComponent<MeshFilter>();
+        if (unityMeshFilter == null)
+        {
+            unityMeshFilter = unityGo.AddComponent<MeshFilter>();
+        }
         unityMeshFilter.sharedMesh = unityMesh;
 
-        var unityRenderer = unityGo.AddComponent<MeshRenderer>();
+        var unityRenderer = unityGo.GetComponent<MeshRenderer>();
+
+        if (unityRenderer == null)
+        {
+            unityRenderer = unityGo.AddComponent<MeshRenderer>();
+        }
 
         int j = 0;
         bool isMaterialExist = true;
@@ -614,7 +624,7 @@ class WHFbxImporter : System.IDisposable
                 unityGo.AddComponent<CapsuleCollider>();
                 break;
             default:
-                unityGo.AddComponent<MeshCollider>();
+                // unityGo.AddComponent<MeshCollider>();
                 break;
         }
     }

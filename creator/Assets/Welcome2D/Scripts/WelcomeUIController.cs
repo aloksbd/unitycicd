@@ -31,24 +31,11 @@ public class WelcomeUIController : MonoBehaviour
         settingsButton = root.Q<Button>("settings-button");
         exitButton = root.Q<Button>("exit-button");
 
-        StartCoroutine(EnableOnAuth());
-
         exploreButton.clickable.clicked += exploreButtonPressed;
         createButton.clickable.clicked += createButtonPressed;
         elevatorButton.clickable.clicked += elevatorButtonPressed;
         settingsButton.clicked += SettingsButtonPressed;
         exitButton.clicked += ExitButtonPressed;
-    }
-
-    private IEnumerator EnableOnAuth()
-    {
-        exploreButton.SetEnabled(false);
-        createButton.SetEnabled(false);
-
-        yield return new WaitUntil(() => AuthenticationHandler.IsAuthenticated);
-
-        exploreButton.SetEnabled(true);
-        createButton.SetEnabled(true);
     }
 
     void exploreButtonPressed()

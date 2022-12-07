@@ -17,13 +17,14 @@ public class TokenFetch : MonoBehaviour
     {
         public string access_token;
     }
-        private static readonly HttpClient httpClient = new HttpClient();
+    private static readonly HttpClient httpClient = new HttpClient();
 
     public static async Task<string> GetAccessToken()
     {
-        if(AuthenticationHandler.IsExpired()){
-            AuthenticationHandler.Init();
+        if (AuthenticationHandler.IsExpired())
+        {
+            AuthenticationHandler.Authenticate();
         }
-       return AuthenticationHandler.AccessToken;
+        return AuthenticationHandler.AccessToken;
     }
 }
