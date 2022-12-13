@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using MEC;
 
 namespace TerrainEngine
@@ -60,6 +61,9 @@ namespace TerrainEngine
         public Button teleportButton;
         public InputField latLonTextInput;
         private LatLonInput latLonInput;
+
+        //  Building Detail Panel
+        public BuildingDetailPanel buildingDetailPanel;
 
         private LayerMask terrainLayer = 256;
 
@@ -141,6 +145,10 @@ namespace TerrainEngine
         {
             terrainPlayer = TerrainPlayer.Get(gameObject);
             player = terrainPlayer.gameObject;
+
+            PlayerController.OnPlayerLookingAtEnter += OnPlayerLookingAtEnter;
+            PlayerController.OnPlayerLookingAtContinue += OnPlayerLookingAtContinue;
+            PlayerController.OnPlayerLookingAtLeave += OnPlayerLookingAtLeave;
 
             latLonInput = new LatLonInput();
 
@@ -283,17 +291,7 @@ namespace TerrainEngine
             }
             else
             {
-                ray = new Ray(new Vector3(player.transform.position.x, 1000f, player.transform.position.z), Vector3.down);
-
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, terrainLayer))
-                {
-                    terrain = hit.transform.gameObject.GetComponent<Terrain>();
-                }
-
-                if (terrain != null)
-                {
-                    terrainHeight = terrain.SampleHeight(player.transform.position);
-                }
+                TerrainHeightAtPlayerPosition(out terrainHeight);
 
                 if (Input.GetKeyDown(KeyCode.R))
                 {
@@ -323,6 +321,38 @@ namespace TerrainEngine
 
                 CheckForPause();
             }
+        }
+
+        private bool TerrainHeightAtPlayerPosition(out float height)
+        {
+            height = 0.0f;
+            Ray ray = new Ray(new Vector3(player.transform.position.x, 1000f, player.transform.position.z), Vector3.down);
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, terrainLayer))
+            {
+                int layer = hit.transform.gameObject.layer;
+                terrain = hit.transform.gameObject.GetComponent<Terrain>();
+            }
+            if (terrain != null)
+            {
+                height = terrain.SampleHeight(player.transform.position);
+                return true;
+            }
+            return false;
+        }
+
+        private void OnPlayerLookingAtEnter(ref GameObject gameObjectHit, ref RaycastHit hit)
+        {
+            buildingDetailPanel.TryPopulate(gameObjectHit);
+        }
+
+        private void OnPlayerLookingAtContinue(ref GameObject gameObjectHit, ref RaycastHit hit)
+        {
+            buildingDetailPanel.TryPopulate(gameObjectHit);
+        }
+
+        private void OnPlayerLookingAtLeave(ref GameObject gameObjectHit, ref RaycastHit hit)
+        {
+            buildingDetailPanel.Clear();
         }
 
         private void CheckForPause()
@@ -470,6 +500,7 @@ namespace TerrainEngine
 
             if (activate)
             {
+                buildingDetailPanel.gameObject.SetActive(false);
                 Resources.UnloadUnusedAssets();
             }
         }
@@ -575,6 +606,14 @@ namespace TerrainEngine
             controller.Paused = false;
         }
 
+        public void OnToggleLocation(InputAction.CallbackContext value)
+        {
+            if (value.started)
+            {
+                ShowLatitudeLongitude = !ShowLatitudeLongitude;
+            }
+        }
+
         private void LatLonFromPlayerPosition()
         {
             realWorldPosition = terrainPlayer.WorldPosition;
@@ -596,17 +635,9 @@ namespace TerrainEngine
                 startHeight = 0.01f;
             }
 
-            ray = new Ray(rayPosition, Vector3.down);
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, terrainLayer))
+            //  Position the player on the surface of the terrain
+            if (TerrainHeightAtPlayerPosition(out terrainHeight))
             {
-                int layer = hit.transform.gameObject.layer;
-                terrain = hit.transform.gameObject.GetComponent<Terrain>();
-            }
-
-            if (terrain != null)
-            {
-                terrainHeight = terrain.SampleHeight(player.transform.position);
                 terrainPlayer.WorldPosition = new Vector3(0, terrainHeight + terrain.gameObject.transform.position.y + startHeight, 0);
             }
             else
@@ -888,7 +919,6 @@ namespace TerrainEngine
         terrainTextures = null;
 #endif
         }
-
 
         void OnGUI()
         {

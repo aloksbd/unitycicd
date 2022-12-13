@@ -7,7 +7,6 @@ public class HarnessEventHandler : MonoBehaviour
     public static bool selected;
     public Camera _camera;
 
-
     public void Start()
     {
         selected = false;
@@ -69,7 +68,7 @@ public class HarnessEventHandler : MonoBehaviour
 
     public Vector3? getMousePosition()
     {
-        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        var ray = _camera.ScreenPointToRay(Input.mousePosition);
         var plane = new Plane(Vector3.forward, Vector3.zero);
 
         float rayDistance;
@@ -86,17 +85,11 @@ public class HarnessEventHandler : MonoBehaviour
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity))
         {
-            if (hitInfo.transform.name == "BuildingCanvas")
+            if (hitInfo.transform.name == "BuildingCanvas" || hitInfo.transform.tag == "METABLOCK" || hitInfo.transform.tag == "Node")
             {
                 return true;
             }
         }
         return false;
     }
-
-    void OnCollisionStay(Collision other)
-    {
-        Trace.Log("CollisionStay: " + other.gameObject.name);
-    }
-
 }

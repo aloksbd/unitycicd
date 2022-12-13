@@ -36,9 +36,9 @@ public class VersionDownloader
         // download the fbx of creations in local
         for (int i = 0; i < submissions.Count; i++)
         {
-            Buildings.Asset fbxAsset = (from asset in submissions[i].assets
-                                        where asset.mimeType == "application/octet-stream"
-                                        select asset).FirstOrDefault();
+            OsmBuildings.Asset fbxAsset = (from asset in submissions[i].assets
+                                           where asset.mimeType == "application/octet-stream"
+                                           select asset).FirstOrDefault();
             Debug.Log("fbx asset is " + JsonConvert.SerializeObject(fbxAsset));
             if (fbxAsset.id != null)
             {

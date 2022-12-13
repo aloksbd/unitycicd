@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Drawing;
 using BitMiracle.LibTiff.Classic;
 using MEC;
 
@@ -2371,14 +2370,7 @@ namespace TerrainEngine
                 }
             }
 
-            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var image = Image.FromStream(fs, false, false))
-                {
-                    metrics.imageFileWidth = image.Width;
-                    metrics.imageFileHeight = image.Height;
-                }
-            }
+
             return fileData;
         }
 

@@ -1,8 +1,15 @@
 using System;
+using System.IO;
 using UnityEngine;
 
 public class Trace
 {
+    //  For file logging
+    const string COMPANY_SUBFOLDER = "Earth9/"; // TODO: move this to a global const script.
+    const string LOG_SUBFOLDER = "logs/";
+    const string LOG_EXTENSION = ".log";
+    const string LOG_TEMPLATE_EXTENSIION = "{0}" + LOG_EXTENSION;
+
     public class Config
     {
         public bool enabled;
@@ -85,6 +92,33 @@ public class Trace
 #else
             throw new System.Exception("Assertion failed: " + System.String.Format(format, args));
 #endif
+        }
+    }
+
+    public static void LogToFile(string filenameNoExtension, params object[] args)
+    {
+        string pathNoFileName = Path.GetTempPath() + COMPANY_SUBFOLDER + LOG_SUBFOLDER;
+        string pathNoExtension = pathNoFileName + filenameNoExtension;
+        string path = pathNoExtension + LOG_EXTENSION;
+
+        int iTemp = 0;
+        while (File.Exists(path))
+        {
+            iTemp++;
+            path = String.Format(pathNoExtension + LOG_TEMPLATE_EXTENSIION, iTemp);
+        }
+
+        if (!Directory.Exists(pathNoFileName))
+        {
+            Directory.CreateDirectory(pathNoFileName);
+        }
+
+        using (StreamWriter sw = File.CreateText(path))
+        {
+            foreach (string s in args)
+            {
+                sw.Write(s + sw.NewLine);
+            }
         }
     }
 }

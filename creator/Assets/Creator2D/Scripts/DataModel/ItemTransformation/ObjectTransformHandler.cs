@@ -47,22 +47,30 @@ public class ObjectTransformHandler : ITransformHandler
     {
         HarnessEventHandler.selected = true;
     }
-    Vector3 finalPos;
+
     public void Dragged(Vector3 data)
+    {
+        float x = Input.GetAxis("Mouse X");
+        float y = Input.GetAxis("Mouse Y");
+
+        Vector3 moveDirection = new Vector3((x + y), 0.0f, 0.0f);
+        moveDirection = Quaternion.AngleAxis(eventHandler._camera.transform.eulerAngles.z, Vector3.forward) * moveDirection;
+        moveDirection *= eventHandler._camera.orthographicSize / 10.0f;
+
+        var pos = new Vector3(data.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY, 0f, 0f);
+        pos.x = Mathf.Clamp(pos.x, 0, GetMaxClamp());
+
+        this._objectGO.transform.localPosition = pos;
+    }
+
+    private float GetMaxClamp()
     {
         var parent = _objectGO.transform.parent;
         var wall = parent.GetComponent<LineRenderer>();
         var bound = wall.bounds;
+        var object_bound = _objectRenderer.bounds;
 
-        float x = Input.GetAxis("Mouse X");
-        float y = Input.GetAxis("Mouse Y");
-
-        Trace.Log($"CLAMP :: 0 {Mathf.Abs(bound.max.x) + Mathf.Abs(bound.min.x)}");
-
-        var pos = new Vector3(data.x + (x * y) * HarnessConstant.MOVEMENT_SENSITIVITY, 0f, 0f);
-        pos.x = Mathf.Clamp(pos.x, 0, Mathf.Abs(bound.max.x) + Mathf.Abs(bound.min.x));
-
-        this._objectGO.transform.localPosition = pos;
+        return Vector3.Distance(bound.max, bound.min) - (object_bound.size.x * 1.2f);
     }
 
     public void Hovered()

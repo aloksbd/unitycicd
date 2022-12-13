@@ -23,9 +23,9 @@ public class TransformHandle
 
         _renderer = go.GetComponent<MeshRenderer>();
         _renderer.material = Resources.Load("Materials/handles", typeof(Material)) as Material;
-        _renderer.material.color = HarnessConstant.DEFAULT_HANDLE_COLOR;
-        this._originalColor = HarnessConstant.DEFAULT_HANDLE_COLOR;
-        this._handleGO.transform.position = new Vector3(this._handleGO.transform.position.x, this._handleGO.transform.position.y, HarnessConstant.DEFAULT_HANDLE_ZOFFSET);
+        _renderer.material.color = HarnessConstant.DEFAULT_NODE_COLOR;
+        this._originalColor = HarnessConstant.DEFAULT_NODE_COLOR;
+        this._handleGO.transform.position = new Vector3(this._handleGO.transform.position.x, this._handleGO.transform.position.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
 
         eventHandler = go.AddComponent<HarnessEventHandler>();
 
@@ -52,7 +52,7 @@ public class TransformHandle
             HarnessEventHandler.selected = true;
 
             this._wallRenderer.SetPosition(this._position, new Vector3(data.x, data.y, -0.2f));
-            this._handleGO.transform.position = new Vector3(data.x, data.y, HarnessConstant.HOVER_HANDLE_ZOFFSET);
+            this._handleGO.transform.position = new Vector3(data.x, data.y, HarnessConstant.HOVER_NODE_ZOFFSET);
             _data = data;
         }
     }
@@ -64,7 +64,7 @@ public class TransformHandle
 
         float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
 
-        NewBuildingController.UpdateWallHandle(this._item.name, this._handleGO, this._position, pos0, pos1, angle);
+        //NewBuildingController.UpdateWallHandle(this._item.name, this._handleGO, this._position, pos0, pos1, angle);
 
         HarnessEventHandler.selected = false;
     }
@@ -74,8 +74,8 @@ public class TransformHandle
     {
         if (this._wallRenderer != null)
         {
-            this._handleGO.transform.position = new Vector3(this._handleGO.transform.position.x, this._handleGO.transform.position.y, HarnessConstant.HOVER_HANDLE_ZOFFSET);
-            this._handleGO.transform.localScale = new Vector3((this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_HANDLE_SIZE, (this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_HANDLE_SIZE, 0.05f);
+            this._handleGO.transform.position = new Vector3(this._handleGO.transform.position.x, this._handleGO.transform.position.y, HarnessConstant.HOVER_NODE_ZOFFSET);
+            this._handleGO.transform.localScale = new Vector3((this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_NODE_SIZE, (this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_NODE_SIZE, 0.05f);
             this._renderer.material.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
         }
     }
@@ -84,9 +84,9 @@ public class TransformHandle
     {
         if (this._wallRenderer != null)
         {
-            this._handleGO.transform.position = new Vector3(this._handleGO.transform.position.x, this._handleGO.transform.position.y, HarnessConstant.DEFAULT_HANDLE_ZOFFSET);
+            this._handleGO.transform.position = new Vector3(this._handleGO.transform.position.x, this._handleGO.transform.position.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
 
-            this._handleGO.transform.localScale = new Vector3((this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, (this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, 0.05f);
+            this._handleGO.transform.localScale = new Vector3((this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, (this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, 0.05f);
             this._renderer.material.color = this._originalColor;
         }
     }

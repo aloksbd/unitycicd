@@ -20,7 +20,7 @@ public class WallTransformHandler : ITransformHandler
 
         this._originalColor = this._wallRenderer.material.color;
 
-        AttachResizeHarness();
+        //AttachResizeHarness();
 
         eventHandler = go.GetComponent<HarnessEventHandler>() == null ? go.AddComponent<HarnessEventHandler>() : go.GetComponent<HarnessEventHandler>();
 
@@ -122,8 +122,8 @@ public class WallTransformHandler : ITransformHandler
             var points = this._wallRenderer.GetPosition(i);
             this.handles[i].transform.parent = this._wallGO.transform;
 
-            this.handles[i].transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_HANDLE_ZOFFSET);
-            this.handles[i].transform.localScale = new Vector3((this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, (this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, 0.05f);
+            this.handles[i].transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
+            this.handles[i].transform.localScale = new Vector3((this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, (this._wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, 0.05f);
             this.handles[i].name = $"{i}_{ObjectName.RESIZE_HARNESS}";
             this.handles[i].transform.rotation = new Quaternion(0, 0, 0, 0);
 

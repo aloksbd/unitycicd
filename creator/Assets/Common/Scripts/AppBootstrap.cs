@@ -31,7 +31,11 @@ public class AppBootstrap : MonoBehaviour
     void Init()
     {
         AuthenticationHandler.Init();
-        SceneObject.Get().ActiveMode = DefaultStartupMode;
+        #if ADMIN
+            SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
+        #else
+            SceneObject.Get().ActiveMode = DefaultStartupMode;
+        #endif 
         StartCoroutine(AfterAuth());
     }
 

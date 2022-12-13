@@ -149,16 +149,16 @@ class WHFbxExporter : System.IDisposable
         /// The material used, if any; otherwise null.
         /// We don't support multiple materials on one gameobject.
         /// </summary>
-        public Material Material
+        public Material[] Materials
         {
             get
             {
                 if (!unityObject) { return null; }
                 var renderer = unityObject.GetComponent<Renderer>();
-                if (!renderer) { return null; }
+                if (!renderer) { return new Material[0]; }
                 // .material instantiates a new material, which is bad
                 // most of the time.
-                return renderer.sharedMaterial;
+                return renderer.sharedMaterials;
             }
         }
 
@@ -358,14 +358,20 @@ class WHFbxExporter : System.IDisposable
         }
 
         ExportUVs(meshInfo, fbxMesh);
+        foreach (var material in meshInfo.Materials)
+        {
+            var fbxMaterial = ExportMaterial(material, fbxScene);
+            fbxNode.AddMaterial(fbxMaterial);
+        }
 
-        var fbxMaterial = ExportMaterial(meshInfo.Material, fbxScene);
-        fbxNode.AddMaterial(fbxMaterial);
+        // var fbxMaterial = ExportMaterial(meshInfo.Materials, fbxScene);
+        // fbxNode.AddMaterial(fbxMaterial);
 
         /* Triangles have to be added in reverse order, 
          * or else they will be inverted on import 
          * (due to the conversion from left to right handed coords)
          */
+        // Debug.Log("meshInfo")
         for (int f = 0; f < meshInfo.Triangles.Length / 3; f++)
         {
             fbxMesh.BeginPolygon();

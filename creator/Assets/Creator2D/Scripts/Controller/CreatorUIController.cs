@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using TerrainEngine;
 public class CreatorUIController : MonoBehaviour
 {
     private UIDocument m_UIDocument;
@@ -43,7 +44,7 @@ public class CreatorUIController : MonoBehaviour
         return CreatorUIController.root;
     }
 
-    public void Start()
+    async public void Start()
     {
         m_UIDocument = GetComponent<UIDocument>();
         CreatorUIController.root = m_UIDocument.rootVisualElement;
@@ -89,6 +90,10 @@ public class CreatorUIController : MonoBehaviour
         Trace.Assert(player != null, "SceneObject.Mode.Creator does not have a Player gameobject");
         player.AddComponent<VersionChanger>();
 
+        BuildingCanvas bc = BuildingCanvas.Get();
+        OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail();
+        bc.GenerateCanvas(buildingData);
+
         //TODO convert gameobjects to UI Hierachy Elements and PAN Objects
 
         // if(WHFbxImporter.ImportObjects(_getFBXSubPath()) == 1){
@@ -119,7 +124,25 @@ public class CreatorUIController : MonoBehaviour
 
     private void OnBackToGame()
     {
+        TerrainBootstrap.Latitude = BuildingCanvas.centerLatLon[1];
+        TerrainBootstrap.Longitude = BuildingCanvas.centerLatLon[0];
+        TerrainEngine.TerrainController controller = TerrainController.Get();
+        controller.latitudeUser = BuildingCanvas.centerLatLon[1].ToString();
+        controller.longitudeUser = BuildingCanvas.centerLatLon[0].ToString();
         SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
+    }
+
+    public static void CreateBuildingCanvas(OsmBuildingData buildingData)
+    {
+        CreatorItem buildingItem = NewBuildingController.GetBuilding();
+        if (buildingItem != null)
+        {
+            NewBuildingController.SetCurrentFloorPlan(null);
+            NewBuildingController.SetBuilding(null);
+            buildingItem.Destroy();
+        }
+        BuildingCanvas buildingCanvas = BuildingCanvas.Get();
+        buildingCanvas.GenerateCanvas(buildingData);
     }
 
     private static string SelectedFloorName = null;

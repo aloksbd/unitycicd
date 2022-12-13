@@ -15,10 +15,11 @@ public class PlayerController : MonoBehaviour
         Minecraft,          // mouse look, WASD lateral keyboard movement, SPACE/SHIFT vertical movement, and gravity
         MinecraftFlyAlways, // mouse look, WASD lateral keyboard movement, SPACE/SHIFT vertical movement, zero gravity
     };
-    private const IAMode DEFAULT_NONPOINTING_IAMODE = IAMode.MinecraftFlyAlways;
+    private const IAMode DEFAULT_NONPOINTING_IAMODE = IAMode.Minecraft;
 
-    public IAMode InteractionMode;
-    private IAMode lastNonPointingIAMode = DEFAULT_NONPOINTING_IAMODE;
+    public  bool   AllowFly = true;
+    private IAMode _interactionMode = DEFAULT_NONPOINTING_IAMODE; 
+    private IAMode _lastNonPointingIAMode = DEFAULT_NONPOINTING_IAMODE;
 
     [Header("Sub Behaviours")]
     public PlayerMovementBehaviour playerMovementBehavior;
@@ -28,10 +29,26 @@ public class PlayerController : MonoBehaviour
     public PlayerInput playerInput;
     public float MoveSmoothing = 3f;
 
+    //  Events
+    public delegate void PlayerInteractionModeChanged(IAMode modeNew, IAMode modePrev);
+    public static event PlayerInteractionModeChanged OnPlayerInteractionModeChanged;
+
+    public delegate void PlayerLookingAtEnter(ref GameObject gameObject, ref RaycastHit hit);
+    public static event PlayerLookingAtEnter OnPlayerLookingAtEnter;
+
+    public delegate void PlayerLookingAtContinue(ref GameObject gameObject, ref RaycastHit hit);
+    public static event PlayerLookingAtContinue OnPlayerLookingAtContinue;
+
+    public delegate void PlayerLookingAtLeave(ref GameObject gameObjectLeave, ref RaycastHit hitLeave);
+    public static event PlayerLookingAtLeave OnPlayerLookingAtLeave;
+
     //  Private state
     private Vector3 rawMove;
     private Vector3 smoothMove;
     private Vector2 rawLook;
+
+    private RaycastHit hitCurrent;
+    private GameObject gameObjectHitCurrent;
 
     private string actionMapPlayerControls = "Player Controls";
     private string actionMapMenuControls = "Menu Controls";
@@ -39,9 +56,10 @@ public class PlayerController : MonoBehaviour
     //  Current Control Scheme
     private string currentControlScheme;
 
-    //  Diagnostics
-    Trace.Config inputTraces = null; // new Trace.Config(true, true);
-    Trace.Config collisionTraces = null; // new Trace.Config(true, true);
+    //  Diagnostic console logging
+    Trace.Config hitTestTraces = null; // new Trace.Config();
+    Trace.Config inputTraces = null; // new Trace.Config();
+    Trace.Config collisionTraces = null; // new Trace.Config();
 
     public static PlayerController Get(GameObject gameObject)
     {
@@ -54,29 +72,41 @@ public class PlayerController : MonoBehaviour
         return playerID;
     }
 
-    public void SetInteractionMode(IAMode mode)
+    public IAMode GetInteractionMode()
+    {
+        return _interactionMode;
+    }
+
+    public bool SetInteractionMode(IAMode mode)
     {
         //  assign a new interaction mode
-        if (mode != InteractionMode)
+        if (mode != _interactionMode)
         {
-            InteractionMode = mode;
+            if (mode == IAMode.MinecraftFlyAlways && !AllowFly)
+            {
+                return false;
+            }
+
+            IAMode modePrev = _interactionMode;
+            _interactionMode = mode;
             playerMovementBehavior.SetupBehavior(mode);
             playerVisualBehavior.SetupBehavior(mode);
+
+            if (OnPlayerInteractionModeChanged != null)
+            {
+                OnPlayerInteractionModeChanged(mode, modePrev);
+            }
         }
+        return true;
     }
 
     public IAMode ActivateInteractionMode()
     {
         //  realize the current interaction mode
-        playerMovementBehavior.SetupBehavior(InteractionMode);
-        playerVisualBehavior.SetupBehavior(InteractionMode);
+        playerMovementBehavior.SetupBehavior(_interactionMode);
+        playerVisualBehavior.SetupBehavior(_interactionMode);
 
-        return InteractionMode;
-    }
-
-    public IAMode GetInteractionMode()
-    {
-        return InteractionMode;
+        return _interactionMode;
     }
 
     [HideInInspector()]
@@ -92,13 +122,13 @@ public class PlayerController : MonoBehaviour
         {
             if (GetInteractionMode() != IAMode.Pointing)
             {
-                lastNonPointingIAMode = GetInteractionMode();
+                _lastNonPointingIAMode = GetInteractionMode();
             }
             SetInteractionMode(IAMode.Pointing);
         }
         else
         {
-            SetInteractionMode(lastNonPointingIAMode);
+            SetInteractionMode(_lastNonPointingIAMode);
         }
     }
 
@@ -113,9 +143,6 @@ public class PlayerController : MonoBehaviour
         SetupPlayer(0);
 
         GameObject player = SceneObject.GetPlayer(SceneObject.Mode.Player);
-#if ADMIN
-        player.AddComponent<PegasusGameController>();
-#endif
         player.AddComponent<VersionChanger>();
     }
 
@@ -130,8 +157,8 @@ public class PlayerController : MonoBehaviour
         rawLook = new Vector3();
 
         //  Set up the initial interaction and Scene mode
-        playerMovementBehavior.SetupBehavior(InteractionMode);
-        playerVisualBehavior.SetupBehavior(InteractionMode);
+        playerMovementBehavior.SetupBehavior(_interactionMode);
+        playerVisualBehavior.SetupBehavior(_interactionMode);
     }
 
     //  InputSystem Unity Event Handlers
@@ -176,12 +203,39 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void OnFly(InputAction.CallbackContext value)
+    public void OnToggleFly(InputAction.CallbackContext value)
+    {
+        if (playerMovementBehavior.inputEnabled && value.started)
+        {
+            if (GetInteractionMode() == IAMode.Minecraft && AllowFly)
+            {
+                SetInteractionMode(IAMode.MinecraftFlyAlways);
+            }
+            else if (GetInteractionMode() == IAMode.MinecraftFlyAlways)
+            {
+                SetInteractionMode(IAMode.Minecraft);
+            }
+        }
+    }
+
+    public void OnFlyMotion(InputAction.CallbackContext value)
     {
         if (playerMovementBehavior.inputEnabled)
         {
             Trace.Log(inputTraces, "OnFly({0})", value.ToString());
             rawMove.y = value.ReadValue<float>();
+        }
+    }
+
+    public void OnToggleKeyHelp(InputAction.CallbackContext value)
+    {
+        GameObject hotkeyMenu = SceneObject.Find(
+            SceneObject.Get().ActiveMode,
+            ObjectName.HOTKEY_HELP);
+
+        if (hotkeyMenu != null && value.started)
+        {
+            hotkeyMenu.SetActive(!hotkeyMenu.activeSelf);
         }
     }
 
@@ -286,12 +340,53 @@ public class PlayerController : MonoBehaviour
 
             playerMovementBehavior.UpdateLookDelta(rawLook);
             playerMovementBehavior.UpdateMoveDelta(smoothMove);
-        }
 
-        RaycastHit hit;
-        if (playerVisualBehavior.HitTest(out hit))
+            RaycastHit hit;
+            GameObject gameObjectHit = null;
+            if (playerVisualBehavior.HitTest(out hit))
+            {
+                gameObjectHit = hit.transform.gameObject;
+            }
+
+            if (gameObjectHit != gameObjectHitCurrent)
+            {
+                if (gameObjectHitCurrent != null)
+                {
+                    Trace.Log(hitTestTraces, "No longer looking at {0}", gameObjectHitCurrent.name);
+                    if (OnPlayerLookingAtLeave != null)
+                    {
+                        OnPlayerLookingAtLeave(ref gameObjectHitCurrent, ref hitCurrent);
+                    }
+                }
+
+                if (gameObjectHit != null)
+                {
+                    Trace.Log(hitTestTraces, "Looking at {0}", gameObjectHit.name);
+                    if (OnPlayerLookingAtEnter != null)
+                    {
+                        OnPlayerLookingAtEnter(ref gameObjectHit, ref hit);
+                    }
+                }
+            }
+            else if (gameObjectHit != null)
+            {
+                // Trace.Log(hitTestTraces, "Still looking at {0}", gameObjectHit.name);
+                if (OnPlayerLookingAtContinue != null)
+                {
+                    OnPlayerLookingAtContinue(ref gameObjectHit, ref hit);
+                }
+            }
+
+            hitCurrent = hit;
+            gameObjectHitCurrent = gameObjectHit;
+        }
+        else if (gameObjectHitCurrent != null)
         {
-            Trace.Log(inputTraces, "Raycast hit: " + hit.ToString());
+            if (OnPlayerLookingAtLeave != null)
+            {
+                OnPlayerLookingAtLeave(ref gameObjectHitCurrent, ref hitCurrent);
+            }
+            gameObjectHitCurrent = null;
         }
     }
 

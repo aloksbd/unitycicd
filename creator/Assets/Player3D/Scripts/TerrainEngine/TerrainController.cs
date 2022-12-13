@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Net;
-using System.Drawing;
 using MEC;
 using TerrainEngine;
 
@@ -375,7 +374,9 @@ namespace TerrainEngine
         private void Awake()
         {
             s_mainThread = System.Threading.Thread.CurrentThread;
-
+            #if ADMIN
+                gameObject.AddComponent<VideoCaptureController>();
+            #endif
             buildingGenerator = GetComponent<BuildingGenerator>();
             Trace.Assert(buildingGenerator != null, "Building generator component not found on Terrain Controller gameobject {0}", gameObject.name);
         }

@@ -16,7 +16,8 @@ public class NewWall : NewItemWithMesh
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
 
-        WallTransformHandler wallTransformHandler = new WallTransformHandler(clone.gameObject, clone as NewWall);
+        WallListener wallListeningHandler = new WallListener(clone.gameObject, clone as NewWall);
+
         CloneChildren(clone);
         return clone;
     }

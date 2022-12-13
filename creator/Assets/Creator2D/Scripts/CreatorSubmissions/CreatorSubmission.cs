@@ -36,7 +36,7 @@ public class CreatorSubmission : MonoBehaviour
     public class Data
     {
         public string id;
-        public List<Buildings.Asset> assets;
+        public List<OsmBuildings.Asset> assets;
         public bool isLive;
         public string version;
     }

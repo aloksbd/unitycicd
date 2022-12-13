@@ -21,7 +21,7 @@ namespace TerrainEngine
         };
 
         public string id;                       // building id
-        public BuildingData buildingData;       // OSM building data
+        public OsmBuildingData buildingData;    // OSM building data
         public float baseHeight;                // wall height in meters
         public Vector3[] worldFootprint;        // base vertices in world coordinates
         public Vector3[] localFootprint;        // base vertices in coordinates relative to transform.position (arithmetic centerpoint of worldFootprint).
@@ -331,6 +331,9 @@ namespace TerrainEngine
                     pylonMaterial,
                 };
 
+                //  Remove collider added by CreatePrimitive()
+                Destroy(pylon.GetComponent<CapsuleCollider>());
+
                 pylons.Add(pylon);
             }
 
@@ -389,7 +392,7 @@ namespace TerrainEngine
             }
         }
 
-        public void Generate()
+        public void Generate(bool addCollider)
         {
             Abortable abortable = new Abortable("ProceduralBuilding.Generate");
 
@@ -447,6 +450,14 @@ namespace TerrainEngine
                 roofMaterial,
                 wallMaterial,
             };
+
+            if (addCollider)
+            {
+                MeshCollider meshCollider = gameObject.AddComponent<MeshCollider>();
+                meshCollider.sharedMesh = mesh;
+                meshCollider.cookingOptions = MeshColliderCookingOptions.EnableMeshCleaning |
+                                              MeshColliderCookingOptions.WeldColocatedVertices;
+            }
 
             if (abortable.shouldAbort)
             {

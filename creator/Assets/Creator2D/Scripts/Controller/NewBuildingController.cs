@@ -163,7 +163,6 @@ public class NewBuildingController
         }
     }
 
-
     public static void UpdateWall3DPos(CreatorItem parentItem, Vector3 pos0, Vector3 pos1, float angle)
     {
         parentItem.GetComponent<NewIHasDimension>().SetDimension(Vector3.Distance(pos0, pos1), WHConstants.DefaultWallHeight, WHConstants.DefaultWallBreadth);
@@ -185,17 +184,15 @@ public class NewBuildingController
         }
     }
 
-    public static void UpdateWallHandle(string ItemName, GameObject handleGO, int index, Vector3 pos0, Vector3 pos1, float angle)
+    public static void UpdateWallHandle(string ItemName, Dictionary<int, Node> nodes, Vector3 pos0, Vector3 pos1, float angle)
     {
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(ItemName, floorPlanItem);
-
-            UpdateWall3DPos(parentItem, pos0, pos1, angle);
+            LineRenderer wallRenderer = parentItem.gameObject.GetComponent<LineRenderer>();
 
             var length = Vector3.Distance(pos0, pos1);
-            LineRenderer wallRenderer = parentItem.gameObject.GetComponent<LineRenderer>();
             float lineWidth = wallRenderer.endWidth;
             wallRenderer.SetPositions(new Vector3[] { pos0, pos1 });
 
@@ -207,14 +204,17 @@ public class NewBuildingController
             parentItem.gameObject.transform.position = pos0;
             parentItem.gameObject.transform.eulerAngles = new Vector3(0, 0, angle);
 
-            for (int i = 0; i < 2; i++)
+            foreach (var n in nodes)
             {
-                var handle = parentItem.gameObject.transform.GetChild(i).gameObject;
-                var points = wallRenderer.GetPosition(i);
-                handle.transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_HANDLE_ZOFFSET);
-                handle.transform.localScale = new Vector3((wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, (wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_HANDLE_SIZE, 0.05f);
-                handle.transform.rotation = new Quaternion(0, 0, 0, 0);
+                var points = wallRenderer.GetPosition(n.Key);
+
+                //Update the position of the nodes based on the wall's new position
+                n.Value.nodeGO.transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
+                n.Value.nodeGO.transform.localScale = new Vector3((wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, (wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, 0.05f);
+                n.Value.nodeGO.transform.rotation = new Quaternion(0, 0, 0, 0);
             }
+
+            UpdateWall3DPos(parentItem, pos0, pos1, angle);
         }
     }
 

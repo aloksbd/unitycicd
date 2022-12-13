@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System;
 using System.Text;
 using System.Collections;
+using System.Net.Http;
 
 public class TokenDecoded
 {
@@ -30,6 +31,7 @@ public class AuthenticationHandler
 
     public static Action OnAuthenticated;
     public static Action OnAuthenticationFailure;
+    private static readonly HttpClient _httpClient = new HttpClient();
 
 
     public static void Init()
@@ -53,15 +55,33 @@ public class AuthenticationHandler
         }
     }
 
-    public static void Authenticate()
+    public static async void Authenticate()
     {
-        IsAuthenticated = false;
-        Application.OpenURL(WHConstants.WEB_URL + "/auth");
-        ServerSocket.StartServer((string token) => OnAuthenticationSuccess(token));
+        #if ADMIN
+            // if admin(video capture) then auto login without user intervention. 
+            string payload = "{\"username\":\"metatestadmin@whitehatengineering.com\",\"password\":\"metaTestAdmin\"}";
+            HttpContent c = new StringContent(payload, Encoding.UTF8, "application/json");
+            try
+            {
+                var response = await _httpClient.PostAsync(WHConstants.ADMIN_API_URL + "/auth/login", c);
+                response.EnsureSuccessStatusCode();
+                string resp = await response.Content.ReadAsStringAsync();
+                TokenFetch.TokenClassName tokenResp = JsonConvert.DeserializeObject<TokenFetch.TokenClassName>(resp);
+                var token = tokenResp.access_token;
+                AccessToken = token;
+            }catch(Exception e)
+            {
+                Trace.Log(e.ToString());
+            }
+        #else
+            IsAuthenticated = false;
+            Application.OpenURL(WHConstants.WEB_URL + "/auth");
+            ServerSocket.StartServer((string token) => OnAuthenticationSuccess(token));
 
-        MonoBehaviour mono = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<MonoBehaviour>();
-        mono.StartCoroutine(SecurelySaveToken());
-        mono.StartCoroutine(TimerForFailure());
+            MonoBehaviour mono = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<MonoBehaviour>();
+            mono.StartCoroutine(SecurelySaveToken());
+            mono.StartCoroutine(TimerForFailure());
+        #endif
     }
 
     public static bool OnAuthenticationSuccess(string data)

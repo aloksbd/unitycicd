@@ -12,7 +12,8 @@ public class PlayerMovementBehaviour : MonoBehaviour
 
     //  For Unity's Insprectr Panel:
     [Header("Basic Movement Settings")][Space(5)]
-    public float MoveSpeed = 20.0f;
+    public float GroundSpeed = 10.0f;
+    public float FlySpeed = 75.0f;
     public float LookSpeed = 15.0f;
     public float DoublePressTime = DOUBLE_BUTTON_TIME;
     public float MinVerticalLook = -90.0f; // degrees (-90.0f = straight down)
@@ -35,45 +36,46 @@ public class PlayerMovementBehaviour : MonoBehaviour
     public float VerticalBoundsDistance = 0f;
     public HorizontalBoundsType horizontalBoundsType = HorizontalBoundsType.None;
     public float HorizontalBoundsDistance = 0f;
-    private Vector3 boundsOrigin;
+    private Vector3 _boundsOrigin;
 
     //  Internal state
-    private CharacterController     characterController;
-    private PlayerController.IAMode interactionMode;
+    private CharacterController     _characterController;
+    private PlayerController.IAMode _interactionMode;
 
-    private bool    enableMouseLook;
-    private bool    enableGravity;
+    private bool    _enableMouseLook;
+    private bool    _enableGravity;
 
-    private const float GRAVITY = -15.0f;
-    private float   gravity;
+    private const float GRAVITY = -20.0f;
+    private float   _gravity;
 
-    private double  jumpBtnDown = 0.0d;   // Time when jump button was first pressed.
-    private bool    jumping = false;
+    private double  _jumpBtnDown = 0.0d;   // Time when jump button was first pressed.
+    private bool    _jumping = false;
 
+    [HideInInspector()]
     public bool     inputEnabled = true;
 
-    private Vector3 moveDelta;
-    private Vector2 lookDelta;
-    private float   vertRotation;
-    private float   horzRotation;
+    private Vector3 _moveDelta;
+    private Vector2 _lookDelta;
+    private float   _vertRotation;
+    private float   _horzRotation;
 
     //  Unity Input System's first mouse Look/Axis reports are flaky. 
     //  We'll defer mouse look updates for a short time interval:
     private const float LOOK_DEFER_START = 0.5f; // in seconds.
-    private float   lookCountdown = LOOK_DEFER_START;
+    private float   _lookCountdown = LOOK_DEFER_START;
 
     public void SetupBehavior(PlayerController.IAMode mode)
     {
         //  FYI: SetupBehavior() method may be invoked multiple times over 
         //  this component's lifetime.
-        characterController = GetComponent<CharacterController>();
-        if (characterController == null)
+        _characterController = GetComponent<CharacterController>();
+        if (_characterController == null)
         {
             throw new Exception("Player CharacterController component not found");
         }
 
-        //vertRotation = transform.rotation.y;
-        //horzRotation = 180.0f; //transform.rotation.x; // TODO: How is this not initialized to the Inspector's value?
+        //_vertRotation = transform.rotation.y;
+        //_horzRotation = 180.0f; //transform.rotation.x; // TODO: How is this not initialized to the Inspector's value?
 
         SetInteractionMode(mode);
     }
@@ -85,20 +87,20 @@ public class PlayerMovementBehaviour : MonoBehaviour
 
     public void UpdateMoveDelta(Vector3 delta)
     {
-        moveDelta = -delta;
+        _moveDelta = -delta;
     }
 
     public void UpdateLookDelta(Vector2 delta)
     {
-        if (inputEnabled && enableMouseLook)
+        if (inputEnabled && _enableMouseLook)
         {
-            if (lookCountdown <= 0.0f)
+            if (_lookCountdown <= 0.0f)
             {
-                lookDelta = delta;
+                _lookDelta = delta;
             }
             else
             {
-                lookCountdown -= Time.deltaTime;
+                _lookCountdown -= Time.deltaTime;
             }
         }
     }
@@ -125,10 +127,10 @@ public class PlayerMovementBehaviour : MonoBehaviour
                 break;
 
             default:
-                throw new Exception("Invalid Interaction Mode: " + interactionMode);
+                throw new Exception("Invalid Interaction Mode: " + _interactionMode);
         }
         
-        interactionMode = mode;
+        _interactionMode = mode;
     }
 
     void EnableMouseLook(bool enable)
@@ -140,35 +142,35 @@ public class PlayerMovementBehaviour : MonoBehaviour
             rigidbody.freezeRotation = enable;
         }
 
-        lookCountdown = LOOK_DEFER_START;
-        enableMouseLook = enable;
+        _lookCountdown = LOOK_DEFER_START;
+        _enableMouseLook = enable;
     }
 
     void EnableGravity(bool enable)
     {        
-        enableGravity = enable;  
-        gravity = enable ? GRAVITY : 0.0f;      
+        _enableGravity = enable;  
+        _gravity = enable ? GRAVITY : 0.0f;      
     }
 
     public void OnJumpButton(InputAction.CallbackContext value)
     {
         if (inputEnabled)
         {
-            if (PlayerController.IAMode.Minecraft == interactionMode)
+            if (PlayerController.IAMode.Minecraft == _interactionMode)
             {
                 if (TryJumpButtonTime(value.time))
                 {
                     if (InputActionPhase.Started == value.action.phase)
                     {
-                        Debug.Log((enableGravity ? "Stopping " : "Starting ") + "Gravity");
-                        EnableGravity(!enableGravity);
+                        Debug.Log((_enableGravity ? "Stopping " : "Starting ") + "Gravity");
+                        EnableGravity(!_enableGravity);
                         ResetJumpButtonState();
                     }
                 }
                 else if (InputActionPhase.Started == value.action.phase)
                 {
                     Debug.Log("Starting jump timer at " + value.time);
-                    jumpBtnDown = value.time;
+                    _jumpBtnDown = value.time;
                 }
             }
         }
@@ -178,9 +180,9 @@ public class PlayerMovementBehaviour : MonoBehaviour
     {
         if (inputEnabled)
         {
-            if (jumpBtnDown != 0.0f)
+            if (_jumpBtnDown != 0.0f)
             {
-                if ((timeNow - jumpBtnDown) < DoublePressTime)
+                if ((timeNow - _jumpBtnDown) < DoublePressTime)
                 {
                     return true;
                 }
@@ -192,7 +194,7 @@ public class PlayerMovementBehaviour : MonoBehaviour
 
     void ResetJumpButtonState()
     {
-        jumpBtnDown = 0.0f;
+        _jumpBtnDown = 0.0f;
     }
 
     void FixedUpdate()
@@ -205,8 +207,8 @@ public class PlayerMovementBehaviour : MonoBehaviour
     [HideInInspector()]
     public Vector3 BoundsOrigin
     {
-        get { return boundsOrigin; }
-        set { boundsOrigin = value; }
+        get { return _boundsOrigin; }
+        set { _boundsOrigin = value; }
     }
 
     private Vector3 AbsolutePosition
@@ -233,7 +235,7 @@ public class PlayerMovementBehaviour : MonoBehaviour
 
             if (verticalBoundsType == VerticalBoundsType.Relative)
             {
-                deltaY = (movement.y + absolutPos.y) - (VerticalBoundsDistance + boundsOrigin.y);
+                deltaY = (movement.y + absolutPos.y) - (VerticalBoundsDistance + _boundsOrigin.y);
             }
             else if (verticalBoundsType == VerticalBoundsType.Absolute)
             {
@@ -253,7 +255,7 @@ public class PlayerMovementBehaviour : MonoBehaviour
             float moveSq = (movement.x * movement.x) + (movement.z * movement.z);
             float aposSq = (absolutPos.x * absolutPos.x) + (absolutPos.z * absolutPos.z);
             float distSq = HorizontalBoundsDistance * HorizontalBoundsDistance;
-            float origSq = (boundsOrigin.x * boundsOrigin.x) + (boundsOrigin.z * boundsOrigin.z);
+            float origSq = (_boundsOrigin.x * _boundsOrigin.x) + (_boundsOrigin.z * _boundsOrigin.z);
             float deltaSq = (moveSq + aposSq) - (distSq + origSq);
 
             if (deltaSq > 0)
@@ -271,9 +273,13 @@ public class PlayerMovementBehaviour : MonoBehaviour
     {
         if (inputEnabled)
         {
-            Vector3 movement = moveDelta * MoveSpeed * Time.deltaTime;
+            float speed = (_interactionMode == PlayerController.IAMode.Minecraft) ?
+                GroundSpeed : 
+                FlySpeed;
+
+            Vector3 movement = _moveDelta * speed * Time.deltaTime;
             movement = transform.TransformDirection(movement);
-            movement.y += (gravity * Time.deltaTime);
+            movement.y += (_gravity * Time.deltaTime);
 
             BoundsCheck(ref movement);
 
@@ -304,7 +310,7 @@ public class PlayerMovementBehaviour : MonoBehaviour
             //  transforms crop up again elsewhere, we should reconsider going with #1.
 
             Physics.SyncTransforms(); 
-            characterController.Move(movement);
+            _characterController.Move(movement);
 
             //Debug.Log("movement: " + movement);
         }
@@ -314,13 +320,13 @@ public class PlayerMovementBehaviour : MonoBehaviour
     {
         if (inputEnabled)
         {
-            horzRotation += (lookDelta.x * LookSpeed * Time.deltaTime);
-            vertRotation += (lookDelta.y * LookSpeed * Time.deltaTime);
-            vertRotation = Math.Clamp(vertRotation, MinVerticalLook, MaxVerticalLook);
+            _horzRotation += (_lookDelta.x * LookSpeed * Time.deltaTime);
+            _vertRotation += (_lookDelta.y * LookSpeed * Time.deltaTime);
+            _vertRotation = Math.Clamp(_vertRotation, MinVerticalLook, MaxVerticalLook);
 
             transform.localEulerAngles = new Vector3(
-                vertRotation,
-                horzRotation,
+                _vertRotation,
+                _horzRotation,
                 0);
         }
     }

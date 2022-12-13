@@ -24,7 +24,8 @@ public class CreatorWallFactory : ICreatorItemFactory
         item.SetRotation(0, -angle, 0);
         uiItem._delegate = item;
 
-        WallTransformHandler wallTransformHandler = new WallTransformHandler(wall, item);
+        WallTransform wallTransform = new WallTransform(wall, item as NewWall);
+
         return item;
     }
 

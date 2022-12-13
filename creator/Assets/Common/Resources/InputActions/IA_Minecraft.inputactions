@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Fly",
+                    "name": "FlyMotion",
                     "type": "Value",
                     "id": "daa223fa-4bc3-459b-b247-8ce8ac7149b3",
                     "expectedControlType": "Axis",
@@ -69,7 +69,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "JumpButton",
+                    "name": "Jump",
                     "type": "Button",
                     "id": "e81c7463-013c-4e60-be48-4aa738fbc7c6",
                     "expectedControlType": "Button",
@@ -78,9 +78,63 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "CreatorEdit",
+                    "name": "EditObject",
                     "type": "Button",
                     "id": "a5d86e5c-a0a9-4289-9093-8c548dadfe3c",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleKeyHelp",
+                    "type": "Button",
+                    "id": "4e3b933e-21d2-4d39-9bb1-c0d3cb80b5eb",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleFly",
+                    "type": "Button",
+                    "id": "ba101c47-6f2f-41e3-9b1e-6353d8c3c784",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleLocation",
+                    "type": "Button",
+                    "id": "188bbedb-f47d-46c3-8b93-77db29c2a6a8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Roof",
+                    "type": "Button",
+                    "id": "52d7a4d8-8c5c-41ae-8674-4cf58b3cf2a8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Lobby",
+                    "type": "Button",
+                    "id": "39308ee9-3e7a-4726-b178-19249f78f0ae",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleBuildingDetails",
+                    "type": "Button",
+                    "id": "cbab6017-33ea-4e6b-b3fa-1e530b18a78b",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -216,7 +270,7 @@
                     "interactions": "",
                     "processors": "Invert",
                     "groups": "Keyboard&Mouse",
-                    "action": "Fly",
+                    "action": "FlyMotion",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -227,7 +281,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Fly",
+                    "action": "FlyMotion",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -403,7 +457,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "JumpButton",
+                    "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -414,7 +468,73 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "CreatorEdit",
+                    "action": "EditObject",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "62e0c24e-e0b1-4372-acbd-c651c2839061",
+                    "path": "<Keyboard>/h",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToggleKeyHelp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a528bd53-af36-43ca-b4f1-477e6d93240b",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToggleFly",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e01ba486-0135-4f25-9f4a-92823207e3bd",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToggleLocation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "357d4181-c6bb-4246-ba0a-e36b43aa6b0e",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Roof",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "961184d1-ec60-4837-82fe-101bb286145f",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Lobby",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "19191d90-b0e8-4ce9-90b9-fe35ae86a793",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ToggleBuildingDetails",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

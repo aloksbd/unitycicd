@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using TerrainEngine;
 
-public class Buildings
+public class OsmBuildings
 {
     public struct Asset
     {
@@ -34,7 +34,7 @@ public class Buildings
     // todo : create separate file for this.    
     private static readonly HttpClient _httpClient = new HttpClient();
 
-    public static async Task<BuildingData> GetBuildingDetail()
+    public static async Task<OsmBuildingData> GetBuildingDetail(string buildingId = "c95b5836-d3a2-4190-9615-2fa6ae6841a2")
     {
         // todo: figure out where to get it : plot id or building id will be fetched from context.
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
@@ -42,7 +42,6 @@ public class Buildings
             string token = await TokenFetch.GetAccessToken();
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
         }
-        string buildingId = "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
         if (DeeplinkHandler.Instance.isDeeplinkCalled)
         {
             buildingId = DeeplinkHandler.BuildData.building_id != null ? DeeplinkHandler.BuildData.building_id : "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
@@ -62,7 +61,7 @@ public class Buildings
         }
     }
 
-    public static async Task<List<BuildingData>> GetBuildingByBoundryBox(BoundryBoxCoordinates boundryBoxCoordinates)
+    public static async Task<List<OsmBuildingData>> GetBuildingByBoundryBox(BoundryBoxCoordinates boundryBoxCoordinates)
     {
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
         {
@@ -78,8 +77,17 @@ public class Buildings
             HttpResponseMessage result = _httpClient.PostAsync(uri, content).Result;
 
             string responseData = await result.Content.ReadAsStringAsync();
-            APIResponseData response = JsonConvert.DeserializeObject<APIResponseData>(responseData);
-            return response.buildings;
+            try
+            {
+                APIResponseData response = JsonConvert.DeserializeObject<APIResponseData>(responseData);
+                return response.buildings;
+            }
+            catch (JsonReaderException e)
+            {
+                Trace.LogToFile("GetBuildingByBoundingBox_Exception", e.ToString(), responseData);
+                Trace.Exception(e);
+                return null;
+            }
         }
     }
 }
@@ -100,13 +108,13 @@ public class BoundryBoxCoordinates
 
 public class APIResponseData
 {
-    public List<BuildingData> buildings { get; set; }
+    public List<OsmBuildingData> buildings { get; set; }
     public int statusCode { get; set; }
 }
 
 public class AreaBuildingData
 {
-    public List<BuildingData> buildingData { get; set; }
+    public List<OsmBuildingData> buildingData { get; set; }
     public Wgs84Bounds areaBounds;
 }
 
@@ -114,7 +122,7 @@ public class AreaBuildingData
 public class Point
 {
     public string type { get; set; }
-    public List<float> coordinates { get; set; }
+    public List<double> coordinates { get; set; }
 }
 
 public struct Polygon
@@ -125,7 +133,7 @@ public struct Polygon
 
 public class APIResponse
 {
-    public BuildingData building { get; set; }
+    public OsmBuildingData building { get; set; }
     public int statusCode { get; set; }
 }
 
@@ -140,7 +148,7 @@ public struct Detail
 }
 
 [Serializable]
-public class BuildingData
+public class OsmBuildingData
 {
     public string id { get; set; }
 

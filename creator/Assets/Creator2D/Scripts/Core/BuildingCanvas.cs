@@ -3,21 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class BuildingCanvas : MonoBehaviour
+public class BuildingCanvas
 {
-    [Header("Material")]
-    public Material material;
+
+    private GameObject gameObject;
+    private GameObject buildingGO;
 
     List<Vector3> boundaryCoordinates = new List<Vector3>();
 
-    async void Start()
+    public static List<double> centerLatLon;
+
+    private static BuildingCanvas b_instance = null;
+
+    public static BuildingCanvas Get()
     {
-        BuildingData building = await Buildings.GetBuildingDetail();
+        if (b_instance == null)
+        {
+            b_instance = new BuildingCanvas();
+            b_instance.gameObject = SceneObject.Find(SceneObject.Mode.Creator, ObjectName.BUILDING_CANVAS);
+        }
+        return b_instance;
+    }
+
+    public void GenerateCanvas(OsmBuildingData building)
+    {
+        boundaryCoordinates = new List<Vector3>();
         if (building == null)
         {
             return;
         }
-        Vector2 centerCoordinate = ConvertCoordinate.GeoToWorldPosition(building.center.coordinates[1], building.center.coordinates[0]);
+        centerLatLon = building.center.coordinates;
+        Vector2 centerCoordinate = ConvertCoordinate.GeoToWorldPosition((float)building.center.coordinates[1], (float)building.center.coordinates[0]);
         foreach (List<List<float>> firstList in building.geometry.coordinates)
         {
             foreach (List<float> coordinateList in firstList)
@@ -40,13 +56,18 @@ public class BuildingCanvas : MonoBehaviour
         // _boundary is closed meaning the first coordinate is also repeated in last one
         pointList.RemoveAt(pointList.Count - 1);
 
+        UnityEngine.GameObject.DestroyImmediate(gameObject.GetComponent<MeshFilter>());
+        UnityEngine.GameObject.DestroyImmediate(gameObject.GetComponent<MeshRenderer>());
+        UnityEngine.GameObject.DestroyImmediate(gameObject.GetComponent<MeshCollider>());
+
         MeshFilter mf = gameObject.AddComponent<MeshFilter>();
         mf.mesh = new Triangulator().CreateInfluencePolygon(pointList.ToArray());
         var meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        Material material = Resources.Load("Materials/BuildingCanvas") as Material;
         meshRenderer.material = material;
 
         gameObject.AddComponent<MeshCollider>();
-        gameObject.transform.Rotate(new Vector3(-90, 0, 0));
+        gameObject.transform.eulerAngles = new Vector3(-90, 0, 0);
         UpdateCameraOrthoSize();
 
         AutoFloorPlanGenerator.Generate(boundaryCoordinates, gameObject.transform.position);

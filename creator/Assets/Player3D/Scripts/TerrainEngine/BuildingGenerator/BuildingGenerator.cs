@@ -14,23 +14,46 @@ namespace TerrainEngine
     {
         private const int    LOADING_GRID_CELLS_X = 25;
         private const int    LOADING_GRID_CELLS_Y = LOADING_GRID_CELLS_X;
-        const float          DEFAULT_BUILDING_HEIGHT = 15f;
+        const float          DEFAULT_BUILDING_HEIGHT = 14f;
 
-        //  Configureable via Inspector
+        //  Configured in Inspector
+        [Header("Assets and settings")][Space(5)]
         public TerrainPlayer player;
-        public float         distanceFilter = 0;
-        public Material      wallMaterial;
-        public Material      roofMaterial;
-        public Material      pylonMaterial;
+        public Material wallMaterial;
+        public Material roofMaterial;
+        public Material pylonMaterial;
+        public bool buidingColliders;
+        public float distanceFilter = 0;
 
+        // Inspector-based performance monitoring
+        [Header("Download Performance")]
+        [Space(5)]
+        public int totalDownloadRequests;
+        [Space(5)]
+        public float latestDownloadTime;
+        public float minDownloadTime;
+        public float maxDownloadTime;
+        public float avgDownloadTime;
+        public float totalDownloadTime;
+        [Space(5)]
+        public int latestBuildingCount;
+        public int minBuildingCount;
+        public int maxBuildingCount;
+        public float avgBuildingCount;
+        public int totalBuildingCount;
+        [Space(5)]
+        public float latestTimePerBuilding;
+        public float avgTimePerBuilding;
+
+        [Header("Processing activity")][Space(5)]
         public int buildingsToGenerate = 0;
-        public int buildingsGenerated  = 0;
-
+        public int buildingsGenerated = 0;
+        
         //  Private members
         //
         private object              s_datalock = new object();
         private TerrainController   controller;
-        private RangeGrid           loadingGrid = new RangeGrid();
+        private RangeGrid           loadingGrid;
 
         enum CellTag    
         {
@@ -53,16 +76,16 @@ namespace TerrainEngine
         //  Game-ready data from which a building is generated
         private class GameReadyBuilding
         {
-            public string        buildingObjectId;
-            public BuildingData  buildingData;      // OSM building data
-            public int           iGeometry;         // polygon index (for multi-polygon buildings)
-            public Wgs84Bounds   bbox;              // building's bounding box
-            public List<Vector3> worldVertices;     // wall vertices in world coordinates
-            public Vector3[]     localVertices;     // wall vertices in local coordinates (relative to its geometric centerpoint)
-            public Vector3       localCenterPt;     
-            public float         baseHeight;        
+            public string           buildingObjectId;
+            public OsmBuildingData  buildingData;      // OSM building data
+            public int              iGeometry;         // polygon index (for multi-polygon buildings)
+            public Wgs84Bounds      bbox;              // building's bounding box
+            public List<Vector3>    worldVertices;     // wall vertices in world coordinates
+            public Vector3[]        localVertices;     // wall vertices in local coordinates (relative to its geometric centerpoint)
+            public Vector3          localCenterPt;     
+            public float            baseHeight;        
             public ProceduralBuilding.RoofType roofType;
-            public float         roofHeight;
+            public float            roofHeight;
         };
         Dictionary<string, GameReadyBuilding> gameReadyBuildingData;
 
@@ -103,7 +126,7 @@ namespace TerrainEngine
             Vector3 playerPostion = player.transform.position;
             int rangeId = 0;
 
-            if (loadingGrid != null)
+            if (loadingGrid == null)
             {
                 loadingGrid = new RangeGrid();
                 loadingGrid.InitializeFromArea(
@@ -114,6 +137,8 @@ namespace TerrainEngine
                 // For now, we only have one range to compute. In the future we may
                 // discriminate among multiple distance ranges
                 loadingGrid.SetRange(rangeId, 0 /* near */, distanceFilter /* far */);
+
+                ResetDownloadMetrics();
             }
 
             List<RangeGrid.Cell> areasInRange;
@@ -161,6 +186,7 @@ namespace TerrainEngine
 
                     AreaBuildingData osmBuildingData;
                     WebExceptionStatus status = DownloadBuildings(ref cell.wgs84Bounds, out osmBuildingData);
+
                     if (status != WebExceptionStatus.Success)
                     {
                         controller.ReportFatalWebServiceError(status);
@@ -244,7 +270,9 @@ namespace TerrainEngine
                         area.right }
                 };
 
-                List<BuildingData> buildingData = Buildings.GetBuildingByBoundryBox(buildingCoordinates).Result;
+                long downloadStart = DateTime.Now.Ticks;
+
+                List<OsmBuildingData> buildingData = OsmBuildings.GetBuildingByBoundryBox(buildingCoordinates).Result;
 
                 if (abortable.shouldAbort)
                 {
@@ -269,6 +297,8 @@ namespace TerrainEngine
                     Trace.Exception(e);
                 }
 
+                UpdateDownloadMetrics((float)(DateTime.Now.Ticks - downloadStart) / (float)TimeSpan.TicksPerMillisecond / 1000f, buildingData.Count);
+
                 controller.UpdateState(TerrainController.TerrainState.BuildingDataReceived);
             }
             catch (WebException e)
@@ -283,6 +313,44 @@ namespace TerrainEngine
             }
 
             return WebExceptionStatus.Success;
+        }
+
+        [RuntimeAsync(nameof(UpdateDownloadMetrics))]
+        private void UpdateDownloadMetrics(float seconds, int buildingCount)
+        {
+            Interlocked.Increment(ref totalDownloadRequests);
+            latestDownloadTime = seconds;
+            latestBuildingCount = buildingCount;
+            latestTimePerBuilding = buildingCount > 0 ?
+                seconds / buildingCount : 0;
+
+            minDownloadTime = (maxDownloadTime == 0) ? latestDownloadTime : Mathf.Min(minDownloadTime, latestDownloadTime);
+            maxDownloadTime = Mathf.Max(maxDownloadTime, latestDownloadTime);
+            minBuildingCount = (maxBuildingCount == 0) ? latestBuildingCount : (int)Math.Min(minBuildingCount, latestBuildingCount); ;
+            maxBuildingCount = (int)Math.Max(maxBuildingCount, latestBuildingCount); ;
+
+            totalDownloadTime += seconds;
+            totalBuildingCount += buildingCount;
+            avgDownloadTime = totalDownloadTime / totalDownloadRequests;
+            avgTimePerBuilding = totalDownloadTime / totalBuildingCount;
+            avgBuildingCount = totalBuildingCount / totalDownloadRequests;
+        }
+
+        private void ResetDownloadMetrics()
+        {
+            latestDownloadTime = 0.0f;
+            latestBuildingCount = 0;
+            latestTimePerBuilding = 0.0f;
+            maxDownloadTime = 0.0f;
+            minDownloadTime = 0.0f;
+            maxBuildingCount = 0;
+            minBuildingCount = 0;
+            totalDownloadRequests = 0;
+            totalDownloadTime = 0.0f;
+            totalBuildingCount = 0;
+            avgDownloadTime = 0.0f;
+            avgTimePerBuilding = 0.0f;
+            avgBuildingCount = 0.0f;
         }
 
         [RuntimeAsync(nameof(AsyncPreProcessData))]
@@ -344,7 +412,7 @@ namespace TerrainEngine
             ref GridMetrics gridMetrics,
             ref Wgs84Bounds wgs84AreaBounds,
             Vector3 playerPosition,
-            BuildingData buildingData,
+            OsmBuildingData buildingData,
             int iGeometry)
         {
             Abortable abortable = new Abortable("BuildingGenerator.FilterAndGeoLocateFootprint");
@@ -688,7 +756,7 @@ namespace TerrainEngine
             proceduralBuilding.pylonMaterial = pylonMaterial;
             proceduralBuilding.pylonsTransformParent = pylonsTransformParent;
 
-            proceduralBuilding.Generate();
+            proceduralBuilding.Generate(buidingColliders);
             return true;
         }
 

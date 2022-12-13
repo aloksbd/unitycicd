@@ -126,18 +126,25 @@ public class CreatorEventManager : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
-            Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-            if (_lineRender && Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity))
+            if (_lineRender)
             {
-                if (buildingInventoryController.currentBlock && hitInfo.transform.gameObject == BuildingCanvas)
+                Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity))
                 {
-                    if (buildingInventoryController.currentBlock.CategoryName == "Build")
+                    if (buildingInventoryController.currentBlock && hitInfo.transform.gameObject == BuildingCanvas)
                     {
-                        if (buildingInventoryController.currentBlock.AssetType == "Wall")
+                        if (buildingInventoryController.currentBlock.CategoryName == "Build")
                         {
-                            UpdateLine(hitInfo);
+                            if (buildingInventoryController.currentBlock.AssetType == "Wall")
+                            {
+                                UpdateLine(hitInfo);
+                            }
                         }
                     }
+                }
+                else
+                {
+                    GenerateLine();
                 }
             }
             else if (_canvasDrag)
@@ -151,13 +158,7 @@ public class CreatorEventManager : MonoBehaviour
             _canvasDrag = false;
             if (_lineRender)
             {
-                LineRenderer lineRenderer = _lineRendererGO.GetComponent<LineRenderer>();
-                if (lineRenderer.GetPosition(0) != lineRenderer.GetPosition(1))
-                {
-                    NewBuildingController.CreateWall(lineRenderer.GetPosition(0), lineRenderer.GetPosition(1));
-                }
-                Destroy(_lineRendererGO);
-                _lineRender = false;
+                GenerateLine();
             }
         }
 
@@ -277,6 +278,17 @@ public class CreatorEventManager : MonoBehaviour
     {
         LineRenderer lineRenderer = _lineRendererGO.GetComponent<LineRenderer>();
         lineRenderer.SetPosition(1, new Vector3(hitInfo.point.x, hitInfo.point.y, -0.2f));
+    }
+
+    private void GenerateLine()
+    {
+        LineRenderer lineRenderer = _lineRendererGO.GetComponent<LineRenderer>();
+        if (lineRenderer.GetPosition(0) != lineRenderer.GetPosition(1))
+        {
+            NewBuildingController.CreateWall(lineRenderer.GetPosition(0), lineRenderer.GetPosition(1));
+        }
+        Destroy(_lineRendererGO);
+        _lineRender = false;
     }
 
     public void DestroyBlock()

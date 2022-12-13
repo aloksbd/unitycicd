@@ -17,8 +17,6 @@ namespace TerrainEngine
 
         public float imageOffsetX;              // x-offset of base image in meter
         public float imageOffsetY;              // y-offset of base image in meters
-        public int imageFileHeight;             // base image height, as read from file
-        public int imageFileWidth;              // base image width, as read from file
 
         public string slippyTileName;           // cache file name for heightmaps and base images
         public string terrainGridName;          // name of the grid to which the cell belongs

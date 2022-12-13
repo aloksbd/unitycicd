@@ -27,7 +27,8 @@ public static class ObjectName
     //  UI container chldren
     public const string CROSSHAIRS_IMAGE = UI_CONTAINER + "/Crosshairs";
     public const string CROSSHAIRS_HIT_IMAGE = UI_CONTAINER + "/Crosshairs_Hit";
-    public const string UPLOADTEXT = UI_CONTAINER + "/UploadText";
+    public const string HOTKEY_HELP = UI_CONTAINER + "/HotKeyMenu";
+    public const string BUILDING_DETAIL = UI_CONTAINER + "/BuildingDetail";
 
     //  Elevator container
     public const string ELEVATOR_CONTAINER = "Elevator";

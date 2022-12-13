@@ -309,8 +309,8 @@ class WHFbxImporter : System.IDisposable
                                  lclScl.ToString(),
                                  fbxNode.GetName()));
 
-        unityGo.transform.localPosition = new Vector3((float)lclTrs[0], (float)lclTrs[1], (float)lclTrs[2]);
-        unityGo.transform.localRotation = new Quaternion((float)lclRot[0], (float)lclRot[1], (float)lclRot[2], (float)lclRot[3]);
+        unityGo.transform.localPosition = new Vector3(-(float)lclTrs[0], (float)lclTrs[1], (float)lclTrs[2]);
+        unityGo.transform.localRotation = new Quaternion((float)lclRot[0], -(float)lclRot[1], -(float)lclRot[2], (float)lclRot[3]);
         unityGo.transform.localScale = new Vector3((float)lclScl[0], (float)lclScl[1], (float)lclScl[2]);
 
     }
@@ -340,7 +340,7 @@ class WHFbxImporter : System.IDisposable
             Debug.Assert(fbxVector4.Y <= float.MaxValue && fbxVector4.Y >= float.MinValue);
             Debug.Assert(fbxVector4.Z <= float.MaxValue && fbxVector4.Z >= float.MinValue);
 
-            unityVertices.Add(new Vector3((float)fbxVector4.X, (float)fbxVector4.Y, (float)fbxVector4.Z));
+            unityVertices.Add(new Vector3(-(float)fbxVector4.X, (float)fbxVector4.Y, (float)fbxVector4.Z));
         }
 
         // transfer triangles
@@ -385,16 +385,14 @@ class WHFbxImporter : System.IDisposable
         int j = 0;
         bool isMaterialExist = true;
         List<Material> multipleMaterials = new List<Material>();
-        //assign it
-        // go.GetComponent<Renderer>().materials = yourMaterials ;
         do
         {
             FbxSurfaceMaterial materialTemp = fbxNode.GetMaterial(j);
             if (materialTemp != null)
             {
-                var unityMaterial = ProcessMaterial(materialTemp, unityRenderer.material);
+                var unityMaterial = new Material(Shader.Find("Standard"));
+                ProcessMaterial(materialTemp, unityMaterial);
                 multipleMaterials.Add(unityMaterial);
-                // unityRenderer.sharedMaterial = unityMaterial;
                 j++;
             }
             else
@@ -404,17 +402,9 @@ class WHFbxImporter : System.IDisposable
 
         } while (isMaterialExist);
         unityRenderer.materials = multipleMaterials.ToArray();
+        unityRenderer.sharedMaterials = multipleMaterials.ToArray();
 
         ProcessCollider(fbxNode, unityGo);
-
-        //TODO handle material
-        // {
-        //     // Assign the default material (hack!)
-        //     var unityPrimitive = GameObject.CreatePrimitive (PrimitiveType.Quad);
-        //     var unityMat = unityPrimitive.GetComponent<MeshRenderer> ().sharedMaterial;
-        //     unityRenderer.sharedMaterial = unityMat;
-        //     UnityEngine.Object.DestroyImmediate (unityPrimitive);
-        // }
     }
 
     /// <summary>
