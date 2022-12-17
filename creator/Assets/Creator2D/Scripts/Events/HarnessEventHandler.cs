@@ -20,8 +20,10 @@ public class HarnessEventHandler : MonoBehaviour
     public event Action mouseUp;
     public event Action mouseHover;
     public event Action mouseExit;
+    public event Action mouseClicked;
     private static bool moving = false;
-
+    private float downClickTime;
+    private float ClickDeltaTime = 0.2f;
 
     public void OnMouseEnter()
     {
@@ -45,13 +47,17 @@ public class HarnessEventHandler : MonoBehaviour
 
     public void OnMouseDrag()
     {
-        moving = true;
-        drag(getMousePosition().GetValueOrDefault());
+        if (!IsClick())
+        {
+            moving = true;
+            drag(getMousePosition().GetValueOrDefault());
+        }
     }
 
 
     public void OnMouseDown()
     {
+        downClickTime = Time.time;
         if (mouseDown != null)
         {
             Vector3 clickPos = getMousePosition().GetValueOrDefault();
@@ -61,9 +67,22 @@ public class HarnessEventHandler : MonoBehaviour
 
     public void OnMouseUp()
     {
+        if (IsClick())
+        {
+            mouseClicked?.Invoke();
+        }
         moving = false;
         UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         mouseUp?.Invoke();
+    }
+
+    public bool IsClick()
+    {
+        if (Time.time - downClickTime <= ClickDeltaTime)
+        {
+            return true;
+        }
+        return false;
     }
 
     public Vector3? getMousePosition()
@@ -91,5 +110,16 @@ public class HarnessEventHandler : MonoBehaviour
             }
         }
         return false;
+    }
+
+    public void isMovable(GameObject GO)
+    {
+        RaycastHit hit;
+
+        if (Physics.BoxCast(GO.transform.position, GO.transform.localScale / 2, GO.transform.forward, out hit, Quaternion.identity, 1f))
+        {
+            Trace.Log($"WE HIT :: {hit.transform.name}");
+            Debug.DrawRay(GO.transform.position, GO.transform.forward, Color.green, 10f);
+        }
     }
 }

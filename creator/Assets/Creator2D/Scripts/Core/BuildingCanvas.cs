@@ -25,7 +25,7 @@ public class BuildingCanvas
         return b_instance;
     }
 
-    public void GenerateCanvas(OsmBuildingData building)
+    public void GenerateCanvas(OsmBuildingData building, bool autoGenerateFloor = true)
     {
         boundaryCoordinates = new List<Vector3>();
         if (building == null)
@@ -70,8 +70,11 @@ public class BuildingCanvas
         gameObject.transform.eulerAngles = new Vector3(-90, 0, 0);
         UpdateCameraOrthoSize();
 
-        AutoFloorPlanGenerator.Generate(boundaryCoordinates, gameObject.transform.position);
-        CreatorUIController.SetupAddFloorDropdown();
+        if (autoGenerateFloor)
+        {
+            AutoFloorPlanGenerator.Generate(boundaryCoordinates, gameObject.transform.position);
+            CreatorUIController.SetupAddFloorDropdown();
+        }
     }
 
     private void UpdateCameraOrthoSize()

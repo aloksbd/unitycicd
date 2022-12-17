@@ -4,11 +4,13 @@ public class CreatorDoorFactory : ICreatorItemFactory
 {
     private CreatorItem _parentItem;
     private Vector3 _startPosition;
+    private Sprite _sprite;
 
-    public CreatorDoorFactory(CreatorItem parentItem, Vector3 startPosition)
+    public CreatorDoorFactory(CreatorItem parentItem, Vector3 startPosition, Sprite sprite)
     {
         _parentItem = parentItem;
         _startPosition = startPosition;
+        _sprite = sprite;
     }
 
     public CreatorItem Create(string name)
@@ -32,8 +34,7 @@ public class CreatorDoorFactory : ICreatorItemFactory
     {
         GameObject doorGO = new GameObject();
         SpriteRenderer spriteRenderer = doorGO.AddComponent<SpriteRenderer>();
-        BuildingInventoryController buildingInventoryController = BuildingInventoryController.Get();
-        spriteRenderer.sprite = buildingInventoryController.currentBlock.BlockSprite;
+        spriteRenderer.sprite = _sprite;
 
         Vector2 unit = ConvertCoordinate.PixelToUnit(spriteRenderer.sprite);
 

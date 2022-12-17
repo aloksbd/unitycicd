@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class HarnessConstant
 {
-    public const float MOVEMENT_SENSITIVITY = 0.5f;
+    public const float MOVEMENT_SENSITIVITY = 50f;
     public const float DEFAULT_NODE_ZOFFSET = -0.1f;
     public const float HOVER_NODE_ZOFFSET = -0.4f;
     public const float DEFAULT_NODE_SIZE = 3f;

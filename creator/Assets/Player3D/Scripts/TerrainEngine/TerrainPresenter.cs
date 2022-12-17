@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using TMPro;
 using MEC;
 
 namespace TerrainEngine
@@ -24,6 +25,7 @@ namespace TerrainEngine
         [Header("Hard-coded assignments:")]
         [Space(5)]
         public GameObject terrainGenerator;
+        public HotkeyMenu hotkeyMenu;
         private TerrainPlayer terrainPlayer;
 
         public GameObject fadeIn;
@@ -32,26 +34,28 @@ namespace TerrainEngine
 
         //  Loading UI Parent
         public GameObject loadingUI;
-        public Text loadingUITitle;
+        public TextMeshProUGUI loadingUITitle;
 
-        public Text heightMapsPercent;
-        public Text baseImagesPercent;
+        public TextMeshProUGUI heightMapsPercent;
+        public TextMeshProUGUI baseImagesPercent;
         public Slider heightmapProgressBar;
         public Slider imageProgressBar;
 
         public GameObject taskCanvas;
-        public Text heightMapsRetrieved;
-        public Text baseImagesRetrieved;
-        public Text buildingsRetrieved;
-        public Text detailTerrrainCreated;
-        public Text distantTerrrainCreated;
-        public Text buildingsCreated;
+        public TextMeshProUGUI heightMapsRetrieved;
+        public TextMeshProUGUI baseImagesRetrieved;
+        public TextMeshProUGUI buildingsRetrieved;
+        public TextMeshProUGUI detailTerrrainCreated;
+        public TextMeshProUGUI distantTerrrainCreated;
+        public TextMeshProUGUI buildingsCreated;
 
         private Color taskColorComplete;
         private Color taskColorIncomplete;
+        private Color progressColorComplete;
+        private Color progressColorIncomplete;
 
         public GameObject errorCanvas;
-        public Text errorDescription;
+        public TextMeshProUGUI errorDescription;
 
         public Button retryButton;
         public Button cancelButton;
@@ -77,13 +81,6 @@ namespace TerrainEngine
         public Texture2D detailNormalFar;   //  'MudRockyNormalsFar'
         [Range(0, 100)] public float detailBelending = 25f;
         public float detailTileSize = 25f;
-
-        enum AbortReason
-        {
-            Teleport,
-            Retry,
-            ExitToMain
-        };
 
         //  Private objects and state
         private enum PresentationState
@@ -141,25 +138,53 @@ namespace TerrainEngine
             "Done!"
         };
 
+        public static void TeleportToLatLong(
+            float latitude, 
+            float longitude, 
+            float bearing = 0f)
+        {
+            SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
+
+            TerrainPresenter terrainPresenter = SceneObject.Find(SceneObject.Mode.Player, ObjectName.TERRAIN_PRESENTER).GetComponent<TerrainPresenter>();
+            terrainPresenter.latLonInput.Latitude = latitude;
+            terrainPresenter.latLonInput.Longitude = longitude;
+            controller.UpdateState(TerrainController.TerrainState.UserAborted);
+            terrainPresenter.StartCoroutine(terrainPresenter.WaitForTerrainAborted(() =>
+            {
+                terrainPresenter.ReloadAndTeleport();
+            }));
+        }
+
         void Awake()
         {
             terrainPlayer = TerrainPlayer.Get(gameObject);
             player = terrainPlayer.gameObject;
 
+            // Player raycast events
             PlayerController.OnPlayerLookingAtEnter += OnPlayerLookingAtEnter;
             PlayerController.OnPlayerLookingAtContinue += OnPlayerLookingAtContinue;
             PlayerController.OnPlayerLookingAtLeave += OnPlayerLookingAtLeave;
 
             latLonInput = new LatLonInput();
 
+            //  Player controler events
+            PlayerController.OnPlayerInteractionModeChanged += OnPlayerInteractionModeChanged;
+
+            // Terrain controller events
             controller = TerrainController.Get();
             TerrainController.OnTerrainStateChanged += OnTerrainStateChanged;
             TerrainController.OnTerrainFatalErrorReport += OnTerrainFatalError;
 
+            //  Elevator events
+            ElevatorController.OnPlayerExitElevator += OnPlayerExitElevator;
+
             taskColorComplete = heightMapsRetrieved.color;
             taskColorIncomplete = baseImagesRetrieved.color;
+            progressColorComplete = heightmapProgressBar.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color;
+            progressColorIncomplete = imageProgressBar.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color;
 
             SetupLoadingUI();
+            SetupHotkeyMenu();
             SetupMusic();
 
             QualitySettings.shadowDistance = (controller.areaSize * 1000f) / 4f;
@@ -191,6 +216,22 @@ namespace TerrainEngine
             CheckDetailTextures();
         }
 
+        private void SetupHotkeyMenu()
+        {
+            List<HotkeyMenu.Key> keys = new List<HotkeyMenu.Key>()
+            {
+                HotkeyMenu.Key.Build,
+                HotkeyMenu.Key.ToggleFly,
+                HotkeyMenu.Key.FlyUp,
+                HotkeyMenu.Key.FlyDown,
+                HotkeyMenu.Key.ToggleDetails,
+                HotkeyMenu.Key.ToggleLocation,
+                HotkeyMenu.Key.MainMenu,
+                HotkeyMenu.Key.HotkeyMenu
+            };
+            hotkeyMenu.Populate(keys);
+        }
+
         void ResetLoadingUI()
         {
             startTime = 0.0F;
@@ -199,9 +240,9 @@ namespace TerrainEngine
             fade.color = fadeColorInit;
             loading.color = loadingColorInit;
 
-            heightMapsPercent.GetComponent<Text>().text = 0 + "0%";
+            heightMapsPercent.text = 0 + "0%";
             heightmapProgressBar.value = 0;
-            baseImagesPercent.GetComponent<Text>().text = 0 + "0%";
+            baseImagesPercent.text = 0 + "0%";
             imageProgressBar.value = 0;
 
             ResetTaskCompletion();
@@ -212,13 +253,16 @@ namespace TerrainEngine
         void ResetTaskCompletion()
         {
             heightMapsRetrieved.color =
-            heightMapsPercent.color = 
             baseImagesRetrieved.color =
+            heightMapsPercent.color =
             baseImagesPercent.color =
             buildingsRetrieved.color =
             detailTerrrainCreated.color =
             distantTerrrainCreated.color =
             buildingsCreated.color = taskColorIncomplete;
+
+            heightmapProgressBar.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color =
+            imageProgressBar.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = progressColorIncomplete;
 
             retryButton.gameObject.SetActive(false);
         }
@@ -343,16 +387,33 @@ namespace TerrainEngine
         private void OnPlayerLookingAtEnter(ref GameObject gameObjectHit, ref RaycastHit hit)
         {
             buildingDetailPanel.TryPopulate(gameObjectHit);
+
+            ProceduralBuilding pb = gameObjectHit.GetComponent<ProceduralBuilding>();
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.Build, pb != null);
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.ToggleDetails, pb != null);
         }
 
         private void OnPlayerLookingAtContinue(ref GameObject gameObjectHit, ref RaycastHit hit)
         {
-            buildingDetailPanel.TryPopulate(gameObjectHit);
+            if (!pauseMenu.activeSelf)
+            {
+                buildingDetailPanel.TryPopulate(gameObjectHit);
+            }
         }
 
         private void OnPlayerLookingAtLeave(ref GameObject gameObjectHit, ref RaycastHit hit)
         {
             buildingDetailPanel.Clear();
+
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.Build, false);
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.ToggleDetails, false);
+        }
+
+        private void OnPlayerExitElevator(GameObject elevatorDoor, int floor)
+        {
+            //  TODO: Place user outside the elevator on the right floor.
+            //  For now, switch to Welcome screen
+            SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
         }
 
         private void CheckForPause()
@@ -390,9 +451,9 @@ namespace TerrainEngine
             float progressHeightmapPercent = progressHeightmap * 100f;
             float progressbaseImagesPercent = progressImage * 100f;
 
-            heightMapsPercent.GetComponent<Text>().text = (int)progressHeightmapPercent + "%";
+            heightMapsPercent.text = (int)progressHeightmapPercent + "%";
             heightmapProgressBar.value = (int)progressHeightmapPercent;
-            baseImagesPercent.GetComponent<Text>().text = (int)progressbaseImagesPercent + "%";
+            baseImagesPercent.text = (int)progressbaseImagesPercent + "%";
             imageProgressBar.value = (int)progressbaseImagesPercent;
 
             bool done = false;
@@ -404,15 +465,17 @@ namespace TerrainEngine
             {
                 if (progressHeightmap >= 1.0)
                 {
-                    heightMapsRetrieved.color =
+                    heightMapsRetrieved.color = 
                     heightMapsPercent.color = taskColorComplete;
+                    heightmapProgressBar.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = progressColorComplete;
 
                 }
 
                 if (progressImage >= 1.0)
                 {
-                    baseImagesRetrieved.color =
+                    baseImagesRetrieved.color = 
                     baseImagesPercent.color = taskColorComplete;
+                    imageProgressBar.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = progressColorComplete;
                 }
             }
 
@@ -421,6 +484,17 @@ namespace TerrainEngine
                 loadingUITitleText[0];
 
             PlayNextSong();
+        }
+
+
+        //-------------------------------------------
+        //  Player controller event handlers
+        private void OnPlayerInteractionModeChanged(
+            PlayerController.IAMode modeNew,
+            PlayerController.IAMode modePrev)
+        {
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.FlyUp, modeNew == PlayerController.IAMode.MinecraftFlyAlways);
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.FlyDown, modeNew == PlayerController.IAMode.MinecraftFlyAlways);
         }
 
         //-------------------------------------------
@@ -505,7 +579,7 @@ namespace TerrainEngine
             }
         }
 
-        private IEnumerator<float> WaitForTerrainAborted(AbortReason reason)
+        private System.Collections.IEnumerator WaitForTerrainAborted(Action action)
         {
             while (Abortable.WaitForAbortables())
             {
@@ -515,22 +589,7 @@ namespace TerrainEngine
             controller.Unload();
             ResetLoadingUI();
 
-            switch (reason)
-            {
-                case AbortReason.Teleport:
-                    ReloadAndTeleport();
-                    break;
-
-                case AbortReason.Retry:
-                    latLonInput.Latitude = Convert.ToDouble(TerrainController.Settings.latitudeUser);
-                    latLonInput.Longitude = Convert.ToDouble(TerrainController.Settings.longitudeUser);
-                    ReloadAndTeleport();
-                    break;
-
-                case AbortReason.ExitToMain:
-                    SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
-                    break;
-            }
+            action();
         }
 
         //-------------------------------------------
@@ -539,7 +598,12 @@ namespace TerrainEngine
         {
             SetPresentationState(PresentationState.ProcessingCanceled);
             controller.UpdateState(TerrainController.TerrainState.UserAborted);
-            TerrainController.RunCoroutine(WaitForTerrainAborted(AbortReason.Retry));
+            StartCoroutine(WaitForTerrainAborted(() =>
+            {
+                latLonInput.Latitude = Convert.ToDouble(TerrainController.Settings.latitudeUser);
+                latLonInput.Longitude = Convert.ToDouble(TerrainController.Settings.longitudeUser);
+                ReloadAndTeleport();
+            }));
         }
 
         public void OnAbortTerrain()
@@ -549,7 +613,10 @@ namespace TerrainEngine
 
             SetPresentationState(PresentationState.ProcessingCanceled);
             controller.UpdateState(TerrainController.TerrainState.UserAborted);
-            TerrainController.RunCoroutine(WaitForTerrainAborted(AbortReason.ExitToMain));
+            StartCoroutine(WaitForTerrainAborted(() =>
+            {
+                SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
+            }));
         }
 
         //-------------------------------------------
@@ -576,8 +643,11 @@ namespace TerrainEngine
             {
                 //  Prepare UI for terrain loading
                 ShowPauseOptions(false);
-                controller.UpdateState(TerrainController.TerrainState.UserAborted);
-                TerrainController.RunCoroutine(WaitForTerrainAborted(AbortReason.Teleport));
+                TerrainController.Get().UpdateState(TerrainController.TerrainState.UserAborted);
+                StartCoroutine(WaitForTerrainAborted(() =>
+                {
+                    ReloadAndTeleport();
+                }));
             }
         }
 

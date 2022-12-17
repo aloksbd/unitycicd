@@ -50,7 +50,12 @@ public class WelcomeUIController : MonoBehaviour
 
     void elevatorButtonPressed()
     {
-        SceneObject.Get().ActiveMode = SceneObject.Mode.Elevator;
+        ElevatorController.EnterElevator(
+            null,   //  TODO: Elevator wall gameObject
+            40,     //  number of floors not counting roof
+            18,     //  zero-based starting floor
+            true,   //  has a lobby as the first floor.
+            true);  //  allow roof access
     }
 
     void SettingsButtonPressed()

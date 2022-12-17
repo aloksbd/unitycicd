@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class WallTransform : ITransformHandler
 {
-    public static List<WallListener> wallListeners = new List<WallListener>();
+    public static Dictionary<GameObject, WallListener> wallListenersList = new Dictionary<GameObject, WallListener>();
     private HarnessEventHandler eventHandler;
     private WallListener _wallListener;
     private LineRenderer _wallRenderer;
@@ -16,7 +16,7 @@ public class WallTransform : ITransformHandler
         this._originalColor = this._wallRenderer.material.color;
 
         _wallListener = new WallListener(go, item as NewWall);
-        wallListeners.Add(_wallListener);
+        wallListenersList.Add(go, _wallListener);
 
         eventHandler = go.GetComponent<HarnessEventHandler>() == null ? go.AddComponent<HarnessEventHandler>() : go.GetComponent<HarnessEventHandler>();
 
@@ -53,8 +53,8 @@ public class WallTransform : ITransformHandler
                 moveDirection = Quaternion.AngleAxis(eventHandler._camera.transform.eulerAngles.z, Vector3.forward) * moveDirection;
                 moveDirection *= eventHandler._camera.orthographicSize / 10.0f;
 
-                var pos = new Vector3(node.Value.nodeGO.transform.position.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY, node.Value.nodeGO.transform.position.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY, -0.2f);
-                node.Value.DragStart(pos);
+                var pos = new Vector3(node.Value.nodeGO.transform.position.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY * Time.deltaTime, node.Value.nodeGO.transform.position.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY * Time.deltaTime, -0.2f);
+                node.Value.NodeDragged(pos);
             }
         }
     }
@@ -66,7 +66,7 @@ public class WallTransform : ITransformHandler
             Highlight();
             foreach (var node in _wallListener.nodes)
             {
-                node.Value.HandleHovered();
+                node.Value.NodeHovered();
             }
         }
     }
@@ -77,7 +77,7 @@ public class WallTransform : ITransformHandler
         RemoveHighlight();
         foreach (var node in _wallListener.nodes)
         {
-            node.Value.HandleExitWall();
+            node.Value.NodeExitWall();
         }
     }
 
@@ -86,16 +86,21 @@ public class WallTransform : ITransformHandler
         HarnessEventHandler.selected = false;
         foreach (var node in _wallListener.nodes)
         {
-            node.Value.HandlReleaseWall();
+            foreach (var wall in wallListenersList)
+            {
+                if (wall.Value.nodes.ContainsValue(node.Value))
+                {
+                    var line = wall.Value.wallGO.GetComponent<LineRenderer>();
+                    var pos0 = line.GetPosition(0);
+                    var pos1 = line.GetPosition(1);
+
+                    float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
+
+                    NewBuildingController.UpdateWallHandle(wall.Value.wallItem.name, pos0, pos1, angle);
+                }
+            }
+            node.Value.NodeReleaseWall();
         }
-        var line = _wallListener.wallGO.GetComponent<LineRenderer>();
-        var pos0 = line.GetPosition(0);
-        var pos1 = line.GetPosition(1);
-
-        float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
-
-        NewBuildingController.UpdateWall(_wallListener.wallItem.name, pos0, pos1, angle);
-
         RemoveHighlight();
     }
 

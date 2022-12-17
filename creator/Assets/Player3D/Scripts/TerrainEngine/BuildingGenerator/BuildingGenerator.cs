@@ -12,22 +12,30 @@ namespace TerrainEngine
 {
     public class BuildingGenerator : MonoBehaviour
     {
-        private const int    LOADING_GRID_CELLS_X = 25;
-        private const int    LOADING_GRID_CELLS_Y = LOADING_GRID_CELLS_X;
-        const float          DEFAULT_BUILDING_HEIGHT = 14f;
+        private const int   LOADING_GRID_CELLS_X = 25;
+        private const int   LOADING_GRID_CELLS_Y = LOADING_GRID_CELLS_X;
+        private const float DEFAULT_BUILDING_HEIGHT = 14f;
 
         //  Configured in Inspector
         [Header("Assets and settings")][Space(5)]
         public TerrainPlayer player;
-        public Material wallMaterial;
-        public Material roofMaterial;
-        public Material pylonMaterial;
+        [Header("Unbuilt (OSM) procedurally generated buildings")]
+        public Material osmWallMaterial;    
+        public Material osmRoofMaterial;
+        public Material osmPylonMaterial;
+        [Header("Work-in-Progress (WIP) procedurally generated buildings")]
+        public Material wipWallMaterial;
+        public Material wipRoofMaterial;
+        public Material wipPylonMaterial;
+        [Space(5)]
+        public bool procedurallyGeneratePartialBuilds = false;
+        public bool procedurallyGeneratePendingApprovals = false;
+        public bool procedurallyGenerateLives = false;
         public bool buidingColliders;
         public float distanceFilter = 0;
 
         // Inspector-based performance monitoring
-        [Header("Download Performance")]
-        [Space(5)]
+        [Header("Download Performance")][Space(5)]
         public int totalDownloadRequests;
         [Space(5)]
         public float latestDownloadTime;
@@ -48,30 +56,45 @@ namespace TerrainEngine
         [Header("Processing activity")][Space(5)]
         public int buildingsToGenerate = 0;
         public int buildingsGenerated = 0;
-        
+
         //  Private members
         //
-        private object              s_datalock = new object();
-        private TerrainController   controller;
-        private RangeGrid           loadingGrid;
+        private object s_datalock = new object();
+        private TerrainController controller;
+        private RangeGrid loadingGrid;
 
-        enum CellTag    
+        //  Building status metadata
+        enum BuildingStatus
         {
-            //  Tags for cells of the building loading grid
-            CellStatus = 0, // value type: CellStatus
+            NotBuilt,
+            UnderConstruction,
+            FloorsCompleted,
+            PendingApproval,
+            Live,
         };
-        
-        enum CellStatus
+
+        struct BuildingStatusInfo
         {
-            //  Values for the CellStatus tag
-            None = 0,
-            ToDownload,
-            Downloading,
-            Processing,
-            Processed
+            public BuildingStatus status;
+            public string description;
+
+            public BuildingStatusInfo(BuildingStatus status, string description)
+            {
+                this.status = status;
+                this.description = description;
+            }
         };
-        
-        private BuildingsInProgress  buildingsInProgress;    // tracks buildings that are already being processed
+
+        private static readonly Dictionary<string, BuildingStatusInfo> s_buildingStatus = new Dictionary<string, BuildingStatusInfo>()
+        {
+            { "NOT_BUILT",          new BuildingStatusInfo(BuildingStatus.NotBuilt,          "Available") },
+            { "UNDER_CONSTRUCTION", new BuildingStatusInfo(BuildingStatus.UnderConstruction, "Under Construction") },
+            { "FLOORS_COMPLETED",   new BuildingStatusInfo(BuildingStatus.FloorsCompleted,   "Partially Built") },
+            { "PENDING_APPROVAL",   new BuildingStatusInfo(BuildingStatus.PendingApproval,   "Pending Approval") },
+            { "LIVE",               new BuildingStatusInfo(BuildingStatus.Live,              "Live") },
+        };
+
+        private BuildingsInProgress  buildingsInProgress;    // buildings currently being processed
 
         //  Game-ready data from which a building is generated
         private class GameReadyBuilding
@@ -86,6 +109,7 @@ namespace TerrainEngine
             public float            baseHeight;        
             public ProceduralBuilding.RoofType roofType;
             public float            roofHeight;
+            public BuildingStatusInfo statusInfo;
         };
         Dictionary<string, GameReadyBuilding> gameReadyBuildingData;
 
@@ -105,15 +129,11 @@ namespace TerrainEngine
             TerrainController.OnTerrainStateChanged += OnTerrainStateChanged;
         }
 
-        // Start is called before the first frame update
-        void Start()
+        public bool TryGetBuildingByID(string id, int iGeometry, out GameObject gameObject)
         {
-        }
+            string buildingObjectID = String.Format("{0}[{1}]", id, iGeometry);
 
-        // Update is called once per frame
-        void Update()
-        {
-            //  Todo: load additional buildings based on player travel.
+            return buildingGameObjects.TryGetValue(buildingObjectID, out gameObject);
         }
 
         //--------------------------------------------------------------------------------//
@@ -439,6 +459,13 @@ namespace TerrainEngine
                 buildingsInProgress.Add(buildingObjectID);
             }
 
+            //  Reject if we shouldn't procedurally generate this building
+            BuildingStatusInfo statusInfo;
+            if (!ShouldProcedurallyGeneratForStatus(buildingData.status, out statusInfo))
+            {
+                return null;
+            }
+
             //  Reject if fewer than three vertices
             List<List<float>> buildingFootprint = buildingData.geometry.coordinates[iGeometry];
             if (buildingFootprint.Count < 3)
@@ -580,8 +607,44 @@ namespace TerrainEngine
                 localCenterPt    = localCenterPt,
                 localVertices    = worldVertices.Select(p => p - localCenterPt).ToArray(),
                 roofType         = ProceduralBuilding.RoofType.flat,
-                roofHeight       = 0
+                roofHeight       = 0,
+                statusInfo       = statusInfo
             };
+        }
+
+        [RuntimeAsync("ShouldProcedurallyGeneratForStatus")]
+        private bool ShouldProcedurallyGeneratForStatus(string statusKey, out BuildingStatusInfo info)
+        {
+#if false
+            //  Randomized status values for dev-testing
+            string[] testvalues = new string[]
+            {
+                "NOT_BUILT",
+                "UNDER_CONSTRUCTION",
+                "FLOORS_COMPLETED",  
+                "PENDING_APPROVAL",  
+                "LIVE"
+            };
+            statusKey = testvalues[new System.Random().Next(0, testvalues.Length - 1)];
+#endif 
+
+            if (s_buildingStatus.TryGetValue(statusKey, out info))
+            {
+                switch (info.status)
+                {
+                    case BuildingStatus.NotBuilt:
+                        return true;
+                    case BuildingStatus.UnderConstruction:
+                    case BuildingStatus.FloorsCompleted:
+                        return procedurallyGeneratePartialBuilds;
+                    case BuildingStatus.PendingApproval:
+                        return procedurallyGeneratePendingApprovals;
+                    case BuildingStatus.Live:
+                        return procedurallyGenerateLives;
+                }
+            }
+            Trace.Warning("BuildingGenerator: missing or invalid status value '{0]'", statusKey);
+            return false;
         }
 
         public static float Angle2D(Vector3 point1, Vector3 point2)
@@ -634,7 +697,6 @@ namespace TerrainEngine
 
             return Vector3.Cross(side1, side2).y <= 0;
         }
-
 
         //--------------------------------------------------------------------------------//
         //  Main thread processing
@@ -745,17 +807,28 @@ namespace TerrainEngine
             //  Create mesh and add material
             proceduralBuilding.id = building.buildingObjectId;
             proceduralBuilding.buildingData = building.buildingData;
+            proceduralBuilding.statusDescription = building.statusInfo.description;
             proceduralBuilding.baseHeight = building.baseHeight;
             proceduralBuilding.worldFootprint = building.worldVertices.ToArray();
             proceduralBuilding.localFootprint = building.localVertices;
             proceduralBuilding.roofHeight = building.roofHeight;
             proceduralBuilding.roofType = building.roofType;
             proceduralBuilding.generateWall = true;
-            proceduralBuilding.wallMaterial = wallMaterial;
-            proceduralBuilding.roofMaterial = roofMaterial;
-            proceduralBuilding.pylonMaterial = pylonMaterial;
-            proceduralBuilding.pylonsTransformParent = pylonsTransformParent;
 
+            if (building.statusInfo.status == BuildingStatus.NotBuilt)
+            {
+                proceduralBuilding.wallMaterial  = osmWallMaterial;
+                proceduralBuilding.roofMaterial  = osmWallMaterial;
+                proceduralBuilding.pylonMaterial = osmPylonMaterial;
+            }
+            else
+            {
+                proceduralBuilding.wallMaterial  = wipWallMaterial;
+                proceduralBuilding.roofMaterial  = wipRoofMaterial;
+                proceduralBuilding.pylonMaterial = wipPylonMaterial;
+            }
+
+            proceduralBuilding.pylonsTransformParent = pylonsTransformParent;
             proceduralBuilding.Generate(buidingColliders);
             return true;
         }

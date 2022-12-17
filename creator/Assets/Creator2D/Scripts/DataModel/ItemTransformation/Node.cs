@@ -7,18 +7,18 @@ public class Node
     public static Dictionary<GameObject, Node> allNodeList = new Dictionary<GameObject, Node>();
     public HarnessEventHandler eventHandler;
     public Action<Node, GameObject> onNodeHovered;
-    public Action<Node> onNodeExit;
-    public Action<Vector3, Node, GameObject> onNodeDrag;
-    public Action<Node> onNodeReleased;
+    public Action<Node, GameObject> onNodeExit;
+    public Action<Vector3, Node> onNodeDrag;
+    public Action<Node, GameObject> onNodeReleased;
+    public Action<Node> onNodeClicked;
     public GameObject nodeGO;
     private Renderer _renderer;
     private Color _originalColor;
     private LayerMask _layerMask;
-    public bool _isMoving = false;
 
     public Node(int index, GameObject parentGO)
     {
-        this.nodeGO = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        this.nodeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         var wallRenderer = parentGO.GetComponent<LineRenderer>();
         var points = wallRenderer.GetPosition(index);
@@ -29,60 +29,74 @@ public class Node
         this._originalColor = HarnessConstant.DEFAULT_NODE_COLOR;
 
         this.nodeGO.transform.SetParent(parentGO.transform);
+
         this.nodeGO.tag = "Node";
         this.nodeGO.layer = LayerMask.NameToLayer("Node");
-        this.nodeGO.transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
+        this._layerMask.value = 1 << this.nodeGO.layer;
+
         this.nodeGO.transform.localScale = new Vector3((wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, (wallRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, 0.05f);
+        this.nodeGO.transform.position = new Vector3(points.x, points.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
         this.nodeGO.name = $"{index}_{parentGO.name}_{ObjectName.RESIZE_HARNESS}";
         this.nodeGO.transform.rotation = new Quaternion(0, 0, 0, 0);
 
         allNodeList.Add(this.nodeGO, this);
-
-        eventHandler = this.nodeGO.GetComponent<HarnessEventHandler>() == null ? this.nodeGO.AddComponent<HarnessEventHandler>() : this.nodeGO.GetComponent<HarnessEventHandler>();
-        eventHandler.mouseHover += HandleHovered;
-        eventHandler.mouseExit += HandleExit;
-        eventHandler.drag += DragStart;
-        eventHandler.mouseUp += HandleReleased;
-
-        this._layerMask.value = 1 << this.nodeGO.layer;
+        RegisterEvents();
     }
 
-    public void HandleHovered()
+    private void RegisterEvents()
+    {
+        eventHandler = this.nodeGO.GetComponent<HarnessEventHandler>() == null ? this.nodeGO.AddComponent<HarnessEventHandler>() : this.nodeGO.GetComponent<HarnessEventHandler>();
+        eventHandler.mouseHover += NodeHovered;
+        eventHandler.mouseExit += NodeExit;
+        eventHandler.drag += NodeDragged;
+        eventHandler.mouseUp += NodeReleased;
+        eventHandler.mouseClicked += NodeClicked;
+    }
+
+    public void NodeClicked()
+    {
+        onNodeClicked?.Invoke(this);
+        eventHandler.OnMouseExit();
+    }
+
+    public void NodeHovered()
     {
         HighLight();
-        GameObject attachableTo = CheckCast();
+        GameObject attachableTo = CheckNodeOverlap();
         onNodeHovered?.Invoke(this, attachableTo);
     }
 
-    public void DragStart(Vector3 data)
+    public void NodeDragged(Vector3 data)
     {
-        CheckCast();
-        GameObject attachableTo = CheckCast();
         if (eventHandler.isInsideCanvas())
-            onNodeDrag?.Invoke(data, this, attachableTo);
+            onNodeDrag?.Invoke(data, this);
     }
 
-    public void HandleExit()
+    public void NodeExit()
     {
+        GameObject attachableTo = CheckNodeOverlap();
+
         RemoveHighLight();
-        onNodeExit?.Invoke(this);
+        onNodeExit?.Invoke(this, attachableTo);
     }
 
-    public void HandleExitWall()
-    {
-        RemoveHighLight();
-    }
-
-    public void HandlReleaseWall()
+    public void NodeExitWall()
     {
         RemoveHighLight();
     }
 
-    public void HandleReleased()
+    public void NodeReleaseWall()
     {
         RemoveHighLight();
-        onNodeReleased?.Invoke(this);
-        AdjustAttachedObjects();
+    }
+
+    public void NodeReleased()
+    {
+        RemoveHighLight();
+        GameObject attachableTo = CheckNodeOverlap();
+
+        onNodeReleased?.Invoke(this, attachableTo);
+        //AdjustAttachedObjects();
     }
 
     public void AdjustAttachedObjects()
@@ -90,7 +104,6 @@ public class Node
         var parent = this.nodeGO.transform.parent;
         var wall = parent.GetComponent<LineRenderer>();
         var bound = wall.bounds;
-        Trace.Log($"AdjustAttachedObjects :: {parent.childCount}");
 
         for (int i = 2; i < parent.childCount; i++)
         {
@@ -110,26 +123,10 @@ public class Node
         }
     }
 
-    public GameObject IsAttachableTo()
-    {
-        RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, _layerMask, QueryTriggerInteraction.Collide))
-        {
-            if (hit.collider.tag == "Node")
-            {
-                if (hit.collider.name != this.nodeGO.name)
-                {
-                    return hit.collider.gameObject;
-                }
-            }
-        }
-        return null;
-    }
-
-    public GameObject CheckCast()
+    public GameObject CheckNodeOverlap()
     {
         Collider[] hitColliders = Physics.OverlapBox(this.nodeGO.transform.position, this.nodeGO.transform.localScale, Quaternion.identity, _layerMask, QueryTriggerInteraction.Collide);
+
         if (hitColliders.Length > 0)
         {
             foreach (var hit in hitColliders)

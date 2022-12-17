@@ -23,7 +23,7 @@ public class CreatorEventManager : MonoBehaviour
         BuildingCanvas = SceneObject.Find(SceneObject.Mode.Creator, ObjectName.BUILDING_CANVAS);
     }
 
-    private bool _lineRender = false;
+    public static bool _lineRender = false;
     private bool _canvasDrag = false;
     private GameObject _lineRendererGO;
     private Vector3 _lineRenderStartPosition;
@@ -89,7 +89,7 @@ public class CreatorEventManager : MonoBehaviour
                             if (_CheckCanDropOnWall(ray, hitInfo))
                             {
                                 CreatorItem item = CreatorItemFinder.FindItemWithGameObject(hitInfo.transform.gameObject);
-                                NewBuildingController.CreateDoor(item.name, hitInfo.point);
+                                NewBuildingController.CreateDoor(item.name, new Vector3(hitInfo.point.x, hitInfo.point.y, 0), buildingInventoryController.currentBlock.BlockSprite);
                             }
                         }
                         else if (buildingInventoryController.currentBlock.AssetType == "Window")
@@ -97,7 +97,7 @@ public class CreatorEventManager : MonoBehaviour
                             if (_CheckCanDropOnWall(ray, hitInfo))
                             {
                                 CreatorItem item = CreatorItemFinder.FindItemWithGameObject(hitInfo.transform.gameObject);
-                                NewBuildingController.CreateWindow(item.name, new Vector3(hitInfo.point.x, hitInfo.point.y, 0));
+                                NewBuildingController.CreateWindow(item.name, new Vector3(hitInfo.point.x, hitInfo.point.y, 0), buildingInventoryController.currentBlock.BlockSprite);
                             }
                         }
                     }
@@ -300,6 +300,10 @@ public class CreatorEventManager : MonoBehaviour
             if (hitInfo.transform.tag == WHConstants.METABLOCK)
             {
                 CreatorItem item = CreatorItemFinder.FindItemWithGameObject(hitInfo.transform.gameObject);
+                if (item is NewWall)
+                {
+                    NewBuildingController.DetachAndDeleteNode(item.name);
+                }
                 NewBuildingController.DeleteItem(item.name);
             }
         }

@@ -213,46 +213,123 @@ class WHFbxImporter2D : System.IDisposable
     public void ProcessNode(FbxNode fbxNode, CreatorItem parentItem)
     {
         string name = fbxNode.GetName();
-        Debug.Log("Node Name::: " + name);
+
+        if (name.Contains("Clone")) return;
 
         GameObject unityGo = new GameObject(name);
 
+        ProcessTransform(fbxNode, unityGo);
         ProcessMesh(fbxNode, unityGo);
-        // NumNodes++;
         CreatorItem currentItem = null;
 
         if (name.Contains("FloorPlan"))
         {
             currentItem = new CreatorFloorPlanFactory().Create(name);
-            // NewBuildingController.CreateFloorPlan();
+            parentItem.AddChild(currentItem);
+            var floorPlan = NewBuildingController.CurrentFloorPlan();
+            var setFloorPlanCommand = new SetCurrentFloorPlanCommand(name, floorPlan != null ? floorPlan.name : "", true);
+            setFloorPlanCommand.Execute();
         }
         else if (name.Contains("Floor"))
         {
             currentItem = new CreatorFloorFactory().Create(name);
-            // NewBuildingController.CreateFloor();
+            parentItem.AddChild(currentItem);
         }
         else if (name.Contains("Wall"))
         {
-            currentItem = new CreatorWallFactory(new Vector3(0, 0, -0.2f), new Vector3(unityGo.GetComponent<Renderer>().bounds.size.x
-            , unityGo.GetComponent<Renderer>().bounds.size.y, -0.2f)).Create(name);
+            var pos = unityGo.transform.position;
+            var endX = pos.x + unityGo.GetComponent<Renderer>().localBounds.size.x * MathF.Cos((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
+            var endY = pos.z + unityGo.GetComponent<Renderer>().localBounds.size.x * MathF.Sin((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
+            currentItem = new CreatorWallFactory(new Vector3(pos.x, pos.z, -0.2f), new Vector3(endX, endY, -0.2f)).Create(name);
+            parentItem.AddChild(currentItem);
+        }
+        else if (name.Contains("Door") || name.Contains("Window"))
+        {
+            var pos = unityGo.transform.position;
+            Sprite sprite = name.Contains("Door") ? Resources.Load<Sprite>("Sprites/Door") : Resources.Load<Sprite>("Sprites/Window");
+            currentItem = name.Contains("Door") ? new CreatorDoorFactory(parentItem, new Vector3(pos.x + parentItem.gameObject.transform.position.x, parentItem.gameObject.transform.position.y, -0.2f), sprite).Create(name) : new CreatorWindowFactory(parentItem, new Vector3(pos.x + parentItem.gameObject.transform.position.x, parentItem.gameObject.transform.position.y, -0.2f), sprite).Create(name);
+            parentItem.AddChild(currentItem);
+            currentItem.gameObject.transform.localPosition = new Vector3(unityGo.transform.position.x, 0.0f, -0.2f);
         }
         else if (name.Contains(ObjectName.CREATOR_BUILDING))
         {
             currentItem = new CreatorBuildingFactory().Create();
             NewBuildingController.SetBuilding(currentItem);
         }
-        if (parentItem != null && currentItem != null)
-        {
-            currentItem.gameObject.transform.position = unityGo.transform.position;
-            parentItem.AddChild(currentItem);
-        }
-
 
         for (int i = 0; i < fbxNode.GetChildCount(); ++i)
         {
             ProcessNode(fbxNode.GetChild(i), currentItem);
         }
         UnityEngine.Object.Destroy(unityGo);
+    }
+
+    /// <summary>
+    /// Process transformation data and setup Transform component
+    /// </summary>
+    private void ProcessTransform(FbxNode fbxNode, GameObject unityGo)
+    {
+        // Construct rotation matrices
+        FbxVector4 fbxRotation = new FbxVector4(fbxNode.LclRotation.Get());
+        FbxAMatrix fbxRotationM = new FbxAMatrix();
+        fbxRotationM.SetR(fbxRotation);
+
+        FbxVector4 fbxPreRotation = new FbxVector4(fbxNode.GetPreRotation(FbxNode.EPivotSet.eSourcePivot));
+        FbxAMatrix fbxPreRotationM = new FbxAMatrix();
+        fbxPreRotationM.SetR(fbxPreRotation);
+
+        FbxVector4 fbxPostRotation = new FbxVector4(fbxNode.GetPostRotation(FbxNode.EPivotSet.eSourcePivot));
+        FbxAMatrix fbxPostRotationM = new FbxAMatrix();
+        fbxPostRotationM.SetR(fbxPostRotation);
+
+        // Construct translation matrix
+        FbxAMatrix fbxTranslationM = new FbxAMatrix();
+        FbxVector4 fbxTranslation = new FbxVector4(fbxNode.LclTranslation.Get());
+        fbxTranslationM.SetT(fbxTranslation);
+
+        // Construct scaling matrix
+        FbxAMatrix fbxScalingM = new FbxAMatrix();
+        FbxVector4 fbxScaling = new FbxVector4(fbxNode.LclScaling.Get());
+        fbxScalingM.SetS(fbxScaling);
+
+        // Construct offset and pivot matrices
+        FbxAMatrix fbxRotationOffsetM = new FbxAMatrix();
+        FbxVector4 fbxRotationOffset = fbxNode.GetRotationOffset(FbxNode.EPivotSet.eSourcePivot);
+        fbxRotationOffsetM.SetT(fbxRotationOffset);
+
+        FbxAMatrix fbxRotationPivotM = new FbxAMatrix();
+        FbxVector4 fbxRotationPivot = fbxNode.GetRotationPivot(FbxNode.EPivotSet.eSourcePivot);
+        fbxRotationPivotM.SetT(fbxRotationPivot);
+
+        FbxAMatrix fbxScalingOffsetM = new FbxAMatrix();
+        FbxVector4 fbxScalingOffset = fbxNode.GetScalingOffset(FbxNode.EPivotSet.eSourcePivot);
+        fbxScalingOffsetM.SetT(fbxScalingOffset);
+
+        FbxAMatrix fbxScalingPivotM = new FbxAMatrix();
+        FbxVector4 fbxScalingPivot = fbxNode.GetScalingPivot(FbxNode.EPivotSet.eSourcePivot);
+        fbxScalingPivotM.SetT(fbxScalingPivot);
+
+        FbxAMatrix fbxTransform =
+            fbxTranslationM *
+            fbxRotationOffsetM *
+            fbxRotationPivotM *
+            fbxPreRotationM *
+            fbxRotationM *
+            fbxPostRotationM *
+            fbxRotationPivotM.Inverse() *
+            fbxScalingOffsetM *
+            fbxScalingPivotM *
+            fbxScalingM *
+            fbxScalingPivotM.Inverse();
+
+        FbxVector4 lclTrs = fbxTransform.GetT();
+        FbxQuaternion lclRot = fbxTransform.GetQ();
+        FbxVector4 lclScl = fbxTransform.GetS();
+
+        unityGo.transform.localPosition = new Vector3(-(float)lclTrs[0], (float)lclTrs[1], (float)lclTrs[2]);
+        unityGo.transform.localRotation = new Quaternion((float)lclRot[0], -(float)lclRot[1], -(float)lclRot[2], (float)lclRot[3]);
+        unityGo.transform.localScale = new Vector3((float)lclScl[0], (float)lclScl[1], (float)lclScl[2]);
+
     }
 
     /// <summary>
@@ -280,7 +357,7 @@ class WHFbxImporter2D : System.IDisposable
             Debug.Assert(fbxVector4.Y <= float.MaxValue && fbxVector4.Y >= float.MinValue);
             Debug.Assert(fbxVector4.Z <= float.MaxValue && fbxVector4.Z >= float.MinValue);
 
-            unityVertices.Add(new Vector3((float)fbxVector4.X, (float)fbxVector4.Z, (float)fbxVector4.Y));
+            unityVertices.Add(new Vector3(-(float)fbxVector4.X, (float)fbxVector4.Z, (float)fbxVector4.Y));
         }
 
         // transfer triangles

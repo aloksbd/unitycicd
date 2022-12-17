@@ -37,6 +37,7 @@ namespace TerrainEngine
         public Vector2 tileSize                 // material tile size
             = new Vector2(30, 30); 
         public Vector2 uvOffset = Vector2.zero;
+        public string statusDescription;        
 
         private float _startHeight = 0;
         private Vector3 _scale = new Vector3(1.0f, 1.0f, 1.0f);
@@ -321,7 +322,7 @@ namespace TerrainEngine
                 }
 
                 GameObject pylon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                pylon.name = "pylon";
+                pylon.name = id;
                 pylon.transform.parent = pylonsTransformParent;
                 pylon.transform.position = new Vector3(vertex.x, baseHeight / 2.0f + transform.position.y, vertex.z);
                 pylon.transform.localScale = new Vector3(.25f, baseHeight / PYLON_PRIMITIVE_HEIGHT, .25f);
@@ -409,7 +410,7 @@ namespace TerrainEngine
             else
             {
                 mesh = new Mesh();
-                mesh.name = "Building_" + id;
+                mesh.name = id;
                 mesh.subMeshCount = 2;
                 meshFilter.sharedMesh = mesh;
             }

@@ -184,7 +184,7 @@ public class NewBuildingController
         }
     }
 
-    public static void UpdateWallHandle(string ItemName, Dictionary<int, Node> nodes, Vector3 pos0, Vector3 pos1, float angle)
+    public static void UpdateWallHandle(string ItemName, Vector3 pos0, Vector3 pos1, float angle)
     {
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
         foreach (CreatorItem floorPlanItem in linkedFloors)
@@ -204,7 +204,9 @@ public class NewBuildingController
             parentItem.gameObject.transform.position = pos0;
             parentItem.gameObject.transform.eulerAngles = new Vector3(0, 0, angle);
 
-            foreach (var n in nodes)
+            WallListener wall = WallTransform.wallListenersList[parentItem.gameObject];
+
+            foreach (var n in wall.nodes)
             {
                 var points = wallRenderer.GetPosition(n.Key);
 
@@ -242,7 +244,7 @@ public class NewBuildingController
         DeselectAll();
     }
 
-    public static void CreateDoor(string wallName, Vector3 startPosition)
+    public static void CreateDoor(string wallName, Vector3 startPosition, UnityEngine.Sprite sprite)
     {
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
         foreach (CreatorItem floorPlanItem in linkedFloors)
@@ -250,18 +252,18 @@ public class NewBuildingController
             CreatorItem parentItem = CreatorItemFinder.FindByName(wallName, floorPlanItem);
             string name = NamingController.GetName("Door", parentItem.uiItem.Foldout.Children());
 
-            var createCommand = new CreatorItemCreateCommand(new CreatorDoorFactory(parentItem, startPosition), name);
+            var createCommand = new CreatorItemCreateCommand(new CreatorDoorFactory(parentItem, startPosition, sprite), name);
             var createAndAddParentCommand = new CreateCreatorItemWithParentCommand(createCommand, parentItem.Id);
             var multiCommand = new MultipleCommand(new List<ICommand>() { createAndAddParentCommand });
             NewUndoRedo.AddAndExecuteCommand(multiCommand);
 
             var position = createCommand.createdItem.gameObject.transform.localPosition;
-            createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, 0);
+            createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, -0.2f);
         }
         DeselectAll();
     }
 
-    public static void CreateWindow(string wallName, Vector3 startPosition)
+    public static void CreateWindow(string wallName, Vector3 startPosition, UnityEngine.Sprite sprite)
     {
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
         foreach (CreatorItem floorPlanItem in linkedFloors)
@@ -269,13 +271,13 @@ public class NewBuildingController
             CreatorItem parentItem = CreatorItemFinder.FindByName(wallName, floorPlanItem);
             string name = NamingController.GetName("Window", parentItem.uiItem.Foldout.Children());
 
-            var createCommand = new CreatorItemCreateCommand(new CreatorWindowFactory(parentItem, startPosition), name);
+            var createCommand = new CreatorItemCreateCommand(new CreatorWindowFactory(parentItem, startPosition, sprite), name);
             var createAndAddParentCommand = new CreateCreatorItemWithParentCommand(createCommand, parentItem.Id);
             var multiCommand = new MultipleCommand(new List<ICommand>() { createAndAddParentCommand });
             NewUndoRedo.AddAndExecuteCommand(multiCommand);
 
             var position = createCommand.createdItem.gameObject.transform.localPosition;
-            createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, 0);
+            createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, -0.2f);
         }
         DeselectAll();
     }
@@ -285,6 +287,38 @@ public class NewBuildingController
         var deleteCommand = new DeleteItemCommand(floorPlanName, true);
         deleteCommand.Execute();
         evt.StopPropagation();
+    }
+
+    public static void DetachNodes(string itemName, int key)
+    {
+        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        foreach (CreatorItem floorPlanItem in linkedFloors)
+        {
+            CreatorItem parentItem = CreatorItemFinder.FindByName(itemName, floorPlanItem);
+            WallListener wall = WallTransform.wallListenersList[parentItem.gameObject];
+
+            Node.allNodeList.Remove(wall.nodes[key].nodeGO);
+            GameObject.Destroy(wall.nodes[key].nodeGO);
+
+            Node newnode = new Node(key, wall.wallGO);
+            wall.nodes[key] = newnode;
+            wall.UpdateNodeListner(newnode);
+        }
+    }
+    public static void DetachAndDeleteNode(string itemName)
+    {
+        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        foreach (CreatorItem floorPlanItem in linkedFloors)
+        {
+            CreatorItem parentItem = CreatorItemFinder.FindByName(itemName, floorPlanItem);
+            WallListener wall = WallTransform.wallListenersList[parentItem.gameObject];
+
+            //This will trigger an event on the node which notifies all its listner
+
+            Trace.Log($"Deleting {parentItem.name}");
+            wall.nodes[0].NodeClicked();
+            wall.nodes[1].NodeClicked();
+        }
     }
 
     public static void DeleteItem(string itemName)

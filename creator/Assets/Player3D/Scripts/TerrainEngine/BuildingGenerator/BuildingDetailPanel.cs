@@ -51,12 +51,6 @@ public class BuildingDetailPanel : MonoBehaviour
         { Key.Status,   new KeyInfo("Status") },
     };
 
-    private static readonly Dictionary<string, string> s_statusInfo = new Dictionary<string, string>()
-    {
-        { "NOT_BUILT",   "Available" },
-        //  todo: add all possible statuses
-    };
-
     private void InitMetrics(GameObject detailItemObj)
     {
         itemSize = detailItemObj.GetComponent<RectTransform>().sizeDelta;
@@ -64,12 +58,14 @@ public class BuildingDetailPanel : MonoBehaviour
         padding = layoutGroup.padding.bottom;
     }
 
-    public void Populate(ref OsmBuildingData data)
+    public void Populate(ref TerrainEngine.ProceduralBuilding pb)
     {
         Clear();
 
         if (isOn)
         {
+            OsmBuildingData data = pb.buildingData;
+
             string value;
 
             if (!Empty(data.details.name))
@@ -89,12 +85,9 @@ public class BuildingDetailPanel : MonoBehaviour
                 AddItem(Key.Height, String.Format("{0}m", value));
             }
 
-            if (!Empty(data.status))
+            if (!Empty(pb.statusDescription))
             {
-                if (s_statusInfo.TryGetValue(data.status, out value))
-                {
-                    AddItem(Key.Status, value);
-                }
+                AddItem(Key.Status, pb.statusDescription);
             }
             DoLayout();
         }
@@ -187,7 +180,7 @@ public class BuildingDetailPanel : MonoBehaviour
             TerrainEngine.ProceduralBuilding pb = gameObjectHit.GetComponent<TerrainEngine.ProceduralBuilding>();
             if (pb != null)
             {
-                Populate(ref pb.buildingData);
+                Populate(ref pb);
             }
         }
         return false;
