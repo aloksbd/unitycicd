@@ -151,16 +151,16 @@ jobs:
           buildMethod: Earth9Builder.BuildScript.BuildPlay
       
 
-#       - name: Build Admin for Mac
-#         uses: game-ci/unity-builder@v2
-#         env:
-#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#         with:
-#           projectPath: ${{ matrix.projectPath }}
-#           targetPlatform: StandaloneOSX
-#           buildMethod: Earth9Builder.BuildScript.BuildAdmin
+      - name: Build Testing for Mac
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          targetPlatform: StandaloneOSX
+          buildMethod: Earth9Builder.BuildScript.BuildTestingPlay
 
       - name: Codesign Play mode app bundle
         # Extract the secrets we defined earlier as environment variables
@@ -197,6 +197,25 @@ jobs:
           
           /usr/bin/codesign --deep --force --verify --verbose --timestamp --options runtime --entitlements "Earth9.entitlements" --sign "$MACOS_CERTIFICATE_NAME" "creator/build/mac/earth9/earth9.app"
           
+          #
+          #
+          #
+          
+          echo
+          find ./creator/build/mac/earth9-testing/earth9-testing.app/Contents/Plugins/FFmpegEncoder.bundle -name "*.meta" -delete
+          
+          chmod -R a+xr "creator/build/mac/earth9-testing/earth9-testing.app/Contents/Plugins/FFmpegEncoder.bundle"
+          /usr/bin/codesign --deep --force --verify --verbose --timestamp --options runtime --sign "$MACOS_CERTIFICATE_NAME" "creator/build/mac/earth9-testing/earth9-testing.app/Contents/Plugins/FFmpegEncoder.bundle"
+          
+          find ./creator/build/mac/earth9-testing/earth9-testing.app/Contents/Plugins/UnityFbxSdkNative.bundle -name "*.meta" -delete
+          
+          chmod -R a+xr "creator/build/mac/earth9-testing/earth9-testing.app/Contents/Plugins/UnityFbxSdkNative.bundle"
+          /usr/bin/codesign --deep --force --verify --verbose --timestamp --options runtime --sign "$MACOS_CERTIFICATE_NAME" "creator/build/mac/earth9-testing/earth9-testing.app/Contents/Plugins/UnityFbxSdkNative.bundle"
+    
+          chmod -R a+xr "creator/build/mac/earth9-testing/earth9-testing.app"
+          
+          /usr/bin/codesign --deep --force --verify --verbose --timestamp --options runtime --entitlements "Earth9.entitlements" --sign "$MACOS_CERTIFICATE_NAME" "creator/build/mac/earth9-testing/earth9-testing.app"
+          
           
       - name: "Notarize Play mode app bundle"
         # Extract the secrets we defined earlier as environment variables
@@ -225,12 +244,36 @@ jobs:
           echo "Attach staple"
           xcrun stapler staple "creator/build/mac/earth9/earth9.app"
           
+          #
+          #
+          #
+          #
+          
+           echo "Creating temp notarization archive"
+          ditto -c -k --keepParent "creator/build/mac/earth9-testing/earth9-testing.app" "earth9-testing.zip"
+          # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+          # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
+          # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
+          # you're curious
+          echo "Notarize app"
+          xcrun notarytool submit "earth9-testing.zip" --keychain-profile "notarytool-profile" --wait
+          # Finally, we need to "attach the staple" to our executable, which will allow our app to be
+          # validated by macOS even when an internet connection is not available.
+          echo "Attach staple"
+          xcrun stapler staple "creator/build/mac/earth9-testing/earth9-testing.app"
+          
       - name: Building the installer
         run: |
           brew install create-dmg
-          create-dmg --volname "Earth9 installer" --background "installer_background.png" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/mac/earth9/earth9.app" 200 190 --app-drop-link 600 185 --eula "license.rtf" "earth9.dmg" "creator/build/mac/earth9/earth9.app"
+          create-dmg --volname "Earth9 installer" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/mac/earth9/earth9.app" 200 190 --app-drop-link 600 185 --eula "license.rtf" "earth9.dmg" "creator/build/mac/earth9/earth9.app"
+          create-dmg --volname "Earth9 installer" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/mac/earth9-testing/earth9-testing.app" 200 190 --app-drop-link 600 185 --eula "license.rtf" "earth9-testing.dmg" "creator/build/mac/earth9-testing/earth9-testing.app"
       - uses: actions/upload-artifact@v2
         with:
           name: Setup-Mac-Play-${{ steps.date.outputs.date }}
           path: earth9.dmg
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Setup-Mac-Testing-${{ steps.date.outputs.date }}
+          path: earth9-testing.dmg
 
