@@ -161,6 +161,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           targetPlatform: StandaloneOSX
           buildMethod: Earth9Builder.BuildScript.BuildTestingPlay
+          allowDirtyBuild: true
 
       - name: Codesign Play mode app bundle
         # Extract the secrets we defined earlier as environment variables
