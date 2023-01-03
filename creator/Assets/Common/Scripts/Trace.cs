@@ -12,16 +12,11 @@ public class Trace
 
     public class Config
     {
-        public bool enabled;
-        public bool includeTimeStamp; 
+        public bool   enabled = true;
+        public string logFileNameNoExtension = null;
+        public bool   includeTimeStamp = true;
 
-        public Config( 
-            bool enabled_ = true, 
-            bool includeTimestamp_ = true)
-        {
-            enabled = enabled_;
-            includeTimeStamp = includeTimestamp_;
-        }
+        public StreamWriter streamWriter { get; set; }
     };
 
     public static void Log(string format, params object[] args)
@@ -35,13 +30,26 @@ public class Trace
         {
             if (config != null && config.enabled)
             {
-                if (config.includeTimeStamp)
+                if (config.logFileNameNoExtension != null && config.logFileNameNoExtension != "" &&
+                    config.streamWriter == null)
                 {
-                    Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "[" + System.DateTime.Now.ToString("T") + "] " + format, args);
+                    string fullPath;
+                    if (TryGetLogFileFileFullPath(config.logFileNameNoExtension, out fullPath))
+                    {
+                        config.streamWriter = new StreamWriter(fullPath);
+                    }
                 }
-                else
+
+                string fmt = (config.includeTimeStamp) ?
+                    "[" + System.DateTime.Now.ToString("T") + "] " + format :
+                    format;
+
+                Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, fmt, args);
+
+                if (config.streamWriter != null)
                 {
-                    Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, format, args);
+                    config.streamWriter.Write(String.Format(fmt, args) + config.streamWriter.NewLine);
+                    config.streamWriter.Flush();
                 }
             }
         }
@@ -95,25 +103,44 @@ public class Trace
         }
     }
 
-    public static void LogToFile(string filenameNoExtension, params object[] args)
+    public static bool TryGetLogFileFileFullPath(string filenameNoExtension, out string filePath)
     {
+        filePath = null;
         string pathNoFileName = Path.GetTempPath() + COMPANY_SUBFOLDER + LOG_SUBFOLDER;
         string pathNoExtension = pathNoFileName + filenameNoExtension;
         string path = pathNoExtension + LOG_EXTENSION;
 
         int iTemp = 0;
-        while (File.Exists(path))
+        try
         {
-            iTemp++;
-            path = String.Format(pathNoExtension + LOG_TEMPLATE_EXTENSIION, iTemp);
+            while (File.Exists(path))
+            {
+                iTemp++;
+                path = String.Format(pathNoExtension + LOG_TEMPLATE_EXTENSIION, iTemp);
+            }
+
+            if (!Directory.Exists(pathNoFileName))
+            {
+                Directory.CreateDirectory(pathNoFileName);
+            }
+        }
+        catch
+        {
+            return false;
+        }
+        filePath = path;
+        return true;
+    }
+
+    public static void LogTextToFile(string filenameNoExtension, params object[] args)
+    {
+        string filePath;
+        if (!TryGetLogFileFileFullPath(filenameNoExtension, out filePath))
+        {
+            return;
         }
 
-        if (!Directory.Exists(pathNoFileName))
-        {
-            Directory.CreateDirectory(pathNoFileName);
-        }
-
-        using (StreamWriter sw = File.CreateText(path))
+        using (StreamWriter sw = File.CreateText(filePath))
         {
             foreach (string s in args)
             {

@@ -4,19 +4,19 @@
     <Style src="project://database/Assets/Creator2D/UI/uss/TabbedMenu-style.uss?fileID=7433441132597879392&amp;guid=db232a7487577974fa2d0a387b5d355f&amp;type=3#TabbedMenu-style" />
     <Style src="project://database/Assets/Creator2D/UI/uss/Dialog.uss?fileID=7433441132597879392&amp;guid=287b4590f81e34859ba75dc205d99372&amp;type=3#Dialog" />
     <Style src="project://database/Assets/Creator2D/UI/uss/CreatorGrid.uss?fileID=7433441132597879392&amp;guid=b77ed63c911274503a20ba6e60228ed8&amp;type=3#CreatorGrid" />
-    <ui:VisualElement class="row-container top-panel col-xs-12">
+    <ui:VisualElement name="top-menu-panel" class="row-container top-panel col-xs-12">
         <ui:VisualElement class="left-top-panel buttons-container">
-            <ui:Instance template="button-template" name="Copy All" />
-            <ui:Instance template="button-template" name="Content Cut" />
-            <ui:Instance template="button-template" name="Content Paste" />
-            <ui:Instance template="button-template" name="Content Copy" />
-            <ui:Instance template="button-template" name="Rotate Left" />
-            <ui:Instance template="button-template" name="Rotate Right" />
+            <ui:Instance template="button-template" name="Copy All" style="display:none;"/>
+            <ui:Instance template="button-template" name="Content Cut" style="display:none;"/>
+            <ui:Instance template="button-template" name="Content Paste" style="display:none;"/>
+            <ui:Instance template="button-template" name="Content Copy" style="display:none;"/>
+            <ui:Instance template="button-template" name="Rotate Left" style="display:none;"/>
+            <ui:Instance template="button-template" name="Rotate Right" style="display:none;"/>
             <ui:Instance template="button-template" name="Zoom In" />
             <ui:Instance template="button-template" name="Zoom Out" />
-            <ui:Instance template="button-template" name="Grid" />
-            <ui:Instance template="button-template" name="ThreeD Rotation" />
-            <ui:Instance template="button-template" name="Location On" />
+            <ui:Instance template="button-template" name="Grid" style="display:none;"/>
+            <ui:Instance template="button-template" name="ThreeD Rotation" style="display:none;"/>
+            <ui:Instance template="button-template" name="Location On" style="display:none;"/>
         </ui:VisualElement>
         <ui:VisualElement class="right-top-panel buttons-container">
             <ui:Instance template="button-template" name="Notifications" style="display: none;" />
@@ -28,12 +28,10 @@
                 </ui:VisualElement>
                 <ui:Label text="1245" class="label" />
             </ui:VisualElement>
-            <ui:VisualElement class="user-frame">
-                <ui:VisualElement class="avatar-frame grow" style="background-image: resource(&apos;Icons/avatar_icon&apos;);">
-                    <ui:VisualElement class="avatar-icon" style="background-image: url(&apos;project://database/Assets/UI/Resources/Icons/avatar_icon.png?fileID=2800000&amp;guid=615aff00a2287214fb282a51dad67b02&amp;type=3#avatar&apos;);" />
-                </ui:VisualElement>
-                <ui:Label text="Scott Honji" class="avatar-label" />
-                <ui:Button name="dropdown-button" class="dropdown-button" style="background-image: resource(&apos;Icons/dropdown_icon&apos;); background-color: rgb(255, 255, 255); border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;" />
+            <ui:VisualElement name="user-frame" class="user-frame">
+                <ui:VisualElement name="avatar-frame" class="avatar-frame grow" />
+                <ui:Label name="UserName" class="avatar-label" />
+                <ui:VisualElement name="user-dropdown-menu" class="dropdown-menu" />   
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
@@ -63,15 +61,15 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="row-container action-button-panel">
-                <ui:Button display-tooltip-when-elided="true" name="main-menu-button" tooltip="Main Menu" text="Main Menu" class="col-xs-6 meta-button action-button grow border-round bold-font" />
-                <ui:Button display-tooltip-when-elided="true" name="back-to-game-button" tooltip="Explore" text="Explore" class="col-xs-6 meta-button back-to-game-button grow border-round bold-font" />
+                <ui:Button display-tooltip-when-elided="true" name="main-menu-button" tooltip="Main Menu" text="Main Menu" class="col-xs-6 meta-button action-button grow border-round bold-font" style="display: none;" />
+                <ui:Button display-tooltip-when-elided="true" name="back-to-game-button" tooltip="Explore" text="Back To Game" class="col-xs-12 meta-button back-to-game-button grow border-round bold-font" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="main-panel" class="col-xs-10 main-panel" style="height: 100%; display: flex;">
             <ui:VisualElement name="fly-out-button" class="fly-out-frame buttons-container">
                 <ui:Instance template="button-template" name="Selector" />
-                <ui:Instance template="button-template" name="Building Drag" />
-                <ui:Instance template="button-template" name="Video Camera" />
+                <ui:Instance template="button-template" name="Building Drag" style="display:none;"/>
+                <ui:Instance template="button-template" name="Video Camera" style="display:none;"/>
             </ui:VisualElement>
             <ui:VisualElement name="compass-panel" class="compass-panel">
                 <ui:Label tabindex="-1" text="Helloooo" display-tooltip-when-elided="true" name="position-label" />

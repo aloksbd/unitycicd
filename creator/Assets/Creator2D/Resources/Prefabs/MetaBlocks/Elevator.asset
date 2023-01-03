@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Elevator
   m_EditorClassIdentifier: 
   BlockName: Elevator
-  BlockSprite: {fileID: 0}
-  BlockTexture: {fileID: 2800000, guid: 613d9dfc21dff4f08b70b7995f2099cd, type: 3}
+  BlockSprite: {fileID: 21300000, guid: e156d3d6fe0e4144fb552e6b98f32876, type: 3}
+  BlockTexture: {fileID: 2800000, guid: 1655e6fbe2f12d842b9f27ec7a2663c1, type: 3}
   BlockObject: {fileID: 5725210245195512165, guid: f863e3bf0909b184f93a9a5d98d2eb68, type: 3}
   AssetType: Elevator
   CategoryName: Build

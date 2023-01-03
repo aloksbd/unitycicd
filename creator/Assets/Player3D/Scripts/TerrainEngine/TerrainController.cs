@@ -116,21 +116,21 @@ namespace TerrainEngine
         public enum TerrainState
         {
             //  Exclusive states (only one can exist)
-            Unloaded  = 0x00000001,
+            Unloaded = 0x00000001,
             Unloading = 0x00000002,
-            Loading   = 0x00000004,
-            Running   = 0x00000008,
+            Loading = 0x00000004,
+            Running = 0x00000008,
 
             //  Additive states
-            SceneInitialized     = 0x00000100,
-            TexturesGenerated    = 0x00000200,
+            SceneInitialized = 0x00000100,
+            TexturesGenerated = 0x00000200,
             FarTerrainsGenerated = 0x00000400,
-            TerrainsGenerated    = 0x00000800,
-            WorldIsGenerated     = 0x00001000,
-            VersionLoaded        = 0x00004000,
+            TerrainsGenerated = 0x00000800,
+            WorldIsGenerated = 0x00001000,
+            VersionLoaded = 0x00004000,
             BuildingDataReceived = 0x00008000,
-            BuildingsGenerated   = 0x00010000,
-            UserAborted          = 0x10000000,
+            BuildingsGenerated = 0x00010000,
+            UserAborted = 0x10000000,
         };
 
         const UInt32 EXCLUSIVE_TERRAINSTATE_MASK = 0x000000FF;
@@ -153,6 +153,11 @@ namespace TerrainEngine
         };
         private TerrainState _state = TerrainState.Unloaded;
 
+        public TerrainState GetState()
+        {
+            return _state;
+        }
+
         //  Use this function to update the terrain engine's state machine
         public void UpdateState(TerrainState state, string context = "")
         {
@@ -174,7 +179,7 @@ namespace TerrainEngine
                 Abortable.Abort();
             }
 
-            Trace.Log(traceState, "TERRAIN State update: + " + s_stateMsgs[state] + " (0x" + state.ToString("X") + ") => (0x" + _state.ToString("X") + ") " +
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.State), "TERRAIN State update: + " + s_stateMsgs[state] + " (0x" + state.ToString("X") + ") => (0x" + _state.ToString("X") + ") " +
                 ((context == "") ? "" : (" (" + context) + ")"));
 
             if (OnTerrainStateChanged != null)
@@ -221,7 +226,7 @@ namespace TerrainEngine
 
         //  Terrain generator components
         //
-        private BuildingGenerator buildingGenerator;
+        public BuildingGenerator buildingGenerator;
 
         // Main Settings (set in Inspector)
         public TerrainSettings.gridSizeOption terrainGridSize = TerrainSettings.gridSizeOption._8x8;
@@ -279,21 +284,6 @@ namespace TerrainEngine
         public static TerrainSettings _settingExternal;
 
         [HideInInspector] public string dataBasePath = "C:\\Earth9_GIS"; //TODO: User Geo-Server
-        #endregion
-
-        #region Diagnostics
-        //-------------------------------------------------------------------------------
-        //  Diagnostic trace configurations
-#if UNITY_EDITOR
-        [HideInInspector] public static Trace.Config traceDebug = null; // new Trace.Config(true, true);
-        [HideInInspector] public static Trace.Config traceState = null; // new Trace.Config(true, true);
-        [HideInInspector] public static Trace.Config tileDiagnostics = null; // new Trace.Config(true, true);
-#else
-        public static Trace.Config traceDebug = null;
-        public static Trace.Config traceState = null;
-        public static Trace.Config tileDiagnostics = null;
-#endif
-
         #endregion
 
         #region Multithreading State
@@ -374,9 +364,10 @@ namespace TerrainEngine
         private void Awake()
         {
             s_mainThread = System.Threading.Thread.CurrentThread;
-            #if ADMIN
+
+#if ADMIN
                 gameObject.AddComponent<VideoCaptureController>();
-            #endif
+#endif
             buildingGenerator = GetComponent<BuildingGenerator>();
             Trace.Assert(buildingGenerator != null, "Building generator component not found on Terrain Controller gameobject {0}", gameObject.name);
         }
@@ -482,11 +473,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.LoadTerrainHeights");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN LoadTerrainHeights() RunAsync: SmoothAllHeights()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN LoadTerrainHeights() RunAsync: SmoothAllHeights()");
 
                 TerrainRuntime.SmoothAllHeights();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN LoadTerrainHeights() RunAsync: SmoothAllHeights() COMPLETE -> Queuing LoadTerrainHeightsFromTIFFDynamic(0) on main thread.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN LoadTerrainHeights() RunAsync: SmoothAllHeights() COMPLETE -> Queuing LoadTerrainHeightsFromTIFFDynamic(0) on main thread.");
 
                 QueueOnMainThread(() =>
                 {
@@ -504,15 +495,15 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetTerrainHeightsFAR");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetTerrainHeightsFAR() RunAsync: SmoothFarTerrain()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetTerrainHeightsFAR() RunAsync: SmoothFarTerrain()");
 
                 TerrainRuntime.SmoothFarTerrain();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetTerrainHeightsFAR() RunAsync: SmoothFarTerrain() complete -> Running GetTerrainHeightsFromTIFFFAR() async");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetTerrainHeightsFAR() RunAsync: SmoothFarTerrain() complete -> Running GetTerrainHeightsFromTIFFFAR() async");
 
                 TerrainRuntime.GetTerrainHeightsFromTIFFFAR();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetTerrainHeightsFAR() RunAsync: GetTerrainHeightsFromTIFFFAR() complete -> Queuing ApplyTerrainHeightsFromTIFFFAR() on main thread.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetTerrainHeightsFAR() RunAsync: GetTerrainHeightsFromTIFFFAR() complete -> Queuing ApplyTerrainHeightsFromTIFFFAR() on main thread.");
 
                 QueueOnMainThread(() =>
                 {
@@ -530,11 +521,11 @@ namespace TerrainEngine
 
                 if (i == (int)terrainGridSize)
                 {
-                    Trace.Log(TerrainController.traceDebug, "TERRAIN LoadTerrainHeightsNORTH(i: {0}) RunAsync: SmoothNORTH()", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN LoadTerrainHeightsNORTH(i: {0}) RunAsync: SmoothNORTH()", i);
 
                     TerrainRuntime.SmoothNORTH(i);
 
-                    Trace.Log(TerrainController.traceDebug, "--- TERRAIN LoadTerrainHeightsNORTH(i: {0}) RunAsync: SmoothNORTH() COMPLETE -> Queuing HeightsFromNORTH() to main thread.", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN LoadTerrainHeightsNORTH(i: {0}) RunAsync: SmoothNORTH() COMPLETE -> Queuing HeightsFromNORTH() to main thread.", i);
                 }
 
                 QueueOnMainThread(() =>
@@ -556,11 +547,11 @@ namespace TerrainEngine
 
                 if (i == (int)terrainGridSize)
                 {
-                    Trace.Log(TerrainController.traceDebug, "TERRAIN LoadTerrainHeightsSOUTH(i: {0}) RunAsync: SmoothSOUTH()", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN LoadTerrainHeightsSOUTH(i: {0}) RunAsync: SmoothSOUTH()", i);
 
                     TerrainRuntime.SmoothSOUTH();
 
-                    Trace.Log(TerrainController.traceDebug, "--- TERRAIN LoadTerrainHeightsSOUTH(i: {0}) RunAsync: SmoothSOUTH() COMPLETE -> Queuing HeightsFromSOUTH() to main thread.", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN LoadTerrainHeightsSOUTH(i: {0}) RunAsync: SmoothSOUTH() COMPLETE -> Queuing HeightsFromSOUTH() to main thread.", i);
                 }
 
                 QueueOnMainThread(() =>
@@ -582,11 +573,11 @@ namespace TerrainEngine
 
                 if (i == (int)terrainGridSize)
                 {
-                    Trace.Log(TerrainController.traceDebug, "TERRAIN LoadTerrainHeightsEAST(i: {0}) RunAsync: SmoothEAST()", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN LoadTerrainHeightsEAST(i: {0}) RunAsync: SmoothEAST()", i);
 
                     TerrainRuntime.SmoothEAST();
 
-                    Trace.Log(TerrainController.traceDebug, "--- TERRAIN LoadTerrainHeightsEAST(i: {0}) RunAsync: SmoothEAST() COMPLETE -> Queuing HeightsFromEAST() to main thread.", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN LoadTerrainHeightsEAST(i: {0}) RunAsync: SmoothEAST() COMPLETE -> Queuing HeightsFromEAST() to main thread.", i);
                 }
 
                 QueueOnMainThread(() =>
@@ -609,11 +600,11 @@ namespace TerrainEngine
 
                 if (i == (int)terrainGridSize)
                 {
-                    Trace.Log(TerrainController.traceDebug, "TERRAIN LoadTerrainHeightsWEST(i: {0}) RunAsync: SmoothWEST()", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN LoadTerrainHeightsWEST(i: {0}) RunAsync: SmoothWEST()", i);
 
                     TerrainRuntime.SmoothWEST();
 
-                    Trace.Log(TerrainController.traceDebug, "--- TERRAIN LoadTerrainHeightsWEST(i: {0}) RunAsync: SmoothWEST(}) COMPLETE -> Queuing HeightsFromWEST() to main thread.", i);
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN LoadTerrainHeightsWEST(i: {0}) RunAsync: SmoothWEST(}) COMPLETE -> Queuing HeightsFromWEST() to main thread.", i);
                 }
 
                 QueueOnMainThread(() =>
@@ -631,7 +622,7 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainController.HeightsFromNORTH");
 
-            Trace.Log(traceDebug, "HeightsFromNORTH()");
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "HeightsFromNORTH()");
 
             for (int x = 0; x < (int)terrainGridSize; x++)
             {
@@ -652,7 +643,7 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainController.HeightsFromSOUTH");
 
-            Trace.Log(traceDebug, "HeightsFromSOUTH()");
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "HeightsFromSOUTH()");
 
             for (int x = 0; x < (int)terrainGridSize; x++)
             {
@@ -673,7 +664,7 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainController.HeightsFromEAST");
 
-            Trace.Log(traceDebug, "HeightsFromEAST()");
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "HeightsFromEAST()");
 
             for (int x = 0; x < (int)terrainGridSize; x++)
             {
@@ -710,7 +701,7 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainController.HeightsFromWEST");
 
-            Trace.Log(traceDebug, "HeightsFromWEST()");
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "HeightsFromWEST()");
 
             for (int x = 0; x < (int)terrainGridSize; x++)
             {
@@ -733,11 +724,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetHeightmaps");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetHeightmaps() RunAsync: ServerInfoElevation()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetHeightmaps() RunAsync: ServerInfoElevation()");
 
                 TerrainRuntime.ServerInfoElevation();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetHeightmaps() RunAsync: ServerInfoElevation() COMPLETE.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetHeightmaps() RunAsync: ServerInfoElevation() COMPLETE.");
             });
         }
 
@@ -745,19 +736,20 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainController.GetBuildings");
             buildingGenerator.GenerateBuildings();
+            buildingGenerator.GenerateAuthoredBuildings();
         }
- 
+
         public void GetHeightmapFAR()
         {
             RunAsync(() =>
             {
                 Abortable abortable = new Abortable("TerrainController.GetHeightmapFAR");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetHeightmapFAR() RunAsync: ServerInfoElevationFAR()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetHeightmapFAR() RunAsync: ServerInfoElevationFAR()");
 
                 TerrainRuntime.ServerInfoElevationFAR();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetHeightmapFAR() RunAsync: ServerInfoElevationFAR() COMPLETE.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetHeightmapFAR() RunAsync: ServerInfoElevationFAR() COMPLETE.");
             });
         }
 
@@ -767,11 +759,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetHeightmapsNORTH");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetHeightmapsNORTH(i: {0}) RunAsync: ServerInfoElevationNORTH(i: {0})", index);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetHeightmapsNORTH(i: {0}) RunAsync: ServerInfoElevationNORTH(i: {0})", index);
 
                 TerrainRuntime.ServerInfoElevationNORTH(index);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetHeightmapsNORTH(i: {0}) RunAsync: ServerInfoElevationNORTH(i: {0}) COMPLETE.", index);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetHeightmapsNORTH(i: {0}) RunAsync: ServerInfoElevationNORTH(i: {0}) COMPLETE.", index);
             });
         }
 
@@ -781,11 +773,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetHeightmapsSOUTH");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetHeightmapsSOUTH() RunAsync: ServerInfoElevationSOUTH()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetHeightmapsSOUTH() RunAsync: ServerInfoElevationSOUTH()");
 
                 TerrainRuntime.ServerInfoElevationSOUTH();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetHeightmapsSOUTH() RunAsync: ServerInfoElevationSOUTH() COMPLETE.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetHeightmapsSOUTH() RunAsync: ServerInfoElevationSOUTH() COMPLETE.");
             });
         }
 
@@ -795,11 +787,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetHeightmapsEAST");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetHeightmapsEAST() RunAsync: ServerInfoElevationEAST()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetHeightmapsEAST() RunAsync: ServerInfoElevationEAST()");
 
                 TerrainRuntime.ServerInfoElevationEAST();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetHeightmapsEAST() RunAsync: ServerInfoElevationEAST() COMPLETE.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetHeightmapsEAST() RunAsync: ServerInfoElevationEAST() COMPLETE.");
             });
         }
 
@@ -809,11 +801,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetHeightmapsWEST");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetHeightmapsWEST() RunAsync: ServerInfoElevationWEST()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GetHeightmapsWEST() RunAsync: ServerInfoElevationWEST()");
 
                 TerrainRuntime.ServerInfoElevationWEST();
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetHeightmapsWEST() RunAsync: ServerInfoElevationWEST() COMPLETE.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GetHeightmapsWEST() RunAsync: ServerInfoElevationWEST() COMPLETE.");
             });
         }
 
@@ -824,7 +816,7 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectHeightmap");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectHeightmap(i: {0}) RunAsync: ElevationDownload(i: {0})", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ServerConnectHeightmap(i: {0}) RunAsync: ElevationDownload(i: {0})", i);
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethod(TerrainRuntime.ElevationDownload, fileName);
                 if (status != WebExceptionStatus.Success)
                 {
@@ -832,7 +824,7 @@ namespace TerrainEngine
                     return;
                 }
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectHeightmap(i: {0}) RunAsync: ElevationDownload(i: {0}) COMPLETE -> Queuing LoadHeights({0}) to main thread.", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ServerConnectHeightmap(i: {0}) RunAsync: ElevationDownload(i: {0}) COMPLETE -> Queuing LoadHeights({0}) to main thread.", i);
 
                 QueueOnMainThread(() =>
                 {
@@ -848,7 +840,7 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectHeightmapFAR");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectHeightmapFAR() RunAsync: ElevationDownloadFAR()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ServerConnectHeightmapFAR() RunAsync: ElevationDownloadFAR()");
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethodFar(TerrainRuntime.ElevationDownloadFAR);
                 if (status != WebExceptionStatus.Success)
                 {
@@ -856,7 +848,7 @@ namespace TerrainEngine
                     return;
                 }
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectHeightmapFAR() RunAsync: ElevationDownloadFAR() COMPLETE -> Queuing LoadHeightsFAR() to main thread.");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ServerConnectHeightmapFAR() RunAsync: ElevationDownloadFAR() COMPLETE -> Queuing LoadHeightsFAR() to main thread.");
 
                 QueueOnMainThread(() =>
                 {
@@ -872,10 +864,10 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectHeightmapNORTH");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectHeightmapNORTH(i: {0}) RunAsync: ElevationDownloadNORTH(i: {0})", index);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ServerConnectHeightmapNORTH(i: {0}) RunAsync: ElevationDownloadNORTH(i: {0})", index);
                 TerrainRuntime.ElevationDownloadNORTH(index, fileName);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectHeightmapNORTH(i: {0}) RunAsync: ElevationDownloadNORTH(i: {0}) COMPLETE -> Queuing LoadHeightsNORTH({0}) to main thread.", index);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ServerConnectHeightmapNORTH(i: {0}) RunAsync: ElevationDownloadNORTH(i: {0}) COMPLETE -> Queuing LoadHeightsNORTH({0}) to main thread.", index);
 
                 QueueOnMainThread(() =>
                 {
@@ -909,10 +901,10 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectHeightmapSOUTH");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectHeightmapSOUTH(i: {0}) RunAsync: ElevationDownloadSOUTH(i: {0})", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ServerConnectHeightmapSOUTH(i: {0}) RunAsync: ElevationDownloadSOUTH(i: {0})", i);
                 TerrainRuntime.ElevationDownloadSOUTH(i, fileName);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectHeightmapSOUTH(i: {0}) RunAsync: ElevationDownloadSOUTH(i: {0}) COMPLETE -> Queuing LoadHeightsSOUTH({0}) to main thread.", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ServerConnectHeightmapSOUTH(i: {0}) RunAsync: ElevationDownloadSOUTH(i: {0}) COMPLETE -> Queuing LoadHeightsSOUTH({0}) to main thread.", i);
 
                 QueueOnMainThread(() =>
                 {
@@ -940,10 +932,10 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectHeightmapEAST");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectHeightmapEAST(i: {0}) RunAsync: ElevationDownloadEAST(i: {0})", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ServerConnectHeightmapEAST(i: {0}) RunAsync: ElevationDownloadEAST(i: {0})", i);
                 TerrainRuntime.ElevationDownloadEAST(i, fileName);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectHeightmapEAST(i: {0}) RunAsync: ElevationDownloadEAST(i: {0}) COMPLETE -> Queuing LoadHeightsEAST({0}) to main thread.", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ServerConnectHeightmapEAST(i: {0}) RunAsync: ElevationDownloadEAST(i: {0}) COMPLETE -> Queuing LoadHeightsEAST({0}) to main thread.", i);
 
                 QueueOnMainThread(() =>
                 {
@@ -971,10 +963,10 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectHeightmapWEST");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectHeightmapWEST(i: {0}) RunAsync: ElevationDownloadWEST(i: {0})", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ServerConnectHeightmapWEST(i: {0}) RunAsync: ElevationDownloadWEST(i: {0})", i);
                 TerrainRuntime.ElevationDownloadWEST(i, fileName);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectHeightmapWEST(i: {0}) RunAsync: ElevationDownloadWEST(i: {0}) COMPLETE -> Queuing LoadHeightsWEST({0}) to main thread.", i);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ServerConnectHeightmapWEST(i: {0}) RunAsync: ElevationDownloadWEST(i: {0}) COMPLETE -> Queuing LoadHeightsWEST({0}) to main thread.", i);
 
                 QueueOnMainThread(() =>
                 {
@@ -1001,11 +993,11 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GenerateTerrainHeights");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GenerateTerrainHeights() RunAsync: TiffData(fileName: {0})", TerrainRuntime.s_fileNameTerrainData);
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN GenerateTerrainHeights() RunAsync: TiffData(fileName: {0})", TerrainRuntime.s_fileNameTerrainData);
 
                 TerrainRuntime.TiffData(TerrainRuntime.s_fileNameTerrainData);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GenerateTerrainHeights() RunAsync: TiffData(fileName: {0}) compelte -> Queuing FinalizeTerrainHeights(width: {1}, length: {2}) to main thread.",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN GenerateTerrainHeights() RunAsync: TiffData(fileName: {0}) compelte -> Queuing FinalizeTerrainHeights(width: {1}, length: {2}) to main thread.",
                     TerrainRuntime.s_fileNameTerrainData,
                     TerrainRuntime.s_heightMapTiff.width,
                     TerrainRuntime.s_heightMapTiff.length);
@@ -1025,12 +1017,12 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.FinalizeTerrainHeights");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN FinalizeTerrainHeights(...) RunAsync: SmoothHeights(width: {0}, height: {1})",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN FinalizeTerrainHeights(...) RunAsync: SmoothHeights(width: {0}, height: {1})",
                     width, height);
 
                 TerrainRuntime.SmoothHeights(data, width, height);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN FinalizeTerrainHeights(...) RunAsync: SmoothHeights(width: {0}, height: {1}) COMPLETE -> Queuing FinalizeHeights() to main thread.",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN FinalizeTerrainHeights(...) RunAsync: SmoothHeights(width: {0}, height: {1}) COMPLETE -> Queuing FinalizeHeights() to main thread.",
                     width, height);
 
                 QueueOnMainThread(() =>
@@ -1046,12 +1038,12 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.TerrainFromRAW");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN TerrainFromRAW() RunAsync: RawData(filePath: {0})",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN TerrainFromRAW() RunAsync: RawData(filePath: {0})",
                    TerrainRuntime.s_geoDataPathElevation);
 
                 TerrainRuntime.RawData(TerrainRuntime.s_geoDataPathElevation);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN TerrainFromRAW() RunAsync: RawData(filePath: {0}) COMPLETE -> Queuing FinalizeTerrainHeights(width: {1} height: {2}) to main thread.",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN TerrainFromRAW() RunAsync: RawData(filePath: {0}) COMPLETE -> Queuing FinalizeTerrainHeights(width: {1} height: {2}) to main thread.",
                    TerrainRuntime.s_geoDataPathElevation, TerrainRuntime.m_Width, TerrainRuntime.m_Height);
 
                 QueueOnMainThread(() =>
@@ -1067,12 +1059,12 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.TerrainFromTIFF");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN TerrainFromTIFF() RunAsync: TiffData(filePath: {0})",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN TerrainFromTIFF() RunAsync: TiffData(filePath: {0})",
                    TerrainRuntime.s_geoDataPathElevation);
 
                 TerrainRuntime.TiffData(TerrainRuntime.s_geoDataPathElevation);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN TerrainFromTIFF()  RunAsync: TiffData(filePath: {0}) COMPLETE -> Queuing FinalizeTerrainHeights(width: {1} height: {2}) to main thread.",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN TerrainFromTIFF()  RunAsync: TiffData(filePath: {0}) COMPLETE -> Queuing FinalizeTerrainHeights(width: {1} height: {2}) to main thread.",
                    TerrainRuntime.s_geoDataPathElevation, TerrainRuntime.m_Width, TerrainRuntime.m_Height);
 
                 QueueOnMainThread(() =>
@@ -1089,12 +1081,12 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.TerrainFromASCII");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN TerrainFromASCII() RunAsync: AsciiData(filePath: {0})",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN TerrainFromASCII() RunAsync: AsciiData(filePath: {0})",
                     TerrainRuntime.s_geoDataPathElevation);
 
                 TerrainRuntime.AsciiData(TerrainRuntime.s_geoDataPathElevation);
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN TerrainFromASCII() RunAsync: AsciiData(filePath: {0}) COMPLETE -> Queuing FinalizeTerrainHeights(width: {1} height: {2}) to main thread.",
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN TerrainFromASCII() RunAsync: AsciiData(filePath: {0}) COMPLETE -> Queuing FinalizeTerrainHeights(width: {1} height: {2}) to main thread.",
                     TerrainRuntime.s_geoDataPathElevation, TerrainRuntime.m_Width, TerrainRuntime.m_Height);
 
                 QueueOnMainThread(() =>
@@ -1128,11 +1120,11 @@ namespace TerrainEngine
                         {
                             Abortable abortable = new Abortable("TerrainController.GetElevationFileInfo");
 
-                            Trace.Log(TerrainController.traceDebug, "TERRAIN ApplyElevationData() RunAsync: GetElevationFileInfo()");
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "TERRAIN ApplyElevationData() RunAsync: GetElevationFileInfo()");
 
                             TerrainRuntime.GetElevationFileInfo();
 
-                            Trace.Log(TerrainController.traceDebug, "--- TERRAIN ApplyElevationData() RunAsync: GetElevationFileInfo() COMPLETE -> Queueing ApplyOfflineTerrain() to main thread.");
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "--- TERRAIN ApplyElevationData() RunAsync: GetElevationFileInfo() COMPLETE -> Queueing ApplyOfflineTerrain() to main thread.");
 
                             QueueOnMainThread(() =>
                             {
@@ -1148,6 +1140,8 @@ namespace TerrainEngine
 
         public void ApplyImageData()
         {
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN MainThread ApplyImageData() ENTER");
+
             TerrainRuntime.GetFolderInfo(TerrainRuntime.s_dataBasePathImagery);
 
             if (TerrainRuntime.s_totalImagesDataBase == 0)
@@ -1183,17 +1177,12 @@ namespace TerrainEngine
                 {
                     TerrainRuntime.s_baseImageBytes = new Dictionary<int, byte[]>();
 
-                    Trace.Log(TerrainController.traceDebug, "TERRAIN ApplyImageData() RunAsync: DownloadImageData(forEach)");
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ApplyImageData() ENTER");
 
                     for (int i = 0; i < TerrainRuntime.s_baseImageNames.Length; i++)
                     {
-                        Trace.Log(TerrainController.traceDebug, "   Terrain ApplyImageData() RunAsync: DownloadImageData(fileName: {0})", TerrainRuntime.s_baseImageNames[i]);
-
                         TerrainRuntime.DownloadImageData(i, TerrainRuntime.s_baseImageNames[i]);
                     }
-
-                    Trace.Log(TerrainController.traceDebug, "--- TERRAIN ApplyImageData() RunAsync: DownloadImageData(forEach) COMPLETE -> Queuing FillImages(length: {0}) to main thread",
-                        TerrainRuntime.s_totalImagesDataBase);
 
                     QueueOnMainThread(() =>
                     {
@@ -1201,6 +1190,9 @@ namespace TerrainEngine
                             "ApplyImageData()",
                             TerrainRuntime.s_totalImagesDataBase);
                     });
+
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ApplyImageData() EXIT");
+
                 });
             }
         }
@@ -1211,13 +1203,17 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetSatelliteImages");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetSatelliteImages() RunAsync: ServerInfoImagery()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async GetSatelliteImages() ENTER");
+
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethod(TerrainRuntime.ServerInfoImagery, "");
                 if (status != WebExceptionStatus.Success)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async GetSatelliteImages() ABORT");
                     ReportFatalWebServiceError(status);
                     return;
                 }
+
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async GetSatelliteImages() EXIT");
             });
         }
 
@@ -1227,13 +1223,17 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.GetSatelliteImagesFAR");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetSatelliteImagesFAR() RunAsync: ServerInfoImageryFAR()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async GetSatelliteImagesFAR() ENTER");
+
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethodFar(TerrainRuntime.ServerInfoImageryFAR);
                 if (status != WebExceptionStatus.Success)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async GetSatelliteImagesFAR() ABORT");
                     ReportFatalWebServiceError(status);
                     return;
                 }
+
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async GetSatelliteImagesFAR() EXIT");
             });
         }
 
@@ -1241,13 +1241,7 @@ namespace TerrainEngine
         {
             RunAsync(() =>
             {
-                Abortable abortable = new Abortable("TerrainController.GetSatelliteImagesNORTH");
-
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetSatelliteImagesNORTH() RunAsync: ServerInfoImageryNORTH()");
-
                 TerrainRuntime.ServerInfoImageryNORTH();
-
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetSatelliteImagesNORTH() RunAsync: ServerInfoImageryNORTH() COMPLETE.");
             });
         }
 
@@ -1255,13 +1249,7 @@ namespace TerrainEngine
         {
             RunAsync(() =>
             {
-                Abortable abortable = new Abortable("TerrainController.GetSatelliteImagesSOUTH");
-
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetSatelliteImagesSOUTH() RunAsync: ServerInfoImagerySOUTH()");
-
                 TerrainRuntime.ServerInfoImagerySOUTH();
-
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetSatelliteImagesSOUTH() RunAsync: ServerInfoImagerySOUTH() COMPLETE.");
             });
         }
 
@@ -1269,13 +1257,7 @@ namespace TerrainEngine
         {
             RunAsync(() =>
             {
-                Abortable abortable = new Abortable("TerrainController.GetSatelliteImagesEAST");
-
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetSatelliteImagesEAST() RunAsync: ServerInfoImageryEAST()");
-
                 TerrainRuntime.ServerInfoImageryEAST();
-
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetSatelliteImagesEAST() RunAsync: ServerInfoImageryEAST() COMPLETE.");
             });
         }
 
@@ -1283,28 +1265,27 @@ namespace TerrainEngine
         {
             RunAsync(() =>
             {
-                Abortable abortable = new Abortable("TerrainController.GetSatelliteImagesWEST");
-
-                Trace.Log(TerrainController.traceDebug, "TERRAIN GetSatelliteImagesWEST() RunAsync: ServerInfoImageryWEST()");
-
                 TerrainRuntime.ServerInfoImageryWEST();
-
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN GetSatelliteImagesWEST() RunAsync: ServerInfoImageryWEST() COMPLETE.");
             });
         }
 
         [RuntimeAsync(nameof(ServerConnectImagery))]
         public void ServerConnectImagery(int i, string fileName)
         {
+            //  TODO: This should NOT be under RunAsync() because caller is already running this async
 
             RunAsync(() =>
             {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImagery(i: {0}, fileName: \"{1}\") ENTER", i, fileName);
+
                 Abortable abortable = new Abortable("TerrainController.ServerConnectImagery");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectImagery(i: {0}) RunAsync: ImageDownloader(i: {0})", i);
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethod(TerrainRuntime.ImageDownloader, fileName);
                 if (status != WebExceptionStatus.Success)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImagery(i: {0}, fileName: \"{1}\") EXIT ERROR, status: {2}",
+                        i, fileName, status);
+
                     ReportFatalWebServiceError(status);
                     return;
                 }
@@ -1313,31 +1294,28 @@ namespace TerrainEngine
                 {
                     if (TerrainRuntime.s_allBlack)
                     {
-                        Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectImagery(i: {0}) RunAsync: ImageDownloader(i: {0}) COMPLETE -> ERROR: no available imagery at zoom level", i);
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImagery(i: {0}, fileName: \"{1}\") EXIT ERROR, Unavaiable imagery at this zoom level", i, fileName);
+                        //  Decrease TERRAIN GRID SIZE/IMAGE RESOLUTION or increase AREA SIZE
 
-                        UnityEngine.Debug.LogError("UNAVAILABLE IMAGERY - There is no available imagery at this zoom level. Decrease TERRAIN GRID SIZE/IMAGE RESOLUTION or increase AREA SIZE.");
                         TerrainRuntime.s_imageDownloadingStarted = false;
                         return;
                     }
 
                     if (progressiveTexturing)
                     {
-                        Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectImagery(i: {0}) RunAsync: ImageDownloader(i: {0}) COMPLETE -> Queueing FillImage(i: {0}) to main thread", i);
-
-                        RunCoroutine(TerrainRuntime.FillImage(i), "FillImage(i: {0}) progressiveTexturing", "ServerConnectImagery(i: {0})", i);
+                        RunCoroutine(TerrainRuntime.FillImage(i), "ServerConnectImagery(i: {0}, filename: \"{1}\")", i, fileName);
                     }
                     else
                     {
                         if (TerrainRuntime.s_processedImageIndex == TerrainRuntime.NearMetrics.baseImagesTotal)
                         {
-                            Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectImagery(i: {0}) RunAsync: ImageDownloader(i: {0}) COMPLETE -> Queueing FillImages(count: {0}) to main thread",
-                                TerrainRuntime.NearMetrics.baseImagesTotal);
-
-                            RunCoroutine(TerrainRuntime.FillImages(TerrainRuntime.NearMetrics.baseImagesTotal), 
-                                "ServerConnectImagery(i: {1})", TerrainRuntime.NearMetrics.baseImagesTotal, i);
+                            RunCoroutine(TerrainRuntime.FillImages(TerrainRuntime.NearMetrics.baseImagesTotal),
+                                    "ServerConnectImagery(i: {0}, filename: \"{1}\")", i, fileName);
                         }
                     }
                 });
+
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImagery(i: {0}, fileName: \"{1}\") EXIT", i, fileName);
             });
         }
 
@@ -1348,21 +1326,25 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectImageryFAR");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectImageryFAR() RunAsync: ImageDownloaderFAR()");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImageryFAR() ENTER");
+
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethodFar(TerrainRuntime.ImageDownloaderFAR);
                 if (status != WebExceptionStatus.Success)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImageryFAR() EXIT ABORT");
                     ReportFatalWebServiceError(status);
                     return;
                 }
 
-                Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectImageryFAR() RunAsync: ImageDownloaderFAR() COMPLETE -> Queuing FillImageFAR() on main thread.");
-
                 QueueOnMainThread(() =>
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN MainThread ServerConnectImageryFAR() Invoking coroutine FillImageFAR()");
+
                     RunCoroutine(TerrainRuntime.FillImageFAR(),
                         "ServerConnectImageryFAR()");
                 });
+
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerConnectImageryFAR() EXIT");
             });
         }
 
@@ -1373,7 +1355,6 @@ namespace TerrainEngine
             {
                 Abortable abortable = new Abortable("TerrainController.ServerConnectImageryDirection");
 
-                Trace.Log(TerrainController.traceDebug, "TERRAIN ServerConnectImagery" + direction + "(i: {0}) RunAsync: ImageDownloader" + direction + "(i: {0})", i);
                 WebExceptionStatus status = WebRequestRetries.WebRequestMethod(TerrainRuntime.ImageDownloaderDirection, fileName);
                 if (status != WebExceptionStatus.Success)
                 {
@@ -1385,12 +1366,8 @@ namespace TerrainEngine
                 {
                     if (TerrainRuntime.s_allBlack)
                     {
-                        Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectImagery" + direction + "(i: {0}) RunAsync: ImageDownloader" + direction + "(i: {0}) completed -> ERROR", i);
-
                         UnityEngine.Debug.LogError("UNAVAILABLE IMAGERY - There is no available imagery at this zoom level. Decrease TERRAIN GRID SIZE/IMAGE RESOLUTION or increase AREA SIZE.");
                     }
-
-                    Trace.Log(TerrainController.traceDebug, "--- TERRAIN ServerConnectImagery" + direction + "(i: {0}) RunAsync: ImageDownloader" + direction + "(i: {0}) completed -> Queueing FillImage" + direction + "(i: {0}) on main thread.", i);
 
                     RunCoroutine(TerrainRuntime.FillImageDirection(i),
                         "ServerConnectImagery" + direction + "(i: {0})", i);
@@ -1474,16 +1451,16 @@ namespace TerrainEngine
             if (callerName != null && callerName != "")
             {
                 Trace.Log(
-                    TerrainController.traceDebug,
-                    "TERRAIN " +
-                    String.Format("Started coroutine: {0}()", coroutine.ToString()) + " from " +
+                    TerrainTrace.Config(TerrainTrace.Flag.RunCoroutine),
+                    "TERRAIN COROUTINE " +
+                    String.Format("START: {0}()", coroutine.ToString()) + " from " +
                     String.Format(callerName, nameargs));
             }
             else
             {
                 Trace.Log(
-                    TerrainController.traceDebug,
-                    "TERRAIN " + String.Format("Started coroutine: {0}()", coroutine.ToString()));
+                    TerrainTrace.Config(TerrainTrace.Flag.RunCoroutine),
+                    "TERRAIN COROUTINE " + String.Format("START: {0}()", coroutine.ToString()));
             }
             return Timing.RunCoroutine(coroutine);
         }

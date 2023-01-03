@@ -1,8 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
+using TerrainEngine;
+using System.IO;
 public class PlayerController : MonoBehaviour
 {
     //  Player ordinal (for multiple players on some device)
@@ -17,8 +22,8 @@ public class PlayerController : MonoBehaviour
     };
     private const IAMode DEFAULT_NONPOINTING_IAMODE = IAMode.Minecraft;
 
-    public  bool   AllowFly = true;
-    private IAMode _interactionMode = DEFAULT_NONPOINTING_IAMODE; 
+    public bool AllowFly = true;
+    private IAMode _interactionMode = DEFAULT_NONPOINTING_IAMODE;
     private IAMode _lastNonPointingIAMode = DEFAULT_NONPOINTING_IAMODE;
 
     [Header("Sub Behaviours")]
@@ -138,11 +143,12 @@ public class PlayerController : MonoBehaviour
     }
 
     //  Called before the first frame update
-    void Start()
+    async void Start()
     {
         SetupPlayer(0);
 
         GameObject player = SceneObject.GetPlayer(SceneObject.Mode.Player);
+
         player.AddComponent<VersionChanger>();
     }
 
@@ -282,12 +288,102 @@ public class PlayerController : MonoBehaviour
 
     public void OnCreatorEdit(InputAction.CallbackContext context)
     {
+        OsmBuildingData osmBuildingData = null;
+
+
         if (playerMovementBehavior.inputEnabled &&
             (context.phase == InputActionPhase.Performed))
         {
-            SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
+            RaycastHit hit;
+            GameObject gameObjectHit = null;
+            if (playerVisualBehavior.HitTest(out hit))
+            {
+                gameObjectHit = hit.transform.gameObject;
+                TerrainEngine.ProceduralBuilding pb = gameObjectHit.GetComponent<TerrainEngine.ProceduralBuilding>();
+                if (pb != null)
+                {
+                    osmBuildingData = pb.buildingData;
+                }
+                else if (BuildingMaterialNames().Any(item => gameObjectHit.name.Contains(item)))
+                {
+                    TerrainEngine.TerrainController terrainObj = TerrainEngine.TerrainController.Get();
+                    string liveBuildingId = GetLiveBuildingParentName(gameObjectHit);
+                    string buildingId = liveBuildingId.Substring(liveBuildingId.LastIndexOf("_") + 1);
+                    TerrainEngine.BuildingGenerator.GameReadyBuilding existingGO;
+                    if (terrainObj.buildingGenerator.TryGetLiveGameReadyBuildingByID(buildingId + "[0]", out existingGO))
+                    {
+                        if (existingGO != null)
+                        {
+                            osmBuildingData = existingGO.buildingData;
+                        }
+                    }
+                }
+            }
+            string unsubmittedId = CreatorSubmission.GetUsersUnSubmittedBuildingId();
+            if (unsubmittedId != null && CreatorUIController.buildingID != null && CreatorUIController.buildingID != unsubmittedId)
+            {
+                // since this case shouldn't happen and should be checked on CreatorMode coming from Web app Build mode
+                  throw new Exception("Invalid building id : ");
+            }
+            else
+            {
+                CreatorUIController.buildingID = unsubmittedId != null ? unsubmittedId : CreatorUIController.buildingID;
+                if (CreatorUIController.buildingID == null)
+                {
+                    if (osmBuildingData.id != null)
+                    {
+                        SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
+                        CreatorUIController.CreateBuildingCanvas(osmBuildingData);
+                    }
+                }
+                else
+                {
+                    if (osmBuildingData.id == null || osmBuildingData.id == CreatorUIController.buildingID)
+                    {
+                        SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
+                    }
+                    else
+                    {
+                        LoadingUIController.ActiveMode = LoadingUIController.Mode.PreviousBuildDetected;
+                        LoadingUIController.existingbuildingid = CreatorUIController.buildingID;
+                        LoadingUIController.newBuildingId = osmBuildingData.id;
+                        LoadingUIController.osmBuildingData = osmBuildingData;
+                        var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+                        loadingUI.SetActive(true);
+                    }
+                }
+            }
         }
     }
+
+    private string GetLiveBuildingParentName(GameObject gameobject)
+    {
+        while (gameobject != null && !gameobject.name.Contains("EDIT") && !gameobject.name.Contains("LIVE"))
+        {
+            if (gameobject.transform.parent == null)
+            {
+                return "";
+            }
+            gameobject = gameobject.transform.parent.gameObject;
+            GetLiveBuildingParentName(gameobject);
+        }
+        if (gameobject == null)
+        {
+            return "";
+        }
+        else
+        {
+            return gameobject.name;
+        }
+
+    }
+
+    private string[] BuildingMaterialNames()
+    {
+        string[] buildingMaterialNames = { "Wall", "Roof", "Floor", "Door", "Window", "FloorPlan" };
+        return buildingMaterialNames;
+    }
+
 
     public void OnDeviceLost()
     {

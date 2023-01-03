@@ -4,10 +4,12 @@ using System.Linq;
 
 public class FloatingOriginAdvanced : MonoBehaviour
 {
-    public float distance = 100.0f;
+    private const float DEFAULT_DISTANCE = 25000.0f;
+
+    public float distance = DEFAULT_DISTANCE;
     public bool checkParticles = true;
     public bool checkPhysics = true;
-    public float physicsDistance = 1000.0f;
+    public float physicsDistance = DEFAULT_DISTANCE;
     public float defaultSleepThreshold = 0.14f;
     public GameObject trailRenderer;
 

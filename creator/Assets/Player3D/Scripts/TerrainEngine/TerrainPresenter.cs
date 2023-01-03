@@ -139,16 +139,18 @@ namespace TerrainEngine
         };
 
         public static void TeleportToLatLong(
-            float latitude, 
-            float longitude, 
+            double latitude,
+            double longitude,
             float bearing = 0f)
         {
-            SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
-
             TerrainPresenter terrainPresenter = SceneObject.Find(SceneObject.Mode.Player, ObjectName.TERRAIN_PRESENTER).GetComponent<TerrainPresenter>();
             terrainPresenter.latLonInput.Latitude = latitude;
             terrainPresenter.latLonInput.Longitude = longitude;
             controller.UpdateState(TerrainController.TerrainState.UserAborted);
+            TerrainBootstrap.Latitude = latitude;
+            TerrainBootstrap.Longitude = longitude;
+            controller.latitudeUser = latitude.ToString();
+            controller.longitudeUser = longitude.ToString();
             terrainPresenter.StartCoroutine(terrainPresenter.WaitForTerrainAborted(() =>
             {
                 terrainPresenter.ReloadAndTeleport();
@@ -177,6 +179,7 @@ namespace TerrainEngine
 
             //  Elevator events
             ElevatorController.OnPlayerExitElevator += OnPlayerExitElevator;
+            ElevatorController.OnPlayerEnterElevatorDoor += OnPlayerEnterExitElevatorDoor;
 
             taskColorComplete = heightMapsRetrieved.color;
             taskColorIncomplete = baseImagesRetrieved.color;
@@ -227,9 +230,12 @@ namespace TerrainEngine
                 HotkeyMenu.Key.ToggleDetails,
                 HotkeyMenu.Key.ToggleLocation,
                 HotkeyMenu.Key.MainMenu,
-                HotkeyMenu.Key.HotkeyMenu
+                HotkeyMenu.Key.HotkeyMenu,
+                HotkeyMenu.Key.Elevator
             };
             hotkeyMenu.Populate(keys);
+
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.Elevator, false);
         }
 
         void ResetLoadingUI()
@@ -301,12 +307,13 @@ namespace TerrainEngine
                     loadingUI.SetActive(false);
                     taskCanvas.SetActive(false);
                     errorCanvas.SetActive(false);
-                    ShowPauseOptions(false);
+                    // ShowPauseOptions(false);
                     terrainPlayer.EnableUIInput(false);
                     break;
 
                 case PresentationState.RunningPaused:
-                    ShowPauseOptions(true);
+                    // ShowPauseOptions(true);
+                    OnExitToMainMenu();
                     break;
 
             }
@@ -365,6 +372,11 @@ namespace TerrainEngine
 
                 CheckForPause();
             }
+
+            if (ElevatorController.IsPlayerOnRoof && Input.GetKeyUp(KeyCode.G))
+            {
+                ElevatorController.EnterElevatorFromRoof();
+            }
         }
 
         private bool TerrainHeightAtPlayerPosition(out float height)
@@ -413,7 +425,12 @@ namespace TerrainEngine
         {
             //  TODO: Place user outside the elevator on the right floor.
             //  For now, switch to Welcome screen
-            SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
+            //SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
+        }
+
+        private void OnPlayerEnterExitElevatorDoor(int floorNo, bool isEnterExit)
+        {
+            hotkeyMenu.ShowKey(HotkeyMenu.Key.Elevator, isEnterExit);
         }
 
         private void CheckForPause()
@@ -655,7 +672,7 @@ namespace TerrainEngine
         {
             Trace.Assert(latLonInput.IsValid, "Invalid latitude, longitude.");
 
-            ResetLoadingUI();
+            // ResetLoadingUI();
             SetPresentationState(PresentationState.Processing);
 
             //  Disable the runtime to prevent updates and allow terrain to be destroyed.
@@ -666,6 +683,10 @@ namespace TerrainEngine
 
             //  Configure the new destination
             TerrainSettings settings = TerrainController.Settings;
+            if (settings == null)
+            {
+                settings = new TerrainSettings();
+            }
             settings.latitudeUser = latLonInput.Latitude.ToString();
             settings.longitudeUser = latLonInput.Longitude.ToString();
             TerrainController.Settings = settings;
@@ -1079,7 +1100,7 @@ namespace TerrainEngine
             {
                 latLonInput.Latitude = canceledLatitude;
                 latLonInput.Longitude = canceledLongitude;
-
+                ResetLoadingUI();
                 ReloadAndTeleport();
             }
             else

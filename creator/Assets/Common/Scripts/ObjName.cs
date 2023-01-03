@@ -23,6 +23,7 @@ public static class ObjectName
     public const string UI_CONTAINER = "UI";
     public const string WELCOME_UI = "WelcomeUI";
     public const string AUTHENTICATION_UI = "AuthenticationUI";
+    public const string LOADING_UI = "LoadingUI";
     public const string BOOTSTRAP_OBJECT = "Bootstrap";
     //  UI container chldren
     public const string CROSSHAIRS_IMAGE = UI_CONTAINER + "/Crosshairs";
@@ -60,6 +61,7 @@ public static class ObjectName
     public const string PEGASUS_VIDEO_CAMERA = "VideoCamera";
     public const string CREATOR_ASSET_TYPE_FBX = "fbx";
     public const string CREATOR_ASSET_TYPE_VIDEO = "video";
+    public const string UPLOADTEXT = "UploadText";
 
     //----------------------------------------------
     //  Creator Mode GameObjects

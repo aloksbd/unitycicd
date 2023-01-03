@@ -5,63 +5,81 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 public class HarnessRotateManipulator
 {
-  private GameObject Parent;
-  private GameObject ParentItem;
-  private Transform transform;
-  public HarnessRotateManipulator current;
-  public HarnessManipulator manipulator;
-  public Vector3 currentCursorPosition;
-  private const string drag_harness = "Icons/RotateHarness";
-  public event Action ObjectRotated;
-  public HarnessRotateManipulator(GameObject item, GameObject ParentComponent)
-  {
-    if (item.GetComponent<HarnessManipulator>() == null)
+    private GameObject rotatorGO;
+    private GameObject Parent;
+    private CreatorItem Item;
+    private Transform transform;
+    public HarnessRotateManipulator current;
+    public HarnessManipulator manipulator;
+    public Vector3 currentCursorPosition;
+    public event Action ObjectRotated;
+    public static bool IsRotating;
+
+
+    public HarnessRotateManipulator(GameObject GO, GameObject parent, CreatorItem creatorItem)
     {
-      item.AddComponent<HarnessManipulator>();
+        this.Item = creatorItem;
+        if (GO.GetComponent<HarnessManipulator>() == null)
+        {
+            GO.AddComponent<HarnessManipulator>();
+        }
+        manipulator = GO.GetComponent<HarnessManipulator>() == null ? GO.AddComponent<HarnessManipulator>() : GO.GetComponent<HarnessManipulator>();
+
+        manipulator.current_cursor_path = WHConstants.ROTATE_POINTER;
+
+        manipulator.mouseEnter += Highlight;
+        manipulator.mouseDown += RotateStart;
+        manipulator.mouseDrag += RotateParent;
+        manipulator.mouseUp += Released;
+        manipulator.mouseExit += RemoveHighlight;
+
+        current = this;
+
+        rotatorGO = GO;
+        Parent = parent;
     }
 
-    manipulator = item.GetComponent<HarnessManipulator>();
-    manipulator.current_cursor_path = drag_harness;
+    Vector3 initial;
 
-    manipulator.mouseDown += RotateParent;
-    manipulator.mouseDrag += RotateParent;
-    manipulator.mouseUp += RotateParent;
-
-    current = this;
-    Parent = item;
-    ParentItem = ParentComponent;
-  }
-
-  public void RotateParent(Vector3 data)
-  {
-    if (currentCursorPosition != data)
+    public void RotateStart(Vector3 data)
     {
-      GetRotatedAngle(data);
-      currentCursorPosition = data;
+        Highlight();
+        initial = data;
     }
-  }
 
-  public void GetRotatedAngle(Vector3 endPosition)
-  {
-    Vector3 itemPosition = Parent.transform.position;
-    var renderer = ParentItem.GetComponent<Renderer>();
-    
-    // var weakRotation = Parent.GetComponent<ObjectModel.IHasRotation>();
-    // WeakRotation.IsAlive check
-    // See in building canvas
-    // Set value through the functions of the IRotation, and so on
-    // if(weakRotation.i)
-
-    var bounds = renderer.bounds;
-
-    if (itemPosition != endPosition)
+    public void RotateParent(Vector3 data)
     {
-      float transformationAngle = Vector3.Angle(endPosition, itemPosition);
-      ParentItem.transform.RotateAround(bounds.center, Vector3.forward, transformationAngle);
-      if (ObjectRotated != null)
-      {
-        ObjectRotated();
-      }
+        Highlight();
+        RotateObject(data);
     }
-  }
+
+    public float RotateObject(Vector3 endPosition)
+    {
+        float angle = Mathf.Atan2(endPosition.y - initial.y, endPosition.x - initial.x) * 180 / Mathf.PI;
+        Parent.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+        return angle;
+    }
+
+    public void Released(Vector3 data)
+    {
+        RemoveHighlight();
+
+        var angle = RotateObject(data);
+        NewBuildingController.UpdateObjectRotation(this.Item.name, angle);
+    }
+
+    public void Highlight()
+    {
+        var rend = rotatorGO.GetComponent<MeshRenderer>();
+        rend.material.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
+        IsRotating = true;
+    }
+
+    public void RemoveHighlight()
+    {
+        var rend = rotatorGO.GetComponent<MeshRenderer>();
+        rend.material.color = HarnessConstant.DEFAULT_NODE_COLOR;
+        IsRotating = false;
+    }
 }

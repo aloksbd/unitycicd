@@ -13,19 +13,35 @@ public class CreatorDoorFactory : ICreatorItemFactory
         _sprite = sprite;
     }
 
-    public CreatorItem Create(string name)
+    public CreatorItem Create(string name, bool createGO = true)
     {
-        UIItem uiItem = new DoorUIFactory().Create(name);
-        GameObject door = CreateDoor();
-        door.transform.eulerAngles = new Vector3(0, 0, _parentItem.gameObject.transform.eulerAngles.z);
-        NewDoor item = new NewDoor(door, uiItem);
+        NewDoor item;
+        GameObject door = null;
+        if (createGO)
+        {
+            UIItem uiItem = new DoorUIFactory().Create(name);
+            door = CreateDoor();
+            door.transform.eulerAngles = new Vector3(0, 0, _parentItem.gameObject.transform.eulerAngles.z);
+            item = new NewDoor(door, uiItem);
+        }
+        else
+        {
+            item = new NewDoor(null, null);
+        }
+        var parentPos = _parentItem.GetComponent<NewIHasPosition>().Position;
         item.SetDimension(WHConstants.DefaultDoorLength, WHConstants.DefaultDoorHeight, WHConstants.DefaultDoorBreadth);
-        item.SetPosition(new Vector3(Mathf.Abs(_startPosition.x - _parentItem.gameObject.transform.position.x), 0, WHConstants.DefaultDoorY));
+        item.SetPosition(new Vector3(Mathf.Abs(_startPosition.x - parentPos.x), 0, WHConstants.DefaultDoorY));
         item.SetName(name);
         item.SetRotation(0, 0, 0);
-        uiItem._delegate = item;
 
-        ObjectTransformHandler transformHandler = new ObjectTransformHandler(door, item, "door");
+        if (item.uiItem != null)
+        {
+            item.uiItem._delegate = item;
+        }
+        if (createGO)
+        {
+            WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(door, item, "door");
+        }
 
         return item;
     }

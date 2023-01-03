@@ -48,6 +48,32 @@ public class CreatorItemFinder
         }
         throw new CreatorItemNotFoundException();
     }
+
+    public static List<CreatorItem> FindAll<Interface>(CreatorItem parentItem)
+    {
+        List<CreatorItem> items = new List<CreatorItem>();
+        List<CreatorItem> foundItems = new List<CreatorItem>();
+        if (parentItem == null)
+        {
+            items.Add(NewBuildingController.GetBuilding());
+        }
+        else
+        {
+            items.Add(parentItem);
+        }
+        var i = 0;
+        while (i < items.Count)
+        {
+            CreatorItem item = items[i];
+            if (item is Interface) foundItems.Add(item);
+            foreach (var child in item.children)
+            {
+                items.Add(child);
+            }
+            i++;
+        }
+        return foundItems;
+    }
 }
 
 public class CreatorItemNotFoundException : Exception { }

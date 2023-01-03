@@ -4,7 +4,7 @@ public interface ITransformHandler
 {
     void DragStart(Vector3 data);
     void Dragged(Vector3 data);
-    void Released();
+    void Released(Vector3 data);
     void Hovered();
     void Exit();
     void Highlight();

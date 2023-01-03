@@ -5,6 +5,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
+using ObjectModel;
+using Sprite = UnityEngine.Sprite;
+using System.Linq;
+using Unity.VisualScripting;
 
 public class ElevatorController : MonoBehaviour
 {
@@ -27,6 +31,8 @@ public class ElevatorController : MonoBehaviour
     //  Events
     public delegate void    PlayerExitElevator(GameObject elevatorDoor, int floor);
     public static event     PlayerExitElevator OnPlayerExitElevator;
+
+    public static Action<int, bool>    OnPlayerEnterElevatorDoor;
 
     //  Internal UI elements
     TMP_InputField          floorInputField;
@@ -57,15 +63,38 @@ public class ElevatorController : MonoBehaviour
     private bool            manualUpdate;
     private bool            canceledInMotion;
 
-    private Dictionary<int, TextMeshProUGUI>  floorItems = new Dictionary<int, TextMeshProUGUI>();
+    private Dictionary<int, TextMeshProUGUI> floorItems = new Dictionary<int, TextMeshProUGUI>();
     private Dictionary<int, string> floorNames = new Dictionary<int, string>();
 
     //  Diagnostics
-    private Trace.Config traceConfig = new Trace.Config();
+    private Trace.Config    traceConfig = new Trace.Config();
+
+    [SerializeField] private GameObject elevatorKiosk;
+    [SerializeField] private GameObject elevatorPlayer;
+    [SerializeField] private Transform currentBuildingTransform;
+
+    [SerializeField] private ElevatorDoor[] elevatorDoors;
+
+    public static bool IsPlayerOnRoof { get; private set; }
 
     private void Awake()
     {
         s_instance = this;
+        elevatorPlayer.SetActive(true);
+        elevatorKiosk.SetActive(false);
+    }
+
+    public static void LoadBuildingAndFloorData(Transform buildingT, int floorNumber)
+    {
+        ElevatorController controller = Get();
+        controller.currentBuildingTransform = buildingT;
+        controller.startingFloor = controller.destinationFloor = controller.currentFloor = floorNumber;
+    }
+
+    private void GetBuildingData()
+    {
+        elevatorDoors = currentBuildingTransform.GetComponentsInChildren<ElevatorDoor>(true);
+        floorCount = elevatorDoors.Select(e => e.FloorNumber).Distinct().Count();
     }
 
     public static ElevatorController Get()
@@ -73,34 +102,37 @@ public class ElevatorController : MonoBehaviour
         return s_instance;
     }
 
+    public static void EnterElevatorFromRoof()
+    {
+        EnterElevator(null, -1, -1, true, true);
+    }
+
     public static bool EnterElevator(
-        GameObject elevatorDoor, //  elevator door or containing wall. This object's transform will be used to set the orient the player following exit
-        int floorCount,          //  Number of floors not including roof
-        int startingFloor,       //  zero-based floor number
-        bool hasLobbyFloor,      //  Determines whether 1st floor will be labeld "L" and Lobby hotkey is enabled
-        bool hasRoofFloor)       //  Determines whether the elevato allows access to the roof
+        Transform _elevatorBuildingRef, //  elevator door or containing wall. This object's transform will be used to set the orient the player following exit
+        int _floorCount,          //  Number of floors not including roof
+        int _currentFloor,       //  zero-based floor number
+        bool _hasLobbyFloor,      //  Determines whether 1st floor will be labeld "L" and Lobby hotkey is enabled
+        bool _hasRoofFloor)       //  Determines whether the elevato allows access to the roof
     {
         //Trace.Assert(elevatorDoor != null, "Elevator door gameobject must not be null");
-
-        if (startingFloor >= 0 && startingFloor < floorCount)
+        if (_currentFloor >= -1)// && _startingFloor < _floorCount)
         {
             SceneObject.Get().ActiveMode = SceneObject.Mode.Elevator;
             ElevatorController controller = Get();
             Trace.Assert(controller != null, "Elevator Controller property was not assigned in Inspector");
 
-            controller.hasLobby = hasLobbyFloor;
-            controller.hasRoof = hasRoofFloor;
-            controller.floorCount = floorCount + (hasRoofFloor ? 1 : 0);
+            controller.hasLobby = _hasLobbyFloor;
+            controller.hasRoof = _hasRoofFloor;
+            //controller.floorCount = _floorCount + (_hasRoofFloor ? 1 : 0);
 
-            controller.startingFloor = 
-            controller.destinationFloor = 
-            controller.currentFloor = startingFloor;
+            //controller.startingFloor =
+            //controller.destinationFloor =
+            //controller.currentFloor = _currentFloor;
 
             controller.blackCurtain.FadeOut(CROSSFADE_DURATION);
             controller.InitializePanel();
             controller.SetMode(Mode.FloorSelection, true);
             controller.ShowPanel(true);
-            
 
             return true;
         }
@@ -146,6 +178,16 @@ public class ElevatorController : MonoBehaviour
         floorItems.Clear();
         floorNames.Clear();
 
+        floorItems = new Dictionary<int, TextMeshProUGUI>();
+        floorNames = new Dictionary<int, string>();
+
+        GetBuildingData();
+
+        if (currentFloor == -1)
+        {
+            currentFloor = startingFloor = destinationFloor = floorCount - 1;
+        }
+
         scrollbar.numberOfSteps = floorCount;
         scrollbar.size = 1.0f / (float)floorCount;
 
@@ -162,7 +204,7 @@ public class ElevatorController : MonoBehaviour
             }
             else
             {
-                floorNames.Add(f, String.Format("{0}", f + 1));
+                floorNames.Add(f, string.Format("{0}", f + 1));
             }
         }
 
@@ -182,7 +224,7 @@ public class ElevatorController : MonoBehaviour
             HotkeyMenu.Key.HotkeyMenu
         };
         hotkeyMenu.Populate(keys);
-        
+
         UpdateScrollBar();
         UpdateFloorWheel();
         UpdateFloorInput();
@@ -197,6 +239,10 @@ public class ElevatorController : MonoBehaviour
         for (int f = 0; f < FLOORWHEEL_ITEM_COUNT; f++)
         {
             int iName = (f - nameOffset);
+            if (!floorItems.ContainsKey(f))
+            {
+                InitializePanel();
+            }
             if (iName < 0 || iName >= floorNames.Count)
             {
                 floorItems[f].text = "";
@@ -231,7 +277,7 @@ public class ElevatorController : MonoBehaviour
         }
         else
         {
-            floorInputField.text = String.Format("{0}", Floor + 1);
+            floorInputField.text = string.Format("{0}", Floor + 1);
         }
     }
 
@@ -248,14 +294,10 @@ public class ElevatorController : MonoBehaviour
         hotkeyMenu.ShowKey(HotkeyMenu.Key.Cancel, mode == Mode.Moving);
     }
 
-    void Update()
-    {
-    }
-
     //  Panel event handlers
     public void OnFloorInputValueChanged(string value)
     {
-        foreach(int floor in floorNames.Keys)
+        foreach (int floor in floorNames.Keys)
         {
             if (floorNames[floor] == value)
             {
@@ -426,11 +468,42 @@ public class ElevatorController : MonoBehaviour
 
         if (OnPlayerExitElevator != null)
         {
-            OnPlayerExitElevator(elevatorDoor, destinationFloor);
+            //OnPlayerExitElevator(elevatorDoor, destinationFloor);
+            ElevatorFloorReached(null, destinationFloor);
         }
         else
         {
             SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
         }
+    }
+
+    Vector3 playerSpawnPos;
+    Quaternion playerSpawnRot;
+    private void ElevatorFloorReached(GameObject _, int floorNumber)
+    {
+        Transform playerPos;
+        if (hasRoof && (floorCount - 1) == floorNumber)
+        {
+            playerPos = elevatorDoors[0].PlayerT;
+            playerSpawnPos = playerPos.position;
+            playerSpawnPos.y = WHConstants.DefaultWallHeight * floorCount;
+        }
+        else
+        {
+            playerPos = elevatorDoors.First(e => e.FloorNumber == floorNumber).PlayerT;
+            playerSpawnPos = playerPos.position;
+        }
+        playerSpawnPos.y += 0.2f;
+        playerSpawnRot = playerPos.rotation;
+        playerSpawnRot *= Quaternion.Euler(0, 180f, 0);
+
+        SceneObject.GetPlayer(SceneObject.Mode.Player).transform.SetPositionAndRotation(playerSpawnPos, playerSpawnRot);
+        SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
+
+        currentFloor = floorNumber;
+
+        OnPlayerEnterElevatorDoor(currentFloor, currentFloor == (floorCount - 1));
+
+        IsPlayerOnRoof = currentFloor == (floorCount - 1);
     }
 }

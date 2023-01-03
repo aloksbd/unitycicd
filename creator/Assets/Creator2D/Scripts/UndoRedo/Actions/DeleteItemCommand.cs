@@ -2,11 +2,11 @@ using System;
 
 public class DeleteItemCommand : ICommand
 {
-    protected string _name;
+    protected System.Guid _name;
     protected bool _isFloorPlan;
     private Guid _id;
 
-    public DeleteItemCommand(string name, bool isFloorPlan)
+    public DeleteItemCommand(System.Guid name, bool isFloorPlan)
     {
         _name = name;
         _isFloorPlan = isFloorPlan;
@@ -16,13 +16,12 @@ public class DeleteItemCommand : ICommand
     {
         try
         {
-            var item = CreatorItemFinder.FindByName(_name);
-            _id = item.Id;
+            var item = CreatorItemFinder.FindById(this._name);
             item.Destroy();
             if (_isFloorPlan)
             {
                 CreatorUIController.SetupAddFloorDropdown();
-                if (NewBuildingController.CurrentFloorPlan() != null && NewBuildingController.CurrentFloorPlan().name == _name)
+                if (NewBuildingController.CurrentFloorPlan() != null && NewBuildingController.CurrentFloorPlan().name == item.name)
                 {
                     NewBuildingController.SetCurrentFloorPlan(null);
                     BuildingInventoryController buildingInventoryController = BuildingInventoryController.Get();

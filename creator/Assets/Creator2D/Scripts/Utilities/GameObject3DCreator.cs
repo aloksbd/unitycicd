@@ -34,13 +34,12 @@ public class GameObject3DCreator
                 {
                     MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
                     MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
-                    Material material = Resources.Load("Materials/WallMaterial") as Material;
+                    Material material = Resources.Load("Materials/BuildingWallMaterial") as Material;
                     meshRenderer.material = material;
 
                     meshFilter.mesh = meshGenerator.GetMesh();
                     MeshCollider collider = gameObject.AddComponent<MeshCollider>();
                     collider.sharedMesh = meshFilter.mesh;
-
                 }
             }
             catch (Exception e)

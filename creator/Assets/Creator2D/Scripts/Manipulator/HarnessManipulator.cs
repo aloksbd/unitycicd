@@ -18,9 +18,9 @@ public class HarnessManipulator : MonoBehaviour
         current_cursor = Resources.Load<Texture2D>(current_cursor_path);
     }
 
-    public void Update()
-    {
-    }
+
+    public event Action mouseEnter;
+    public event Action mouseExit;
 
     public event Action<Vector3> mouseDrag;
     public event Action<Vector3> mouseDown;
@@ -29,11 +29,13 @@ public class HarnessManipulator : MonoBehaviour
     public void OnMouseEnter()
     {
         UnityEngine.Cursor.SetCursor(current_cursor, Vector2.zero, CursorMode.Auto);
+        mouseEnter?.Invoke();
     }
 
     public void OnMouseExit()
     {
         UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        mouseExit?.Invoke();
     }
 
     public void OnMouseDrag()

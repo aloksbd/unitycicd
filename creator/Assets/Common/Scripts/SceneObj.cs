@@ -49,7 +49,7 @@ public class SceneObject
     {
         { Mode.Welcome,  new ModeInstance(ObjectName.WELCOME_MODE,  false /* useSkybox */,  false /* useEventSystem */) },
         { Mode.Player,   new ModeInstance(ObjectName.PLAYER_MODE,   true  /* useSkybox */,  true  /* useEventSystem */) },
-        { Mode.Creator,  new ModeInstance(ObjectName.CREATOR_MODE,  false /* useSkybox */,  false /* useEventSystem */) },
+        { Mode.Creator,  new ModeInstance(ObjectName.CREATOR_MODE,  false /* useSkybox */,  true /* useEventSystem */) },
         { Mode.Elevator, new ModeInstance(ObjectName.ELEVATOR_MODE, false /* useSkybox */,  true  /* useEventSystem */) }
     };
 
@@ -278,6 +278,9 @@ public class SceneObject
                 if (instance.useEventSystem)
                 {
                     eventSystem.gameObject.SetActive(true);
+
+                    //This is done to prevent the UIToolkit from using the EventSystem
+                    EventSystem.SetUITookitEventSystemOverride(null, false, false);
                 }
                 else
                 {
@@ -449,7 +452,7 @@ public class SceneObject
             UnityEngine.Cursor.visible = true;
         }
     }
-    
+
     private void SetInteractionMode(
         Mode mode,
         PlayerController.IAMode interactionMode)

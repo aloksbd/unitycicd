@@ -1,5 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using ImaginationOverflow.UniversalDeepLinking.Storage;
+
+#if UNITY_STANDALONE_WIN 
+using Microsoft.Win32;
+#endif
 
 public class AppBootstrap : MonoBehaviour
 {
@@ -20,22 +25,40 @@ public class AppBootstrap : MonoBehaviour
             if (args[1] == "-uninstall")
             {
                 DeeplinkHandler.Instance.UnLinkDeeplink();
+
+                //Clearing the Registry
+#if UNITY_STANDALONE_WIN
+                var key = Registry.CurrentUser.OpenSubKey("Software", true);
+                var classes = key.OpenSubKey("Classes", true);
+
+                var config = ConfigurationStorage.Load();
+
+                if (classes != null)
+                {
+                    var appkey = classes.OpenSubKey(config.DeepLinkingProtocols[0].Scheme);
+
+                    if (appkey != null)
+                    {
+                        classes.DeleteSubKeyTree(config.DeepLinkingProtocols[0].Scheme);
+                        appkey = null;
+                    }
+                }
+#endif
                 PlayerPrefs.DeleteKey("access_token");
                 Application.Quit();
-                return;
             }
         }
         Init();
     }
 
-    void Init()
+    public void Init()
     {
         AuthenticationHandler.Init();
-        #if ADMIN
+#if ADMIN
             SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
-        #else
-            SceneObject.Get().ActiveMode = DefaultStartupMode;
-        #endif 
+#else
+        SceneObject.Get().ActiveMode = DefaultStartupMode;
+#endif
         StartCoroutine(AfterAuth());
     }
 

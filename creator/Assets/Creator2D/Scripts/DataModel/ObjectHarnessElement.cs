@@ -201,8 +201,6 @@ public class ObjectHarnessElement
         rotateCircle.transform.position = new Vector3(bounds.center.x, bounds.center.y + bounds.extents.y + 0.2f, bounds.center.z);
         rotateCircle.transform.localScale = new Vector3(rotate_sphere_scale, rotate_sphere_scale, rotate_sphere_scale);
         rotateCircle.name = ObjectName.ROTATE_HARNESS;
-        HarnessRotateManipulator rotateManipulator = new HarnessRotateManipulator(rotateCircle, Parent);
-        rotateManipulator.ObjectRotated += HandleObjectChanged;
 
         rotateCircle.transform.parent = Harness.transform;
     }
@@ -222,5 +220,4 @@ public class ObjectHarnessElement
         RepositionResizeHarness();
         // RepositionRotateHarness();
     }
-
 }

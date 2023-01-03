@@ -24,6 +24,15 @@ public class HarnessEventHandler : MonoBehaviour
     private static bool moving = false;
     private float downClickTime;
     private float ClickDeltaTime = 0.2f;
+    private bool clicked;
+    public bool IsClick
+    {
+        private set
+        {
+            clicked = value;
+        }
+        get { return clicked; }
+    }
 
     public void OnMouseEnter()
     {
@@ -40,6 +49,7 @@ public class HarnessEventHandler : MonoBehaviour
         if (!moving)
         {
             UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+
             mouseExit?.Invoke();
             selected = false;
         }
@@ -47,7 +57,7 @@ public class HarnessEventHandler : MonoBehaviour
 
     public void OnMouseDrag()
     {
-        if (!IsClick())
+        if (!IsClick)
         {
             moving = true;
             drag(getMousePosition().GetValueOrDefault());
@@ -67,22 +77,27 @@ public class HarnessEventHandler : MonoBehaviour
 
     public void OnMouseUp()
     {
-        if (IsClick())
+        CheckIfClicked();
+
+        if (IsClick)
         {
             mouseClicked?.Invoke();
+            UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+            return;
         }
         moving = false;
         UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         mouseUp?.Invoke();
     }
 
-    public bool IsClick()
+    private void CheckIfClicked()
     {
         if (Time.time - downClickTime <= ClickDeltaTime)
         {
-            return true;
+            IsClick = true;
+            return;
         }
-        return false;
+        IsClick = false;
     }
 
     public Vector3? getMousePosition()

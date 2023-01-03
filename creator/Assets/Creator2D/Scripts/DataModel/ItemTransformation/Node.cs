@@ -4,20 +4,29 @@ using System.Collections.Generic;
 
 public class Node
 {
-    public static Dictionary<GameObject, Node> allNodeList = new Dictionary<GameObject, Node>();
-    public HarnessEventHandler eventHandler;
-    public Action<Node, GameObject> onNodeHovered;
-    public Action<Node, GameObject> onNodeExit;
+    public InputEventHandler eventHandler;
+    public Action<Node> onNodeHovered;
+    public Action<Node> onNodeExit;
     public Action<Vector3, Node> onNodeDrag;
-    public Action<Node, GameObject> onNodeReleased;
-    public Action<Node> onNodeClicked;
+    public Action<Node> onNodeReleased;
+    public Action<Node> OnNodeDetach;
     public GameObject nodeGO;
     private Renderer _renderer;
     private Color _originalColor;
     private LayerMask _layerMask;
-
-    public Node(int index, GameObject parentGO)
+    public CreatorItem floor;
+    public Vector3 offset;
+    public enum NodeState
     {
+        CLICKABLE,
+        CLICKED
+    }
+    public NodeState nodeState = NodeState.CLICKABLE;
+
+
+    public Node(int index, GameObject parentGO, CreatorItem floor)
+    {
+        this.floor = floor;
         this.nodeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
         var wallRenderer = parentGO.GetComponent<LineRenderer>();
@@ -39,45 +48,68 @@ public class Node
         this.nodeGO.name = $"{index}_{parentGO.name}_{ObjectName.RESIZE_HARNESS}";
         this.nodeGO.transform.rotation = new Quaternion(0, 0, 0, 0);
 
-        allNodeList.Add(this.nodeGO, this);
+        TransformDatas.allNodeList.Add(this.nodeGO, this);
+
         RegisterEvents();
     }
 
     private void RegisterEvents()
     {
-        eventHandler = this.nodeGO.GetComponent<HarnessEventHandler>() == null ? this.nodeGO.AddComponent<HarnessEventHandler>() : this.nodeGO.GetComponent<HarnessEventHandler>();
-        eventHandler.mouseHover += NodeHovered;
-        eventHandler.mouseExit += NodeExit;
-        eventHandler.drag += NodeDragged;
-        eventHandler.mouseUp += NodeReleased;
-        eventHandler.mouseClicked += NodeClicked;
+        eventHandler = this.nodeGO.GetComponent<InputEventHandler>() == null ? this.nodeGO.AddComponent<InputEventHandler>() : this.nodeGO.GetComponent<InputEventHandler>();
+        eventHandler.MouseHovered += NodeHovered;
+        eventHandler.MouseExit += NodeExit;
+        eventHandler.MouseDragStart += NodeDragStart;
+        eventHandler.MouseDrag += NodeDragged;
+        eventHandler.MouseDragEnd += NodeReleased;
+        eventHandler.MouseClick += NodeClicked;
     }
+
 
     public void NodeClicked()
     {
-        onNodeClicked?.Invoke(this);
-        eventHandler.OnMouseExit();
+        CreatorHotKeyController.Instance.DeselectAllItems();
+
+        TransformDatas.SelectedNode = this;
+        nodeState = NodeState.CLICKED;
+        CreatorHotKeyController.Instance.hotkeyMenu.Populate(CreatorHotKeyController.Instance.nodeKeys);
+
+        HighLight();
+    }
+
+    public void DetachNode()
+    {
+        OnNodeDetach?.Invoke(this);
     }
 
     public void NodeHovered()
     {
+        if (nodeState == NodeState.CLICKABLE)
+        {
+            InputEventHandler.selected = true;
+            HighLight();
+            onNodeHovered?.Invoke(this);
+        }
+    }
+
+    public void NodeDragStart(Vector3 data)
+    {
+        CreatorHotKeyController.Instance.DeselectAllItems();
         HighLight();
-        GameObject attachableTo = CheckNodeOverlap();
-        onNodeHovered?.Invoke(this, attachableTo);
     }
 
     public void NodeDragged(Vector3 data)
     {
-        if (eventHandler.isInsideCanvas())
-            onNodeDrag?.Invoke(data, this);
+        onNodeDrag?.Invoke(data, this);
     }
 
     public void NodeExit()
     {
-        GameObject attachableTo = CheckNodeOverlap();
-
-        RemoveHighLight();
-        onNodeExit?.Invoke(this, attachableTo);
+        if (nodeState == NodeState.CLICKABLE)
+        {
+            InputEventHandler.selected = false;
+            RemoveHighLight();
+            onNodeExit?.Invoke(this);
+        }
     }
 
     public void NodeExitWall()
@@ -90,13 +122,15 @@ public class Node
         RemoveHighLight();
     }
 
-    public void NodeReleased()
+    public void NodeReleased(Vector3 data)
     {
-        RemoveHighLight();
-        GameObject attachableTo = CheckNodeOverlap();
+        if (nodeState == NodeState.CLICKABLE)
+        {
+            InputEventHandler.selected = false;
 
-        onNodeReleased?.Invoke(this, attachableTo);
-        //AdjustAttachedObjects();
+            RemoveHighLight();
+            onNodeReleased?.Invoke(this);
+        }
     }
 
     public void AdjustAttachedObjects()
@@ -110,51 +144,46 @@ public class Node
             var GO = parent.GetChild(i).gameObject;
             var object_bound = GO.GetComponent<SpriteRenderer>().bounds;
 
-            Trace.Log($"ADJUST {GO.name} :: {GO.transform.localPosition.x} :: {Vector3.Distance(bound.max, bound.min)} :: {object_bound.size.x * 1.2f}");
             if (GO.transform.localPosition.x > Vector3.Distance(bound.max, bound.min) - (object_bound.size.x * 1.2f))
             {
                 CreatorItem item = CreatorItemFinder.FindItemWithGameObject(GO);
                 if (item is NewWindow || item is NewDoor)
                 {
-                    Trace.Log($"DeleteItem :: {item.name}");
                     NewBuildingController.DeleteItem(item.name);
                 }
             }
         }
     }
 
-    public GameObject CheckNodeOverlap()
-    {
-        Collider[] hitColliders = Physics.OverlapBox(this.nodeGO.transform.position, this.nodeGO.transform.localScale, Quaternion.identity, _layerMask, QueryTriggerInteraction.Collide);
-
-        if (hitColliders.Length > 0)
-        {
-            foreach (var hit in hitColliders)
-            {
-                if (hit.tag == "Node" && hit.name != this.nodeGO.name)
-                {
-                    return hit.gameObject;
-                }
-            }
-        }
-        return null;
-    }
-
     public void HighLight()
     {
-        var lineRenderer = this.nodeGO.transform.parent.GetComponent<LineRenderer>();
+        try
+        {
+            var lineRenderer = this.nodeGO.transform.parent.GetComponent<LineRenderer>();
 
-        this.nodeGO.transform.localScale = new Vector3((lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_NODE_SIZE, (lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_NODE_SIZE, 0.05f);
-        this.nodeGO.transform.position = new Vector3(this.nodeGO.transform.position.x, this.nodeGO.transform.position.y, HarnessConstant.HOVER_NODE_ZOFFSET);
-        this._renderer.material.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
+            this.nodeGO.transform.localScale = new Vector3((lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_NODE_SIZE, (lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.HOVER_NODE_SIZE, 0.05f);
+            this.nodeGO.transform.position = new Vector3(this.nodeGO.transform.position.x, this.nodeGO.transform.position.y, HarnessConstant.HOVER_NODE_ZOFFSET);
+            this._renderer.material.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
+        }
+        catch
+        {
+            Trace.Log($"Node GO not found");
+        }
     }
 
     public void RemoveHighLight()
     {
-        var lineRenderer = this.nodeGO.transform.parent.GetComponent<LineRenderer>();
+        try
+        {
+            var lineRenderer = this.nodeGO.transform.parent.GetComponent<LineRenderer>();
 
-        this.nodeGO.transform.localScale = new Vector3((lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, (lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, 0.05f);
-        this.nodeGO.transform.position = new Vector3(this.nodeGO.transform.position.x, this.nodeGO.transform.position.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
-        this._renderer.material.color = this._originalColor;
+            this.nodeGO.transform.localScale = new Vector3((lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, (lineRenderer.widthMultiplier + 0.05f) * HarnessConstant.DEFAULT_NODE_SIZE, 0.05f);
+            this.nodeGO.transform.position = new Vector3(this.nodeGO.transform.position.x, this.nodeGO.transform.position.y, HarnessConstant.DEFAULT_NODE_ZOFFSET);
+            this._renderer.material.color = this._originalColor;
+        }
+        catch
+        {
+            Trace.Log($"Node GO not found");
+        }
     }
 }

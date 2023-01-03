@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Linq;
 
 namespace ObjectModel
 {
@@ -39,7 +40,7 @@ namespace ObjectModel
 
         public static string GetName(string baseName, IEnumerable<VisualElement> siblings)
         {
-            var availableNumber = 1;
+            List<int> takenNumbers = new List<int>();
             foreach (var element in siblings)
             {
                 Foldout item;
@@ -54,18 +55,13 @@ namespace ObjectModel
 
                 if (item.name.Contains(baseName))
                 {
-                    try
-                    {
-                        if (availableNumber < GetItemNameNumber(item.name)) break;
-                    }
-                    catch
-                    {
-                        Trace.Error("Item Name doesnot have numbered suffix");
-                    }
-                    availableNumber++;
+                    var num = GetItemNameNumber(item.name);
+                    takenNumbers.Add(num);
                 }
             }
-            var name = baseName + GetFormattedNumber(availableNumber);
+            var expectedRange = Enumerable.Range(1, takenNumbers.Count + 1);
+            var missingNumbers = expectedRange.Except(takenNumbers);
+            var name = baseName + GetFormattedNumber(missingNumbers.ToList()[0]);
             return name;
         }
 

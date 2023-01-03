@@ -3,10 +3,27 @@ using System.Collections.Generic;
 
 public class NewWall : NewItemWithMesh
 {
-    public NewWall(GameObject gameObject, UIItem uiItem) : base(gameObject, uiItem) { }
+    private bool _IsExterior = false;
+
+    public bool IsExterior
+    {
+        get
+        {
+            return _IsExterior;
+        }
+
+        set
+        {
+            this._IsExterior = value;
+        }
+    }
+    public NewWall(GameObject gameObject, UIItem uiItem, bool isExterior = false) : base(gameObject, uiItem)
+    {
+        this._IsExterior = isExterior;
+    }
     public override CreatorItem Clone()
     {
-        CreatorItem clone = new NewWall(GameObject.Instantiate(gameObject), new UIItem(name));
+        CreatorItem clone = new NewWall(GameObject.Instantiate(gameObject), new UIItem(name), _IsExterior);
         foreach (Transform child in clone.gameObject.transform)
         {
             UnityEngine.Object.Destroy(child.gameObject);
@@ -16,9 +33,21 @@ public class NewWall : NewItemWithMesh
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
 
-        WallTransform wallTransform = new WallTransform(clone.gameObject, clone as NewWall);
+        if (clone is NewWall)
+        {
+            var item = clone as NewWall;
+            item.SetWallTransformer();
+        }
+
         CloneChildren(clone);
+
         return clone;
+    }
+
+    public override Mesh GetMesh()
+    {
+        var dimension = Parent.GetComponent<NewIHasDimension>().Dimension;
+        return new NewWallCreator(dimension.Height, Dimension.Length, Dimension.Width, children).CreateWallMesh();
     }
 }
 

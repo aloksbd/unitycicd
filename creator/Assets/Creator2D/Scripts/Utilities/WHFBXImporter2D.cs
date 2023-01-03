@@ -4,16 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using Autodesk.Fbx;
 using UnityEngine;
+using UnityEngine.UIElements;
 class WHFbxImporter2D : System.IDisposable
 {
 
     string parentGameObjectName = "Structure";
     public string pathName;
-
-    /// <summary>
-    /// Number of nodes imported including siblings and decendents
-    /// </summary>
-    public int NumNodes { private set; get; }
+    private static List<Vector3> _floorBoundary;
 
     private FbxSystemUnit UnitySystemUnit { get { return FbxSystemUnit.m; } }
 
@@ -45,11 +42,12 @@ class WHFbxImporter2D : System.IDisposable
         System.GC.SuppressFinalize(this);
     }
 
-    public static int ImportObjects(string filePath)
+    public static int ImportObjects(string filePath, List<Vector3> floorBoundary)
     {
         using (var fbxImporter = Create())
         {
-            fbxImporter.pathName = filePath.Substring(0, filePath.LastIndexOf("\\"));
+            fbxImporter.pathName = filePath.Substring(0, filePath.LastIndexOf(WHConstants.PATH_DIVIDER));
+            _floorBoundary = floorBoundary;
             return fbxImporter.ImportAll(filePath);
         }
     }
@@ -98,6 +96,7 @@ class WHFbxImporter2D : System.IDisposable
                 {
                     Debug.LogError(string.Format("failed to import file ({0})",
                     fbxImporter.GetStatus().GetErrorString()));
+                    return 0;
                 }
                 else
                 {
@@ -108,7 +107,7 @@ class WHFbxImporter2D : System.IDisposable
                 // cleanup
                 fbxScene.Destroy();
                 // fbxImporter.Destroy();
-                return status == true ? NumNodes : 0;
+                return status == true ? 1 : 0;
             }
         }
     }
@@ -219,29 +218,110 @@ class WHFbxImporter2D : System.IDisposable
         GameObject unityGo = new GameObject(name);
 
         ProcessTransform(fbxNode, unityGo);
-        ProcessMesh(fbxNode, unityGo);
+        // ProcessMesh(fbxNode, unityGo);
         CreatorItem currentItem = null;
 
-        if (name.Contains("FloorPlan"))
+        if (name.Contains("Roof"))
         {
+            currentItem = new CreatorRoofFactory().Create("Roof");
+            parentItem.AddChild(currentItem);
+            NewBuildingController.SetCurrentRoof(currentItem);
+        }
+        else if (name.Contains("FloorPlan"))
+        {
+            if (NewBuildingController.GetCurrentRoof() == null)
+            {
+                var roofItem = new CreatorRoofFactory().Create("Roof");
+                parentItem.AddChild(roofItem);
+                NewBuildingController.SetCurrentRoof(roofItem);
+
+                var floorItem = new CreatorFloorFactory().Create("Floor001");
+                roofItem.AddChild(floorItem);
+                floorItem.GetComponent<NewIHasBoundary>().SetBoundary(_floorBoundary);
+            }
             currentItem = new CreatorFloorPlanFactory().Create(name);
             parentItem.AddChild(currentItem);
+
             var floorPlan = NewBuildingController.CurrentFloorPlan();
+
+            float posZ = 0;
+            if (floorPlan != null)
+            {
+                var z = floorPlan.GetComponent<NewIHasPosition>().Position.z;
+                var floorHeight = floorPlan.GetComponent<NewIHasDimension>().Dimension.Height;
+                posZ = z + floorHeight;
+            }
+
+            currentItem.GetComponent<NewIHasPosition>().SetPosition(new Vector3(0, 0, posZ));
+
+            var floorPlanHeight = WHConstants.DefaultWallHeight;
+            var heightProperty = fbxNode.FindProperty("FLOORPLAN_HEIGHT");
+            if (heightProperty != null && heightProperty.IsValid())
+            {
+                floorPlanHeight = heightProperty.GetFloat();
+            }
+
+            var _dimension = new Dimension(0, floorPlanHeight, 0);
+            currentItem.GetComponent<NewIHasDimension>().SetDimension(_dimension.Length, _dimension.Height, _dimension.Width);
+
             var setFloorPlanCommand = new SetCurrentFloorPlanCommand(name, floorPlan != null ? floorPlan.name : "", true);
             setFloorPlanCommand.Execute();
+
+            var linkFloorNameProperty = fbxNode.FindProperty("LinkFloorName");
+            if (linkFloorNameProperty != null && linkFloorNameProperty.IsValid() && linkFloorNameProperty.GetString() != "")
+            {
+                NewBuildingController.LinkFloorPlan(currentItem, CreatorItemFinder.FindByName(linkFloorNameProperty.GetString()));
+            }
+
+            UnityEngine.UIElements.TextField HeightField = currentItem.uiItem.Foldout.Q<UnityEngine.UIElements.TextField>(name + "-height");
+            HeightField.value = (floorPlanHeight / WHConstants.FEET_TO_METER).ToString();
+
+            var roof = NewBuildingController.GetCurrentRoof();
+            var roofPosition = roof.Position;
+            roof.SetPosition(new Vector3(0, 0, roofPosition.z + floorPlanHeight));
         }
         else if (name.Contains("Floor"))
         {
             currentItem = new CreatorFloorFactory().Create(name);
             parentItem.AddChild(currentItem);
+            currentItem.GetComponent<NewIHasBoundary>().SetBoundary(_floorBoundary);
+        }
+        else if (name.Contains("Ceiling"))
+        {
+            float height = WHConstants.DefaultFloorHeight;
+            var floorPlan = NewBuildingController.CurrentFloorPlan();
+            if (floorPlan != null)
+            {
+                height = floorPlan.GetComponent<NewIHasDimension>().Dimension.Height;
+            }
+            currentItem = new CreatorCeilingFactory().Create(name);
+            parentItem.AddChild(currentItem);
+            currentItem.GetComponent<NewIHasPosition>().SetPosition(new Vector3(0, 0, height));
+            currentItem.GetComponent<NewIHasBoundary>().SetBoundary(_floorBoundary);
         }
         else if (name.Contains("Wall"))
         {
             var pos = unityGo.transform.position;
-            var endX = pos.x + unityGo.GetComponent<Renderer>().localBounds.size.x * MathF.Cos((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
-            var endY = pos.z + unityGo.GetComponent<Renderer>().localBounds.size.x * MathF.Sin((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
-            currentItem = new CreatorWallFactory(new Vector3(pos.x, pos.z, -0.2f), new Vector3(endX, endY, -0.2f)).Create(name);
+            // var endX = pos.x + unityGo.GetComponent<Renderer>().localBounds.size.x * MathF.Cos((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
+            // var endY = pos.z + unityGo.GetComponent<Renderer>().localBounds.size.x * MathF.Sin((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
+
+            var endX = pos.x;
+            var endY = pos.z;
+            var LOCALBOUND_X_Property = fbxNode.FindProperty("LOCALBOUND_X");
+            if (LOCALBOUND_X_Property != null)
+            {
+                endX = pos.x + ((float)LOCALBOUND_X_Property.GetFloat()) * MathF.Cos((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
+                endY = pos.z + ((float)LOCALBOUND_X_Property.GetFloat()) * MathF.Sin((-unityGo.transform.rotation.eulerAngles.y * (MathF.PI)) / 180.0F);
+            }
+            var isExterior = false;
+            var EXTERIOR_Property = fbxNode.FindProperty("EXTERIOR");
+            if (EXTERIOR_Property != null)
+            {
+                isExterior = (int)EXTERIOR_Property.GetInt() == 1 ? true : false;
+            }
+            currentItem = new CreatorWallFactory(new Vector3(pos.x, pos.z, WHConstants.DefaultZ), new Vector3(endX, endY, WHConstants.DefaultZ), isExterior).Create(name);
             parentItem.AddChild(currentItem);
+            NewBuildingController.AttachNodes(currentItem as NewWall, parentItem, true);
         }
         else if (name.Contains("Door") || name.Contains("Window"))
         {
@@ -249,7 +329,21 @@ class WHFbxImporter2D : System.IDisposable
             Sprite sprite = name.Contains("Door") ? Resources.Load<Sprite>("Sprites/Door") : Resources.Load<Sprite>("Sprites/Window");
             currentItem = name.Contains("Door") ? new CreatorDoorFactory(parentItem, new Vector3(pos.x + parentItem.gameObject.transform.position.x, parentItem.gameObject.transform.position.y, -0.2f), sprite).Create(name) : new CreatorWindowFactory(parentItem, new Vector3(pos.x + parentItem.gameObject.transform.position.x, parentItem.gameObject.transform.position.y, -0.2f), sprite).Create(name);
             parentItem.AddChild(currentItem);
-            currentItem.gameObject.transform.localPosition = new Vector3(unityGo.transform.position.x, 0.0f, -0.2f);
+            currentItem.gameObject.transform.localPosition = new Vector3(unityGo.transform.position.x, 0.0f, WHConstants.DefaultZ);
+        }
+        else if (name.Contains("Elevator"))
+        {
+            var pos = unityGo.transform.position;
+            Sprite sprite = Resources.Load<Sprite>("Sprites/Elevator");
+            var height = WHConstants.DefaultElevatorLength;
+            if (parentItem.GetComponent<NewIHasDimension>() != null)
+            {
+                height = parentItem.GetComponent<NewIHasDimension>().Dimension.Height;
+            }
+            currentItem = new CreatorElevatorFactory(new Vector3(pos.x, pos.z, -0.2f), sprite, height).Create(name);
+            parentItem.AddChild(currentItem);
+            currentItem.gameObject.transform.localRotation = Quaternion.Euler(0, 0, -unityGo.transform.localRotation.eulerAngles.y); ;
+            currentItem.GetComponent<NewIHasRotation>().SetRotation(0f, -currentItem.gameObject.transform.rotation.eulerAngles.z, 0f);
         }
         else if (name.Contains(ObjectName.CREATOR_BUILDING))
         {
@@ -592,7 +686,7 @@ class WHFbxImporter2D : System.IDisposable
 
         if (filePathProperty != null && filePathProperty.IsValid())
         {
-            var filePath = pathName + "\\Textures\\" + filePathProperty.GetString();
+            var filePath = pathName + WHConstants.PATH_DIVIDER + "Textures" + WHConstants.PATH_DIVIDER + filePathProperty.GetString();
             if (File.Exists(filePath))
             {
                 fileData = File.ReadAllBytes(filePath);

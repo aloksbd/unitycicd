@@ -196,11 +196,6 @@ namespace TerrainEngine
                         cellMetrics.Add(cell);
                     }
 
-                    Trace.Log(TerrainController.tileDiagnostics,
-                        "Terrain wanted: Index {0}: Filename: '{1}'",
-                        index,
-                        cell.slippyTileName);
-
                     index++;
                 }
             }

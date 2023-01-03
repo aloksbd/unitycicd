@@ -13,19 +13,34 @@ public class CreatorWindowFactory : ICreatorItemFactory
         _sprite = sprite;
     }
 
-    public CreatorItem Create(string name)
+    public CreatorItem Create(string name, bool createGO = true)
     {
-        UIItem uiItem = new WindowUIFactory().Create(name);
-        GameObject window = CreateWindow();
-        window.transform.eulerAngles = new Vector3(0, 0, _parentItem.gameObject.transform.eulerAngles.z);
-        NewWindow item = new NewWindow(window, uiItem);
+        NewWindow item;
+        GameObject window = null;
+        if (createGO)
+        {
+            UIItem uiItem = new WindowUIFactory().Create(name);
+            window = CreateWindow();
+            window.transform.eulerAngles = new Vector3(0, 0, _parentItem.gameObject.transform.eulerAngles.z);
+            item = new NewWindow(window, uiItem);
+        }
+        else
+        {
+            item = new NewWindow(null, null);
+        }
+        var parentPos = _parentItem.GetComponent<NewIHasPosition>().Position;
         item.SetDimension(WHConstants.DefaultWindowLength, WHConstants.DefaultWindowHeight, WHConstants.DefaultWindowBreadth);
-        item.SetPosition(new Vector3(Mathf.Abs(_startPosition.x - _parentItem.gameObject.transform.position.x), 0, WHConstants.DefaultWindowY));
+        item.SetPosition(new Vector3(Mathf.Abs(_startPosition.x - parentPos.x), 0, WHConstants.DefaultWindowY));
         item.SetName(name);
         item.SetRotation(0, 0, 0);
-        uiItem._delegate = item;
-
-        ObjectTransformHandler transformHandler = new ObjectTransformHandler(window, item, "window");
+        if (item.uiItem != null)
+        {
+            item.uiItem._delegate = item;
+        }
+        if (createGO)
+        {
+            WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(window, item, "window");
+        }
         return item;
     }
 

@@ -10,18 +10,10 @@ public class NewCeiling : NewItemWithMesh, NewIHasBoundary
 
     public override Mesh GetMesh()
     {
-        List<Vector2> pointList = new List<Vector2>();
-
-        foreach (var b in _boundary)
-        {
-            pointList.Add(new Vector2(b.x, b.z));
-        }
-
-        // _boundary is closed meaning the first coordinate is also repeated in last one
-        pointList.RemoveAt(pointList.Count - 1);
-
-        var mesh = new Triangulator().CreateInfluencePolygon(pointList.ToArray());
+        var mesh = BoundedMeshCreator.GetMesh(_boundary);
         NormalInverter.Invert(mesh);
+        var dimension = Parent.GetComponent<NewIHasDimension>().Dimension;
+        SetPosition(new Vector3(0.0f, 0.0f, dimension.Height));
         return mesh;
     }
 

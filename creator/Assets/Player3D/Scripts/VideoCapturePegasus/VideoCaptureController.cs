@@ -33,18 +33,21 @@ public class VideoCaptureController : MonoBehaviour
     private GameObject pegasusContainer;
     private int fbxImported;
     private float constantSpeed = 25.0f;
-    private float rotationMax = 360.0f;
+    private float rotationMax = 359.0f;
     private OsmBuildingData buildingData;
-    void Start()
+    async void Start()
     {
 #if ADMIN
         runTime = TerrainEngine.TerrainController.Get();
 
-        var jsonText = File.ReadAllText("C:\\Users\\"+System.Windows.Forms.SystemInformation.UserName.ToString()+"\\Documents\\earth9\\videoProcessing\\creator_versions.json");
+        var jsonText = File.ReadAllText("C:\\Users\\"+System.Windows.Forms.SystemInformation.UserName.ToString()+WHConstants.VIDEO_CAPTURE_SUBMISSION_SUBPATH+"\\creator_versions.json");
         details = JsonConvert.DeserializeObject<ISet<SubmissionDetail>>(jsonText);
 
         submissionDetail = details.FirstOrDefault();
-
+            // instantiate pegasus camera along with target object for video capture.
+        pegasusContainer = SceneObject.Create(SceneObject.Mode.Player,"PegasusContainer");
+        try
+        {
         if(details.Count > 0)
         {
             TerrainBootstrap.Latitude = Double.Parse(submissionDetail.center.coordinates.Split(" ")[1]);
@@ -57,10 +60,17 @@ public class VideoCaptureController : MonoBehaviour
             System.DateTime foo = System.DateTime.Now;
             long unixTime = ((System.DateTimeOffset)foo).ToUnixTimeSeconds();   
         
-            WHFbxImporter.ImportObjects(submissionDetail.location);
-
-            // instantiate pegasus camera along with target object for video capture.
-            pegasusContainer = SceneObject.Create(SceneObject.Mode.Player,"PegasusContainer");
+            var buildingID = submissionDetail.buildingId;
+            var buildingName = "PEGASUS_" + buildingID;
+            WHFbxImporterPlayer player1 = new WHFbxImporterPlayer();
+            CreatorItem buildingItem = player1.ImportObjects(submissionDetail.location, await getBoundary(buildingID));
+            if (buildingItem != null)
+            {
+                buildingItem.SetName(buildingName);
+                GameObject structure = SceneObject.Create(SceneObject.Mode.Player, ObjectName.CREATOR_STRUCTURE);
+                GameObject3DCreator.Create(buildingItem, structure);
+            }
+         
             GameObject pegasusCamera = GameObject.CreatePrimitive(PrimitiveType.Cube);
             pegasusCamera.name = ObjectName.PEGASUS_CAMERA_GAMEOBJECT;
             pegasusTarget = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -76,13 +86,13 @@ public class VideoCaptureController : MonoBehaviour
             pegasusCamera.GetComponentInChildren<Renderer>().enabled = false;
 
             // set video capture prefab to captureUIPrefab instance of the controller
-            VideoCapture videoCapturePrefab = Instantiate(Resources.Load("Prefabs/VideoCapture", typeof(VideoCapture))) as VideoCapture;
+            VideoCapture videoCapturePrefab = Instantiate(Resources.Load("VideoCapture", typeof(VideoCapture))) as VideoCapture;
             captureUIPrefab =  videoCapturePrefab;
             captureUI = videoCapturePrefab;
             captureUI.regularCamera = videoCaptureCamera;
             // todo: figure out why video time reduced if following is uncommented. We dont need to capture audio.
             // captureUIPrefab.captureAudio = false;
-            captureUI.saveFolder = "C:\\Users\\"+System.Windows.Forms.SystemInformation.UserName.ToString()+"\\Documents\\earth9\\videoProcessing\\";
+            captureUI.saveFolder = "C:\\Users\\"+System.Windows.Forms.SystemInformation.UserName.ToString()+WHConstants.VIDEO_CAPTURE_SUBMISSION_SUBPATH;
 
             GameObject pegasusGo = SceneObject.Create(SceneObject.Mode.Player,ObjectName.PEGASUS_MANAGER_GAMEOBJECT);
             manager = pegasusGo.AddComponent<PegasusManager>();
@@ -94,8 +104,7 @@ public class VideoCaptureController : MonoBehaviour
             GameObject floor = SceneObject.Find(SceneObject.Mode.Player,"Floor001");
             MeshRenderer renderer  = floor.GetComponent<MeshRenderer>();
 
-            GameObject building = SceneObject.Find(SceneObject.Mode.Player,"Building");
-
+            GameObject building = SceneObject.Find(SceneObject.Mode.Player,buildingName);
 
             var maxBounds = GetMaxBounds(building);
             MeshRenderer[] meshRenderers = building.GetComponentsInChildren<MeshRenderer> ();
@@ -103,16 +112,14 @@ public class VideoCaptureController : MonoBehaviour
             var totalFloorPlan = building.transform.childCount;
             var buildingHeight = building.transform.GetChild(totalFloorPlan -1).transform.position.y;
             var height = Math.Max(1.7f,buildingHeight/10.0f) * (buildingHeight);
-
             pegasusContainer.transform.position = new Vector3(renderer.bounds.center.x,renderer.bounds.center.y,renderer.bounds.center.z);
             pegasusCamera.transform.position = new Vector3(renderer.bounds.min.x,maxBounds.size.y*3.0f,renderer.bounds.min.z*2.0f-maxBounds.size.y);
-
-            pegasusCamera.transform.Rotate(20.0f,20.0f,0f);
+   
+            pegasusCamera.transform.LookAt(floor.transform,Vector3.up);
 
             // since terrain will be loading so not starting at first. 
             // we trigger pegasus start on terrain loaded.
             manager.m_autoStartAtRuntime = false;
-
             // text showing capture status
             GameObject textGO = SceneObject.Create(
             SceneObject.Mode.Player,
@@ -134,7 +141,50 @@ public class VideoCaptureController : MonoBehaviour
             captureUI.SetCustomFileName(filename);
             pegasusTarget.GetComponentInChildren<Renderer>().enabled = true;
         }
+        }catch(Exception e) 
+        {
+            Trace.LogTextToFile("VideoCaptureController_Exception", e.ToString(),submissionDetail.id);
+            Trace.Exception(e);
+        }
 #endif
+    }
+
+    private void RemoveProcedurallyGeneratedOrAuthoredObjectIfExists()
+    {
+        GameObject procedurallyGeneratedObject = SceneObject.Find(SceneObject.Mode.Player, ObjectName.CREATOR_BUILDING + "_" + submissionDetail.buildingId + "[0]");
+        if(procedurallyGeneratedObject!=null){
+            procedurallyGeneratedObject.SetActive(false);
+        }
+        GameObject liveAuthoredGameObject = SceneObject.Find(SceneObject.Mode.Player, ObjectName.CREATOR_BUILDING + "_LIVE_" + submissionDetail.buildingId);
+        if(liveAuthoredGameObject != null){
+            liveAuthoredGameObject.SetActive(false);
+        }
+    }
+
+    private async Task<List<Vector3>> getBoundary(string buildingID)
+    {
+        OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail(buildingID, false);
+        var boundaryCoordinates = new List<Vector3>();
+        Vector2 centerCoordinate = ConvertCoordinate.GeoToWorldPosition((float)buildingData.center.coordinates[1], (float)buildingData.center.coordinates[0]);
+        foreach (List<List<float>> firstList in buildingData.geometry.coordinates)
+        {
+            foreach (List<float> coordinateList in firstList)
+            {
+                if (coordinateList.Count == 2)
+                {
+                    Vector2 coord = ConvertCoordinate.GeoToWorldPosition((float)coordinateList[1], (float)coordinateList[0]);
+                    boundaryCoordinates.Add(coord - centerCoordinate);
+                }
+            }
+        }
+
+        var floorBoundary = new List<Vector3>();
+        foreach (var coord in boundaryCoordinates)
+        {
+            floorBoundary.Add(new Vector3(coord.x, 0, coord.y));
+        }
+
+        return floorBoundary;
     }
 
 
@@ -158,10 +208,11 @@ public class VideoCaptureController : MonoBehaviour
             details.Count > 0 &&
             !videoCatpureStarted &&
             !videoCaptureStopped &&
-            runTime.IsInState(TerrainEngine.TerrainController.TerrainState.BuildingsGenerated) &&
+            runTime.IsInState(TerrainEngine.TerrainController.TerrainState.Running) &&
             captureUI.status != CaptureStatus.STARTED)
         {
 
+            RemoveProcedurallyGeneratedOrAuthoredObjectIfExists();
             pegasusTarget.GetComponentInChildren<Renderer>().enabled = true;
             text.text = "Capturing video";
             videoCatpureStarted = true;
@@ -175,21 +226,32 @@ public class VideoCaptureController : MonoBehaviour
             videoCaptureStopped = captureUI.StopCapture();
         }
         // if the pegasus flystate is stopped and if video capture is done, we load new scene to creator mode.
-        if(videoCaptureStopped && captureUI.status == CaptureStatus.READY && File.Exists(captureUI.saveFolder+filename+".mp4"))
+        if(videoCaptureStopped && captureUI.status == CaptureStatus.READY && File.Exists(captureUI.saveFolder+"\\"+filename+".mp4"))
         {
             if(!videoUploadStarted)
+            {
+            try
             {
                 text.text = "Uploading video";
                 videoUploadStarted = true;
                 details.Remove(submissionDetail);
-                File.WriteAllText("C:\\Users\\"+System.Windows.Forms.SystemInformation.UserName.ToString()+"\\Documents\\earth9\\videoProcessing\\creator_versions.json", JsonConvert.SerializeObject(details));
+                File.WriteAllText("C:\\Users\\"+System.Windows.Forms.SystemInformation.UserName.ToString()+WHConstants.VIDEO_CAPTURE_SUBMISSION_SUBPATH+"\\creator_versions.json", JsonConvert.SerializeObject(details));
                 
                 CreatorUploadRequest request = new CreatorUploadRequest();
                 request.creatorSubmissionId = submissionDetail.id;
                 request.creatorAssetType = ObjectName.CREATOR_ASSET_TYPE_VIDEO;
-                request.filePath = captureUI.saveFolder+filename+".mp4";
+                request.filePath = captureUI.saveFolder+"\\"+filename+".mp4";
                 await UploadCreatorAssets.UploadCreatorSubmissionAssets(request);
-                Application.Quit();
+             }catch(Exception e)
+             {
+              Trace.LogTextToFile("VideoCaptureController_Exception", e.ToString(),submissionDetail.id);
+                Trace.Exception(e);
+             }
+             finally
+             {
+             Application.Quit();
+             }
+                
             }
                 videoCatpureStarted = false;
         }
@@ -199,7 +261,7 @@ public class VideoCaptureController : MonoBehaviour
             text.text = "No videos to process";
         }
         if(details != null && details.Count > 0 &&
-            runTime.IsInState(TerrainEngine.TerrainController.TerrainState.BuildingsGenerated) &&
+            runTime.IsInState(TerrainEngine.TerrainController.TerrainState.Running) &&
             (pegasusContainer.transform.eulerAngles.y <= rotationMax)){
             pegasusContainer.transform.Rotate(0f,constantSpeed * Time.deltaTime,0f,Space.Self);
         }
@@ -229,5 +291,4 @@ public class VideoCaptureController : MonoBehaviour
         public string coordinates;
     }
 }
-
 

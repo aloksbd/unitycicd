@@ -57,7 +57,7 @@ public class AuthenticationHandler
 
     public static async void Authenticate()
     {
-        #if ADMIN
+#if ADMIN
             // if admin(video capture) then auto login without user intervention. 
             string payload = "{\"username\":\"metatestadmin@whitehatengineering.com\",\"password\":\"metaTestAdmin\"}";
             HttpContent c = new StringContent(payload, Encoding.UTF8, "application/json");
@@ -73,15 +73,15 @@ public class AuthenticationHandler
             {
                 Trace.Log(e.ToString());
             }
-        #else
-            IsAuthenticated = false;
-            Application.OpenURL(WHConstants.WEB_URL + "/auth");
-            ServerSocket.StartServer((string token) => OnAuthenticationSuccess(token));
+#else
+        IsAuthenticated = false;
+        Application.OpenURL(WHConstants.WEB_URL + "/auth");
+        ServerSocket.StartServer((string token) => OnAuthenticationSuccess(token));
 
-            MonoBehaviour mono = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<MonoBehaviour>();
-            mono.StartCoroutine(SecurelySaveToken());
-            mono.StartCoroutine(TimerForFailure());
-        #endif
+        MonoBehaviour mono = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<MonoBehaviour>();
+        mono.StartCoroutine(SecurelySaveToken());
+        mono.StartCoroutine(TimerForFailure());
+#endif
     }
 
     public static bool OnAuthenticationSuccess(string data)
@@ -181,5 +181,13 @@ public class AuthenticationHandler
         {
             return null;
         }
+    }
+
+    public static void Logout()
+    {
+        AccessToken = null;
+        IsAuthenticated = false;
+        PlayerPrefs.DeleteKey("access_token");
+
     }
 }

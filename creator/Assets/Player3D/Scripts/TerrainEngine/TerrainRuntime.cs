@@ -156,7 +156,7 @@ namespace TerrainEngine
             Windows
         }
         private static ByteOrder m_ByteOrder = ByteOrder.Windows;
-
+public static  Dictionary<string, BuildingGenerator.GameReadyBuilding> finalBuildingData= new Dictionary<string, BuildingGenerator.GameReadyBuilding>();
         private static string[] terrainNames;
 
         private static int s_generatedTerrainsCount = 0;
@@ -202,6 +202,7 @@ namespace TerrainEngine
         private static readonly string LOCALCACHE_FOLDER_ROOT = Path.GetTempPath() + "Earth9_GIS/";
         private static readonly string LOCALCACHE_ELEVATIONS_FOLDER = LOCALCACHE_FOLDER_ROOT + "/Elevation/";
         private static readonly string LOCALCACHE_BASEIMAGES_FOLDER = LOCALCACHE_FOLDER_ROOT + "/Imagery/";
+        public static readonly string LOCALCACHE_AUTHORED_BUILDINGS_FBX_FOLDER = LOCALCACHE_FOLDER_ROOT + "/Authored_Buildings/Live/";
         public static List<float[,]> s_tiffDataDynamic;
 
         public static Dictionary<int[], Terrain> s_terrainDict;
@@ -356,7 +357,7 @@ namespace TerrainEngine
             s_nearGridMetrics = null;
             s_processedImageIndex = 0;
             s_processedHeightmapIndex = 0;
-
+finalBuildingData=null;
 
             if (s_heightMapTiff != null)
             {
@@ -1172,7 +1173,7 @@ namespace TerrainEngine
             try
             {
                 string slippyTileFilePath = LOCALCACHE_ELEVATIONS_FOLDER + metrics.slippyTileName;
-                Trace.Log(TerrainController.traceDebug,
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps),
                    "Tile check: Index {0}: Filename: '{1}'",
                    metrics.key,
                    metrics.slippyTileName);
@@ -1242,7 +1243,7 @@ namespace TerrainEngine
                 }
                 else
                 {
-                    Trace.Log(TerrainController.traceDebug,
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps),
                          "Heightmap got from cache: Index: {0}, Filename: '{1}'",
                          metrics.key,
                          metrics.slippyTileName);
@@ -1769,10 +1770,14 @@ namespace TerrainEngine
             {
                 if (s_processedImageIndex == NearMetrics.cellCount)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "FillImage(i: {0}, s_processedImageIndex: {1} - 's_processedImageIndex == NearMetrics.cellCount'", index, s_processedImageIndex);
+
                     controller.UpdateState(TerrainController.TerrainState.TexturesGenerated);
 
                     if (controller.IsInState(TerrainController.TerrainState.TerrainsGenerated))
                     {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "FillImage(i: {0}, s_processedImageIndex: {1} - TerrainsGenerated == TRUE", index, s_processedImageIndex);
+
                         if (controller.farTerrain)
                         {
                             if (controller.IsInState(TerrainController.TerrainState.FarTerrainsGenerated))
@@ -1781,6 +1786,8 @@ namespace TerrainEngine
                                 {
                                     yield break;
                                 }
+
+                                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "FillImage(i: {0}, s_processedImageIndex: {1} - FarTerrainsGenerated == TRUE", index, s_processedImageIndex);
 
                                 TerrainController.RunCoroutine(WorldIsGenerated(),
                                     "FillImage(i: {0}) FarTerrainsGenerated,",
@@ -1793,6 +1800,15 @@ namespace TerrainEngine
                                 "FillImage(i: {0})", index);
                         }
                     }
+                    else
+                    {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "FillImage(i: {0}, s_processedImageIndex: {1} - TerrainsGenerated == FALSE", index, s_processedImageIndex);
+                    }
+
+                }
+                else
+                {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "FillImage(i: {0}, s_processedImageIndex: {1} - 's_processedImageIndex != NearMetrics.cellCount'", index, s_processedImageIndex);
                 }
             }
             yield return 0;
@@ -1800,8 +1816,11 @@ namespace TerrainEngine
 
         public static IEnumerator<float> FillImageFAR()
         {
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImageFAR() ENTER");
+
             if (Abortable.ShouldAbortRoutine())
             {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImageFAR() ABORTED");
                 yield break;
             }
 
@@ -1809,6 +1828,7 @@ namespace TerrainEngine
 
             Interlocked.Increment(ref s_downloadedFarTerrainImages);
 
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImageFAR() YIELD RETURN 0");
             yield return 0;
         }
 
@@ -1826,10 +1846,15 @@ namespace TerrainEngine
 
         public static IEnumerator<float> FillImages(int length)
         {
+            //  Loads images into Texture2D objects to be applied to the terrain
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImages() ENTER");
+
             for (int z = 0; z < length; z++)
             {
                 if (Abortable.ShouldAbortRoutine())
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImages() ABORT");
                     yield break;
                 }
 
@@ -1848,8 +1873,12 @@ namespace TerrainEngine
                     //SaveSatelliteImage(s_baseImageBytes[z], z);
                 }
 
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImages() YIELD (Length: {0}, Iteration: {1})", length, z);
+
                 yield return Timing.WaitForSeconds(controller.imageryDelay);
             }
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN CoRoutine FillImages() EXIT");
         }
 
         private static void GetImagesInfo()
@@ -1914,6 +1943,8 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainRuntime.ServerInfoImagery");
 
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImagery(\"{0}\") ENTER", value);
+
             try
             {
                 string defaultMapName = s_mapserviceImagery.GetDefaultMapName();
@@ -1923,6 +1954,7 @@ namespace TerrainEngine
 
                 if (abortable.shouldAbort)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImagery(\"{0}\") EXIT ABORT", value);
                     return WebExceptionStatus.RequestCanceled;
                 }
 
@@ -1930,6 +1962,7 @@ namespace TerrainEngine
                 {
                     if (abortable.shouldAbort)
                     {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImagery(\"{0}\") EXIT ABORT", value);
                         return WebExceptionStatus.RequestCanceled;
                     }
 
@@ -1944,13 +1977,20 @@ namespace TerrainEngine
             }
             catch (WebException e)
             {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImagery(\"{0}\") EXIT ERROR, status: {1}",
+                    value, e.Status);
+
                 return e.Status;
             }
             catch (Exception e)
             {
                 Trace.Exception(e, "Exception exporting ServerConnectImagery. DETAILS:");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImagery(\"{0}\") EXIT ERROR", value);
+
                 return WebExceptionStatus.UnknownError;
             }
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImagery(\"{0}\") EXIT SUCCESS", value);
 
             return WebExceptionStatus.Success;
         }
@@ -1958,12 +1998,15 @@ namespace TerrainEngine
         [RuntimeAsync(nameof(ServerInfoImageryFAR))]
         public static WebExceptionStatus ServerInfoImageryFAR()
         {
-            Abortable abortable = new Abortable("TerrainRuntime.ServerInfoImagery");
+            Abortable abortable = new Abortable("TerrainRuntime.ServerInfoImageryFAR");
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImageryFAR() ENTER");
 
             try
             {
                 if (abortable.shouldAbort)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImageryFAR() EXIT ABORT");
                     return WebExceptionStatus.RequestCanceled;
                 }
 
@@ -1976,14 +2019,17 @@ namespace TerrainEngine
             }
             catch (WebException e)
             {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImageryFAR() EXIT ERROR, status: {0}", e.Status);
                 return e.Status;
             }
             catch (Exception e)
             {
                 Trace.Exception(e, "Exception exporting ServerConnectImagery #{0}. DETAILS:");
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImageryFAR() EXIT ERROR");
                 return WebExceptionStatus.UnknownError;
             }
 
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ServerInfoImageryFAR() EXIT SUCCESS");
             return WebExceptionStatus.Success;
         }
 
@@ -2132,8 +2178,13 @@ namespace TerrainEngine
         {
             Abortable abortable = new Abortable("TerrainRuntime.ImageDownloader");
 
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") ENTER", fileName);
+
             if (abortable.shouldAbort)
             {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT ABORTED, statuss {1}",
+                    fileName, WebExceptionStatus.RequestCanceled);
+
                 return WebExceptionStatus.RequestCanceled;
             }
 
@@ -2151,8 +2202,14 @@ namespace TerrainEngine
                     string slippyTileFilePath = LOCALCACHE_BASEIMAGES_FOLDER + metrics.slippyTileName;
                     if (!File.Exists(slippyTileFilePath))
                     {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") CACHE MISS",
+                            fileName);
+
                         if (abortable.shouldAbort)
                         {
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT ABORTED, statuss {1}",
+                                fileName, WebExceptionStatus.RequestCanceled);
+
                             return WebExceptionStatus.RequestCanceled;
                         }
 
@@ -2163,11 +2220,17 @@ namespace TerrainEngine
                         }
                         catch (WebException e)
                         {
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT FAIL (s_mapserviceImagery.GetDefaultMapName()), statuss {1}",
+                                fileName, e.Status);
+
                             return e.Status;
                         }
                         catch (Exception e)
                         {
                             Trace.Exception(e);
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT FAIL (s_mapserviceImagery.GetDefaultMapName())",
+                                fileName);
+
                             return WebExceptionStatus.UnknownError;
                         }
                         s_mapdesc = s_mapinfo.DefaultMapDescription;
@@ -2206,21 +2269,38 @@ namespace TerrainEngine
                     {
                         if (abortable.shouldAbort)
                         {
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT ABORTED, statuss {1}",
+                                fileName, WebExceptionStatus.RequestCanceled);
+
                             return WebExceptionStatus.RequestCanceled;
                         }
+                        
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") CACHE HIT",
+                            fileName);
+
                         s_baseImageBytes[metrics.key] = FileToByteArray(slippyTileFilePath, metrics);
                     }
+
                     if (!s_availableImageryCheked)
                     {
                         if (abortable.shouldAbort)
                         {
+                            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT ABORTED, statuss {1}",
+                                fileName, WebExceptionStatus.RequestCanceled);
+
                             return WebExceptionStatus.RequestCanceled;
                         }
+
                         CheckImageColors(metrics.key);
                     }
+
+                    Interlocked.Increment(ref s_processedImageIndex);
                 }
                 catch (WebException e)
                 {
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT FAIL, statuss {1}",
+                        fileName, e.Status);
+ 
                     return e.Status;
                 }
                 catch (Exception e)
@@ -2228,14 +2308,17 @@ namespace TerrainEngine
                     Trace.Exception(e,
                         "Exception exporting ImageDownloader #{0}. DETAILS:",
                         metrics.key);
+
+                    Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT FAIL, statuss {1}",
+                        fileName, WebExceptionStatus.UnknownError);
+
                     return WebExceptionStatus.UnknownError;
                 }
-                finally
-                {
-                    Interlocked.Increment(ref s_processedImageIndex);
-                }
-
             }
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.Imagery), "--- TERRAIN Async ImageDownloader(\"{0}\") EXIT SUCCESS, s_processedImageIndex {1}, statuss {2}", 
+                fileName, s_processedImageIndex, WebExceptionStatus.Success);
+
             return WebExceptionStatus.Success;
         }
 
@@ -3126,9 +3209,9 @@ namespace TerrainEngine
             }
 
             // Rotate terrain heights and normalize values
-            for (int y = 0; y < s_heightMapTiff.width; y++)
+            for (int y = 0; !abortable.shouldAbort && y < s_heightMapTiff.width; y++)
             {
-                for (int x = 0; x < s_heightMapTiff.length; x++)
+                for (int x = 0; !abortable.shouldAbort && x < s_heightMapTiff.length; x++)
                 {
                     if (abortable.shouldAbort)
                     {
@@ -4522,7 +4605,7 @@ namespace TerrainEngine
 
         private static void GetTerrainHeightsFromTIFFFAR_Params(Terrain terrainTile, int terrainRes, float[,] terrainHeights)
         {
-            Trace.Log(TerrainController.traceDebug, "Enter FillHeightsDynamicFAR()");
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "GetTerrainHeightsFromTIFFFAR_Params() ENTER");
 
             int gridCount = (terrainRes - 1) / controller.farTerrainCellSize;
             int xyStart = Mathf.FloorToInt(gridCount / controller.areaSizeFarMultiplier / 2f);
@@ -4560,9 +4643,7 @@ namespace TerrainEngine
                                     }
                                     catch (Exception e)
                                     {
-                                        Trace.Log("GetTerrainHeightsFromTIFFFAR_Params() - Array Copy x: {0}, row: {1}, col: {2}, source index: {3}, dest index: {4}, length: {5}",
-                                            x, row, col, s_heightmapCellFar, x * controller.farTerrainCellSize, controller.farTerrainCellSize);
-                                        Trace.Error(e.Message);
+                                        Trace.Exception(e, "GetTerrainHeightsFromTIFFFAR_Params() EXCEPTION");
                                     }
                                 }
 
@@ -4610,11 +4691,13 @@ namespace TerrainEngine
                         }
                         catch (Exception e)
                         {
-                            Trace.Exception(e);
+                            Trace.Exception(e, "GetTerrainHeightsFromTIFFFAR_Params() EXCEPTION");
                         }
                     }
                 }
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.HeightMaps), "GetTerrainHeightsFromTIFFFAR_Params() ENTER");
             }
+
 
             try
             {
@@ -4650,6 +4733,7 @@ namespace TerrainEngine
             {
                 Trace.Exception(e);
             }
+
         }
 
         public static IEnumerator<float> ApplyTerrainHeightsFromTIFFFAR()
@@ -4687,7 +4771,9 @@ namespace TerrainEngine
                     if (controller.elevationOnly &&
                         controller.IsInState(TerrainController.TerrainState.TerrainsGenerated))
                     {
-                         TerrainController.RunCoroutine(WorldIsGenerated(),
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN CoRoutine ApplyTerrainHeightsFromTIFFFAR() STATE: TerrainsGenerated");
+
+                        TerrainController.RunCoroutine(WorldIsGenerated(),
                             "FillHeightsDynamicFAR() elevationOnly");
                     }
                     else if (
@@ -4700,9 +4786,19 @@ namespace TerrainEngine
                             yield break;
                         }
 
-                         TerrainController.RunCoroutine(WorldIsGenerated(),
-                            "FillHeightsDynamicFAR()");
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN CoRoutine ApplyTerrainHeightsFromTIFFFAR() STATE: TexturesGenerated && TerrainsGenerated");
+
+                        TerrainController.RunCoroutine(WorldIsGenerated(),
+                            "ApplyTerrainHeightsFromTIFFFAR()");
                     }
+                    else
+                    {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN CoRoutine ApplyTerrainHeightsFromTIFFFAR() STATE: elevationOnly: {0}, TexturesGenerated: {1}, TerrainsGenerated: {2}",
+                            controller.elevationOnly,
+                            controller.IsInState(TerrainController.TerrainState.TexturesGenerated),
+                            controller.IsInState(TerrainController.TerrainState.TerrainsGenerated));
+                    }
+
                 }
             }
             else
@@ -5915,6 +6011,8 @@ namespace TerrainEngine
             {
                 yield break;
             }
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN CoRoutine PerformNeighboring() EXIT invoke CheckInitialization()");
             CheckInitialization();
 
             yield return 0;
@@ -5922,8 +6020,12 @@ namespace TerrainEngine
 
         private static void CheckInitialization()
         {
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() ENTER");
+
             if (!controller.IsInState(TerrainController.TerrainState.TerrainsGenerated))
             {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() STATE: TerrainsGenerated = FALSE");
+
                 controller.UpdateState(TerrainController.TerrainState.TerrainsGenerated, "CheckInitialization()");
 
                 if (controller.elevationOnly)
@@ -5946,12 +6048,20 @@ namespace TerrainEngine
                 {
                     if (controller.IsInState(TerrainController.TerrainState.TexturesGenerated))
                     {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() STATE: TexturesGenerated = TRUE");
+
                         if (controller.farTerrain)
                         {
                             if (controller.IsInState(TerrainController.TerrainState.FarTerrainsGenerated))
                             {
-                                 TerrainController.RunCoroutine(WorldIsGenerated(),
+                                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() STATE: FarTerrainsGenerated = TRUE");
+
+                                TerrainController.RunCoroutine(WorldIsGenerated(),
                                     "CheckInitialization() farTerrain");
+                            }
+                            else
+                            {
+                                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() STATE: FarTerrainsGenerated = FALSE");
                             }
                         }
                         else
@@ -5960,8 +6070,18 @@ namespace TerrainEngine
                                 "CheckInitialization()");
                         }
                     }
+                    else
+                    {
+                        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() STATE: TexturesGenerated = FALSE");
+                    }
                 }
             }
+            else
+            {
+                Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() STATE: TerrainsGenerated = TRUE");
+            }
+
+            Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WorldGen), "--- TERRAIN MainThread CheckInitialization() EXIT");
         }
 
         [RuntimeAsync(nameof(CalculateResampleHeightmaps))]
@@ -6382,7 +6502,7 @@ namespace TerrainEngine
                 int[] cellIndex = new int[tileImages];
                 index = 0;
 
-                for (int i = 0; i < NearMetrics.cellCount; i++)
+                for (int i = 0; i < NearMetrics.cellCount&index<NearMetrics.cellCount; i++)
                 {
                     cellIndex[index++] = i;
                 }

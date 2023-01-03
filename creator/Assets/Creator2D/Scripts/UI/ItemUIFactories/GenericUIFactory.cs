@@ -15,3 +15,7 @@ public class WallUIFactory : GenericUIFactory { }
 public class DoorUIFactory : GenericUIFactory { }
 
 public class WindowUIFactory : GenericUIFactory { }
+
+public class RoofUIFactory : GenericUIFactory { }
+
+public class ElevatorUIFactory : GenericUIFactory { }

@@ -22,6 +22,8 @@ public class WebRequestRetries
 
         Abortable abortable = new Abortable(string.Format("WebRequestMethod({0}({0}))", methodName, index));
 
+        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WebRequests), "--- TERRAIN WebRequestMethod(" + methodName + "()) ENTER");
+
         for (int tries = 0; tries < GIS_SERVICEREQUEST_RETRYCOUNT; tries++)
         {
             if (abortable.shouldAbort)
@@ -52,10 +54,11 @@ public class WebRequestRetries
         {
             Trace.Warning("Request {0}({1}) failed after {2} tries. Status: {3}",
                 methodName, index, GIS_SERVICEREQUEST_RETRYCOUNT, status);
+            
+            TerrainController.Get().ReportFatalWebServiceError(status);
         }
 
-        Trace.Log(TerrainController.traceDebug, "--- TERRAIN " + methodName + "() RunAsync: " + methodName + "() COMPLETE.");
-
+        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WebRequests), "--- TERRAIN WebRequestMethod(" + methodName + "()) EXIT with WebExceptionStatus {0}", status);
         return status;
     }
 
@@ -67,6 +70,8 @@ public class WebRequestRetries
         string methodName = webRequestHandler.Method.Name;
 
         Abortable abortable = new Abortable(string.Format("WebRequestMethodFar({0})", methodName));
+
+        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WebRequests), "--- TERRAIN WebRequestMethodFar(" + methodName + "()) ENTER");
 
         for (int tries = 0; tries < GIS_SERVICEREQUEST_RETRYCOUNT; tries++)
         {
@@ -98,9 +103,11 @@ public class WebRequestRetries
         {
             Trace.Warning("Request {0}() failed after {1} tries. Status: {2}",
                 methodName, GIS_SERVICEREQUEST_RETRYCOUNT, status);
+
+            TerrainController.Get().ReportFatalWebServiceError(status);
         }
 
-        Trace.Log(TerrainController.traceDebug, "--- TERRAIN " + methodName + "() RunAsync: " + methodName + "() COMPLETE.");
+        Trace.Log(TerrainTrace.Config(TerrainTrace.Flag.WebRequests), "--- TERRAIN WebRequestMethodFar(" + methodName + "()) EXIT with WebExceptionStatus {0}", status);
 
         return status;
     }

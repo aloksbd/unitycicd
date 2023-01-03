@@ -38,6 +38,8 @@ public class BuildingInventoryController
     {
         buildingInventoryRoot = CreatorUIController.getRoot().Q<VisualElement>(buildingInventoryName);
         buildingInventoryRoot.style.marginTop = 10;
+        GameObject cam = SceneObject.GetCamera(SceneObject.Mode.Creator);
+        cam.GetComponent<CreatorEventManager>().enabled = true;
     }
 
     public void SetMetaBlocks(MetaBlock[] availableMetaBlocks)
@@ -174,6 +176,9 @@ public class BuildingInventoryController
 
     private void SelectMetaBlock(VisualElement metaBlock, string BlockName)
     {
+        CreatorHotKeyController.Instance.DeselectAllItems();
+        CreatorHotKeyController.Instance.hotkeyMenu.Populate(CreatorHotKeyController.Instance.generalKeys);
+
         metaBlock.AddToClassList(currentlySelectedMetaBlockClassName);
         currentBlock = Array.Find(availableMetaBlocks, element => element.BlockName == BlockName);
         CreatorUIController.DeselectFlyOutButton();

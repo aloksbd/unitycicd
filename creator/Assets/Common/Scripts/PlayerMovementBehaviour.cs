@@ -122,8 +122,8 @@ public class PlayerMovementBehaviour : MonoBehaviour
                 break;
 
             case PlayerController.IAMode.Pointing:
-                EnableMouseLook(false);
-                EnableGravity(false);
+                EnableMouseLook(false);      //Modified by Aman -> should be false
+                EnableGravity(false);        //Modified by Aman -> should be false
                 break;
 
             default:
@@ -324,7 +324,7 @@ public class PlayerMovementBehaviour : MonoBehaviour
             _vertRotation += (_lookDelta.y * LookSpeed * Time.deltaTime);
             _vertRotation = Math.Clamp(_vertRotation, MinVerticalLook, MaxVerticalLook);
 
-            transform.localEulerAngles = new Vector3(
+            transform.localEulerAngles = (SceneObject.Get().ActiveMode == SceneObject.Mode.Elevator)? Vector3.zero : new Vector3(
                 _vertRotation,
                 _horzRotation,
                 0);

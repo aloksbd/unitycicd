@@ -5,26 +5,43 @@ public class CreatorWallFactory : ICreatorItemFactory
     private Vector3 _startPosition;
     private Vector3 _endPosition;
 
-    public CreatorWallFactory(Vector3 startPosition, Vector3 endPosition)
+    private bool _IsExterior = false;
+
+    public CreatorWallFactory(Vector3 startPosition, Vector3 endPosition, bool IsExterior = false)
     {
         _startPosition = startPosition;
         _endPosition = endPosition;
+        _IsExterior = IsExterior;
     }
 
-    public CreatorItem Create(string name)
+    public CreatorItem Create(string name, bool createGO = true)
     {
-        UIItem uiItem = new WallUIFactory().Create(name);
-        GameObject wall = CreateWall();
+
         float angle = Mathf.Atan2(_endPosition.y - _startPosition.y, _endPosition.x - _startPosition.x) * 180 / Mathf.PI;
-        wall.transform.eulerAngles = new Vector3(0, 0, angle);
-        NewWall item = new NewWall(wall, uiItem);
+        NewWall item;
+        if (createGO)
+        {
+            UIItem uiItem = new WallUIFactory().Create(name);
+            GameObject wall = CreateWall();
+            wall.transform.eulerAngles = new Vector3(0, 0, angle);
+            item = new NewWall(wall, uiItem, _IsExterior);
+        }
+        else
+        {
+            item = new NewWall(null, null, _IsExterior);
+        }
         item.SetDimension(Vector3.Distance(_startPosition, _endPosition), WHConstants.DefaultWallHeight, WHConstants.DefaultWallBreadth);
         item.SetPosition(new Vector3(_startPosition.x, _startPosition.y, 0));
         item.SetName(name);
         item.SetRotation(0, -angle, 0);
-        uiItem._delegate = item;
-
-        WallTransform wallTransform = new WallTransform(wall, item as NewWall);
+        if (createGO)
+        {
+            item.SetWallTransformer();
+        }
+        if (item.uiItem != null)
+        {
+            item.uiItem._delegate = item;
+        }
 
         return item;
     }

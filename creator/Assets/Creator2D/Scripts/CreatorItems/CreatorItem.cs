@@ -28,22 +28,37 @@ public class CreatorItem : IRenamable, NewIHasPosition, UIItemDelegate, NewISele
     public void SetId(Guid id)
     {
         _id = id;
-        uiItem.SetId(id);
+        if (uiItem != null)
+        {
+            uiItem.SetId(id);
+        }
     }
 
     public void SetName(string name)
     {
         _name = name;
-        gameObject.name = _id.ToString();
-        uiItem.SetName(name);
+        if (gameObject != null)
+        {
+            gameObject.name = _id.ToString();
+        }
+        if (uiItem != null)
+        {
+            uiItem.SetName(name);
+        }
     }
 
     public void AddChild(CreatorItem child)
     {
         children.Add(child);
         child.Parent = this;
-        child.gameObject.transform.parent = gameObject.transform;
-        uiItem.Foldout.Add(child.uiItem.Foldout);
+        if (gameObject != null)
+        {
+            child.gameObject.transform.parent = gameObject.transform;
+        }
+        if (uiItem != null)
+        {
+            uiItem.Foldout.Add(child.uiItem.Foldout);
+        }
     }
 
     public void RemoveFromParent()
@@ -114,7 +129,14 @@ public class CreatorItem : IRenamable, NewIHasPosition, UIItemDelegate, NewISele
     {
         foreach (var child in children)
         {
-            clone.AddChild(child.Clone());
+            if (clone is NewWall && ((NewWall)clone).IsExterior && child is NewDoor)
+            {
+                continue;
+            }
+            else
+            {
+                clone.AddChild(child.Clone());
+            }
         }
     }
 
@@ -154,4 +176,10 @@ public class CreatorFloorPlanItem : CreatorItem, NewIHasDimension
     {
         _dimension = new Dimension(length, height, width);
     }
+}
+
+
+public class Roof : CreatorFloorPlanItem
+{
+    public Roof(GameObject gameObject, UIItem itemUI) : base(gameObject, itemUI) { }
 }

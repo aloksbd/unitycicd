@@ -5,63 +5,56 @@ public class WallListener
 {
     public GameObject wallGO;
     public NewWall wallItem;
+    public CreatorItem floorPlan;
     public LineRenderer wallRenderer;
     public Dictionary<int, Node> nodes = new Dictionary<int, Node>();
     private bool _isAttachable = false;
-    private GameObject _attachableNodeGO;
 
     public WallListener(GameObject go, NewWall item)
     {
         this.wallGO = go;
         this.wallItem = item;
         this.wallRenderer = this.wallGO.GetComponent<LineRenderer>();
-
-        for (int i = 0; i < wallRenderer.positionCount; i++)
-        {
-            Node node = new Node(i, wallGO);
-            AttachNode(i, node);
-        }
     }
 
     //Attach the common nodes while creating the wall footprint
-    public void AttachNode(int position, Node node)
+    public void AttachNode(int position, Node checking_node, CreatorItem floorPlan, bool attach = true)
     {
-        foreach (var n in Node.allNodeList)
+        foreach (var allnodes in TransformDatas.allNodeList)
         {
-            try
+            if (allnodes.Value != checking_node && floorPlan == allnodes.Value.floor && attach)
             {
-                if (n.Value != node && n.Value.nodeGO.activeInHierarchy && !CreatorEventManager._lineRender)
+                var distance = Vector3.Distance(allnodes.Value.nodeGO.transform.position, checking_node.nodeGO.transform.position);
+                var isClose = distance < HarnessConstant.NODE_ATTACH_THRESHOLD;
+
+                if (isClose)
                 {
-                    var isClose = Vector3.Distance(n.Value.nodeGO.transform.position, node.nodeGO.transform.position) < HarnessConstant.NODE_ATTACH_DISTANCE;
-
-                    if (isClose)
-                    {
-                        Node.allNodeList.Remove(node.nodeGO);
-                        GameObject.Destroy(node.nodeGO);
-                        node = n.Value;
-                        break;
-
-                    }
+                    TransformDatas.allNodeList.Remove(checking_node.nodeGO);
+                    GameObject.Destroy(checking_node.nodeGO);
+                    checking_node = allnodes.Value;
+                    break;
                 }
-            }
-            catch
-            {
-                Trace.Log($"Couldnot find wall ref");
             }
         }
 
-        nodes.Add(position, node);
-        UpdateNodeListner(node);
+        if (!nodes.ContainsKey(position))
+        {
+            nodes.Add(position, checking_node);
+        }
+        else
+        {
+            nodes[position] = checking_node;
+        }
+        UpdateNodeListner(checking_node);
     }
 
-    public void HandleHovered(Node node, GameObject attachableNodeGO)
+    public void HandleHovered(Node node)
     {
-        _attachableNodeGO = attachableNodeGO;
     }
 
-    public void HandleExit(Node node, GameObject attachableNodeGO)
+    public void HandleExit(Node node)
     {
-        _attachableNodeGO = attachableNodeGO;
+
     }
 
     public void DragStart(Vector3 data, Node node)
@@ -72,7 +65,7 @@ public class WallListener
 
             if (n.Value == node)
             {
-                wallRenderer.SetPosition(n.Key, new Vector3(data.x, data.y, -0.2f));
+                wallRenderer.SetPosition(n.Key, new Vector3(data.x, data.y, WHConstants.DefaultZ));
                 this.wallGO.transform.position = new Vector3(data.x, data.y, HarnessConstant.HOVER_NODE_ZOFFSET);
 
                 var pos0 = wallRenderer.GetPosition(0);
@@ -99,42 +92,16 @@ public class WallListener
         }
     }
 
-    public void HandleReleased(Node node, GameObject attachableNodeGO)
+    public void HandleReleased(Node node)
     {
-        _attachableNodeGO = attachableNodeGO;
-        ConnectNodes(node, attachableNodeGO);
-
         var pos0 = wallRenderer.GetPosition(0);
         var pos1 = wallRenderer.GetPosition(1);
+
+        var dist = Vector3.Distance(pos0, pos1);
+        bool attach = pos0 != pos1 && dist > HarnessConstant.WALL_LENGTH_THRESHOLD;
+
         float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
-
-        NewBuildingController.UpdateWallHandle(this.wallItem.name, pos0, pos1, angle);
-    }
-
-    public void ConnectNodes(Node node, GameObject attachableGO)
-    {
-        if (attachableGO == null)
-        {
-            return;
-        }
-        var attachableNode = Node.allNodeList[attachableGO];
-
-        foreach (var n in nodes)
-        {
-            if (n.Value == node)
-            {
-                if (n.Value != attachableNode)
-                {
-                    Node.allNodeList.Remove(n.Value.nodeGO);
-                    GameObject.Destroy(n.Value.nodeGO);
-                    nodes[n.Key] = attachableNode;
-
-                    UpdateNodeListner(attachableNode);
-
-                    break;
-                }
-            }
-        }
+        NewBuildingController.UpdateWallHandle(this.wallItem.name, pos0, pos1, angle, attach);
     }
 
     public void DetachNodes(Node node)
@@ -157,6 +124,6 @@ public class WallListener
         node.onNodeExit += HandleExit;
         node.onNodeDrag += DragStart;
         node.onNodeReleased += HandleReleased;
-        node.onNodeClicked += DetachNodes;
+        node.OnNodeDetach += DetachNodes;
     }
 }

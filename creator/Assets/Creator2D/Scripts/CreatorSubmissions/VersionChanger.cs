@@ -24,7 +24,7 @@ public class VersionChanger : MonoBehaviour
             count++;
             if (SceneObject.GetPlayer(SceneObject.Mode.Creator) != null)
             {
-                WHFbxImporter2D.ImportObjects(item.Key);
+                WHFbxImporter2D.ImportObjects(item.Key, new List<Vector3>());
             }
             else
             {

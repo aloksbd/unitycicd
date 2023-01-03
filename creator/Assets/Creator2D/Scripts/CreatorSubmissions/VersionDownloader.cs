@@ -64,20 +64,31 @@ public class VersionDownloader
 
     public static async Task DownloadFileTaskAsync(string uriStr, string savePath)
     {
-        if (!File.Exists(savePath))
+        try
         {
-
-            using (var client = new HttpClient())
+            if (!Directory.Exists(savePath.Substring(0, savePath.LastIndexOf(WHConstants.PATH_DIVIDER))))
             {
-                var uri = new Uri(uriStr);
-                using (var s = await client.GetStreamAsync(uri))
+                Directory.CreateDirectory(savePath.Substring(0, savePath.LastIndexOf(WHConstants.PATH_DIVIDER)));
+            }
+            if (!File.Exists(savePath))
+            {
+
+                using (var client = new HttpClient())
                 {
-                    using (var fs = new FileStream(savePath, FileMode.CreateNew))
+                    var uri = new Uri(uriStr);
+                    using (var s = await client.GetStreamAsync(uri))
                     {
-                        await s.CopyToAsync(fs);
+                        using (var fs = new FileStream(savePath, FileMode.CreateNew))
+                        {
+                            await s.CopyToAsync(fs);
+                        }
                     }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(ex.ToString());
         }
     }
 

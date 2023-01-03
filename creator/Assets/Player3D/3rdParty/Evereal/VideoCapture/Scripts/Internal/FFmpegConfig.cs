@@ -10,13 +10,12 @@ namespace Evereal.VideoCapture
   /// </summary>
   public class FFmpegConfig
   {
-        private static string streamingAssetsPath = Application.dataPath + "/Player3D/3rdParty/StreamingAssets";
     // The ffmpeg folder
     public static string folder
     {
       get
       {
-        return streamingAssetsPath + "/FFmpeg/";
+        return Application.streamingAssetsPath + "/FFmpeg/";
       }
     }
 

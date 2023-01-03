@@ -27,9 +27,7 @@ public class NewDoor : NewItemWithMesh, IHas3DObject, NewIFlipable
         clone.SetPosition(this.Position);
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
-
-        ObjectTransformHandler transformHandler = new ObjectTransformHandler(clone.gameObject, clone as NewDoor, "door");
-
+        WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(clone.gameObject, clone as NewDoor, "door");
         CloneChildren(clone);
         return clone;
     }

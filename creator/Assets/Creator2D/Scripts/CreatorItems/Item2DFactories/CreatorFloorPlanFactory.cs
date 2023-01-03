@@ -1,13 +1,24 @@
 using UnityEngine;
 public class CreatorFloorPlanFactory : ICreatorItemFactory
 {
-    public CreatorItem Create(string name)
+    public CreatorItem Create(string name, bool createGO = true)
     {
-        UIItem uiItem = new FloorPlanUIFactory().Create(name);
-        GameObject building = new GameObject(name);
-        CreatorItem item = new CreatorFloorPlanItem(building, uiItem);
+        CreatorItem item;
+        if (createGO)
+        {
+            UIItem uiItem = new FloorPlanUIFactory().Create(name);
+            GameObject building = new GameObject(name);
+            item = new CreatorFloorPlanItem(building, uiItem);
+        }
+        else
+        {
+            item = new CreatorFloorPlanItem(null, null);
+        }
         item.SetName(name);
-        item.uiItem._delegate = item;
+        if (item.uiItem != null)
+        {
+            item.uiItem._delegate = item;
+        }
         return item;
     }
 }

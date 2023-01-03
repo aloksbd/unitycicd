@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Autodesk.Fbx;
 using UnityEngine;
+using UnityEngine.UIElements;
 class WHFbxExporter : System.IDisposable
 {
 
@@ -199,6 +200,7 @@ class WHFbxExporter : System.IDisposable
         using (var fbxExporter = Create())
         {
             fbxExporter.pathName = pathName;
+            Debug.Log("pathName:::" + pathName);
             return fbxExporter.ExportAll(filePath, structureGO);
         }
     }
@@ -282,16 +284,47 @@ class WHFbxExporter : System.IDisposable
         {
             return;
         }
+        if (unityGo.name.Contains("Clone")) return;
         // create an FbxNode and add it as a child of parent
         FbxNode fbxNode = FbxNode.Create(fbxScene, unityGo.name);
         NumNodes++;
 
         ExportTransform(unityGo.transform, fbxNode);
-        ExportMesh(GetMeshInfo(unityGo), fbxNode, fbxScene);
-        ExportCollider(unityGo, fbxNode);
+        // ExportMesh(GetMeshInfo(unityGo), fbxNode, fbxScene);
+        // ExportCollider(unityGo, fbxNode);
 
         fbxNodeParent.AddChild(fbxNode);
 
+        var name = unityGo.name;
+
+        if (name.Contains("FloorPlan"))
+        {
+            CreatorItem item = CreatorItemFinder.FindByName(name);
+            if (item != null)
+            {
+                Label linkFloorName = item.uiItem.Foldout.Q<UnityEngine.UIElements.Label>("linkFloorName-" + name);
+                if (linkFloorName != null)
+                {
+                    FbxProperty linkFloorProperty = FbxProperty.Create(fbxNode, new FbxDataType(EFbxType.eFbxString), "LinkFloorName");
+                    linkFloorProperty.Set(linkFloorName.text);
+                }
+
+                var dimension = item.GetComponent<NewIHasDimension>().Dimension;
+                FbxProperty heightProperty = FbxProperty.Create(fbxNode, new FbxDataType(EFbxType.eFbxFloat), "FLOORPLAN_HEIGHT");
+                heightProperty.Set(dimension.Height);
+            }
+        }
+        else if (name.Contains("Wall"))
+        {
+            FbxProperty localBoundX = FbxProperty.Create(fbxNode, new FbxDataType(EFbxType.eFbxFloat), "LOCALBOUND_X");
+            localBoundX.Set(unityGo.GetComponent<Renderer>().localBounds.size.x);
+            CreatorItem item = CreatorItemFinder.FindByName(name);
+            if (item != null)
+            {
+                FbxProperty exteriorWall = FbxProperty.Create(fbxNode, new FbxDataType(EFbxType.eFbxInt), "EXTERIOR");
+                exteriorWall.Set(((NewWall)item).IsExterior ? 1 : 0);
+            }
+        }
 
         // now  unityGo  through our children and recurse
         foreach (Transform childT in unityGo.transform)
@@ -375,9 +408,9 @@ class WHFbxExporter : System.IDisposable
         for (int f = 0; f < meshInfo.Triangles.Length / 3; f++)
         {
             fbxMesh.BeginPolygon();
-            fbxMesh.AddPolygon(meshInfo.Triangles[3 * f + 2]);
-            fbxMesh.AddPolygon(meshInfo.Triangles[3 * f + 1]);
             fbxMesh.AddPolygon(meshInfo.Triangles[3 * f]);
+            fbxMesh.AddPolygon(meshInfo.Triangles[3 * f + 1]);
+            fbxMesh.AddPolygon(meshInfo.Triangles[3 * f + 2]);
             fbxMesh.EndPolygon();
         }
 

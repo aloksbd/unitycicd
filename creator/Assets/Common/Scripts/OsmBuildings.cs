@@ -34,7 +34,7 @@ public class OsmBuildings
     // todo : create separate file for this.    
     private static readonly HttpClient _httpClient = new HttpClient();
 
-    public static async Task<OsmBuildingData> GetBuildingDetail(string buildingId = "c95b5836-d3a2-4190-9615-2fa6ae6841a2")
+    public static async Task<OsmBuildingData> GetBuildingDetail(string buildingId = "c95b5836-d3a2-4190-9615-2fa6ae6841a2", bool fromWelcome = true)
     {
         // todo: figure out where to get it : plot id or building id will be fetched from context.
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
@@ -42,10 +42,16 @@ public class OsmBuildings
             string token = await TokenFetch.GetAccessToken();
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
         }
+#if UNITY_EDITOR
+        if (fromWelcome) {
+            buildingId = WelcomeUIController.buildingID;
+        }
+#else
         if (DeeplinkHandler.Instance.isDeeplinkCalled)
         {
             buildingId = DeeplinkHandler.BuildData.building_id != null ? DeeplinkHandler.BuildData.building_id : "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
         }
+#endif
         using (var result = await _httpClient.GetAsync(new System.Uri(WHConstants.API_URL + "/buildings/" + buildingId)))
         {
             try
@@ -84,7 +90,7 @@ public class OsmBuildings
             }
             catch (JsonReaderException e)
             {
-                Trace.LogToFile("GetBuildingByBoundingBox_Exception", e.ToString(), responseData);
+                Trace.LogTextToFile("GetBuildingByBoundingBox_Exception", e.ToString(), responseData);
                 Trace.Exception(e);
                 return null;
             }
@@ -163,4 +169,14 @@ public class OsmBuildingData
     public Polygon geometry { get; set; }
 
     public string createdAt { get; set; }
+
+    public Media asset { get; set; }
+
+}
+
+[Serializable]
+public class Media
+{
+    public OsmBuildings.Asset fbx;
+    public OsmBuildings.Asset video;
 }

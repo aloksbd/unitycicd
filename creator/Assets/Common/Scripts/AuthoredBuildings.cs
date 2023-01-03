@@ -41,7 +41,7 @@ public class AuthoredBuildings
             }
             catch (JsonReaderException e)
             {
-                Trace.LogToFile("GetLiveAuthoredBuildings_Exception", e.ToString(), responseData);
+                Trace.LogTextToFile("GetLiveAuthoredBuildings_Exception", e.ToString(), responseData);
                 Trace.Exception(e);
                 return null;
             }

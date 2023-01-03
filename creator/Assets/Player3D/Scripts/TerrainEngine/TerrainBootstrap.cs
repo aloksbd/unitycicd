@@ -12,6 +12,12 @@ public class TerrainBootstrap : MonoBehaviour
     private const double WAIKIKI_LATITUDE = 21.276480405088737d;
     private const double WAIKIKI_LONGITUDE = -157.82762347699511d;
 
+    //private const double WAIKIKI_LATITUDE = 21.28101225;
+    //private const double WAIKIKI_LONGITUDE = -157.82576905;
+
+    //private const double WAIKIKI_LATITUDE = 21.294927;
+    //private const double WAIKIKI_LONGITUDE = -157.852626;
+
     private readonly TerrainSettings _settings = new TerrainSettings();
 
     public static double Latitude

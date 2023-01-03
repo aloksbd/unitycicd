@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using TerrainEngine;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -9,7 +11,7 @@ public class BuildingCanvas
     private GameObject gameObject;
     private GameObject buildingGO;
 
-    List<Vector3> boundaryCoordinates = new List<Vector3>();
+    public static List<Vector3> boundaryCoordinates = new List<Vector3>();
 
     public static List<double> centerLatLon;
 
@@ -27,6 +29,13 @@ public class BuildingCanvas
 
     public void GenerateCanvas(OsmBuildingData building, bool autoGenerateFloor = true)
     {
+        //Clear if any record present of previous create floorplan
+        TransformDatas.allNodeList.Clear();
+        TransformDatas.wallListenersList.Clear();
+
+        List<Vector3> pointList = new List<Vector3>();
+        var _building = TerrainRuntime.finalBuildingData;
+
         boundaryCoordinates = new List<Vector3>();
         if (building == null)
         {
@@ -45,36 +54,47 @@ public class BuildingCanvas
                 }
             }
         }
-
-        List<Vector2> pointList = new List<Vector2>();
-
-        foreach (var b in boundaryCoordinates)
+        var buildingData = _building.ToList().Where(x => x.Key.Split("[")[0] == building.id).FirstOrDefault();
+        if (buildingData.Value != null && 1 == 2)  // TODO: Handle later
         {
-            pointList.Add(new Vector2(b.x, b.y));
+            pointList.AddRange(buildingData.Value.localVertices);
         }
-
-        // _boundary is closed meaning the first coordinate is also repeated in last one
-        pointList.RemoveAt(pointList.Count - 1);
+        else
+        {
+            foreach (var b in boundaryCoordinates)
+            {
+                pointList.Add(new Vector3(b.x, 0, b.y));
+            }
+        }
 
         UnityEngine.GameObject.DestroyImmediate(gameObject.GetComponent<MeshFilter>());
         UnityEngine.GameObject.DestroyImmediate(gameObject.GetComponent<MeshRenderer>());
         UnityEngine.GameObject.DestroyImmediate(gameObject.GetComponent<MeshCollider>());
 
         MeshFilter mf = gameObject.AddComponent<MeshFilter>();
-        mf.mesh = new Triangulator().CreateInfluencePolygon(pointList.ToArray());
+        mf.mesh = BoundedMeshCreator.GetMesh(pointList);
         var meshRenderer = gameObject.AddComponent<MeshRenderer>();
         Material material = Resources.Load("Materials/BuildingCanvas") as Material;
         meshRenderer.material = material;
 
         gameObject.AddComponent<MeshCollider>();
         gameObject.transform.eulerAngles = new Vector3(-90, 0, 0);
-        UpdateCameraOrthoSize();
+        gameObject.transform.position += new Vector3(0, 0, 0.1f);
 
         if (autoGenerateFloor)
         {
-            AutoFloorPlanGenerator.Generate(boundaryCoordinates, gameObject.transform.position);
+            if (buildingData.Value != null && 1 == 2)  // TODO: Handle later
+            {
+                pointList.Add(buildingData.Value.localVertices[0]);
+            }
+            else
+            {
+                pointList.Add(new Vector3(boundaryCoordinates[0].x, 0, boundaryCoordinates[0].y));
+            }
+            AutoFloorPlanGenerator.Generate(pointList, gameObject.transform.position);
             CreatorUIController.SetupAddFloorDropdown();
         }
+        UpdateCameraOrthoSize();
     }
 
     private void UpdateCameraOrthoSize()
@@ -88,8 +108,9 @@ public class BuildingCanvas
 
         var camera = SceneObject.GetCamera(SceneObject.Mode.Creator).GetComponent<Camera>(); ;
         var player = SceneObject.GetPlayer(SceneObject.Mode.Creator);
+        camera.orthographicSize = orthoSizePadding;
 
-        if (screenRatio >= targetRatio)
+        if (float.IsNaN((float)mainPanel.localBound.height) || (float)mainPanel.localBound.height == 0 || screenRatio >= targetRatio)
         {
             camera.orthographicSize = targetBounds.size.y / 2;
         }
@@ -112,21 +133,25 @@ public class AutoFloorPlanGenerator
     {
         if (boundaryCoordinates.Count <= 1) return;
 
+        var floorBoundary = boundaryCoordinates;
+        // foreach (var coord in boundaryCoordinates)
+        // {
+        //     floorBoundary.Add(new Vector3(coord.x, 0, coord.y));
+        // }
+        NewBuildingController.CreateRoof();
+        NewBuildingController.CreateFloor(floorBoundary);
+
         NewBuildingController.CreateFloorPlan(null);
-        var floorBoundary = new List<Vector3>();
-        foreach (var coord in boundaryCoordinates)
-        {
-            floorBoundary.Add(new Vector3(coord.x, 0, coord.y));
-        }
         NewBuildingController.CreateFloor(floorBoundary);
         NewBuildingController.CreateCeiling(floorBoundary);
-
-        var previousCoordinate = boundaryCoordinates[0];
-        for (int i = 1; i < boundaryCoordinates.Count; i++)
+        int boundryCount = boundaryCoordinates.Count;
+        var previousCoordinate = new Vector3(boundaryCoordinates[0].x, boundaryCoordinates[0].z, 0);
+        for (int i = 1; i < boundryCount; i++)
         {
-            var zUpPosition = new Vector3(0, 0, -0.2f);
-            NewBuildingController.CreateWall(previousCoordinate + positionOffset + zUpPosition, boundaryCoordinates[i] + positionOffset + zUpPosition);
-            previousCoordinate = boundaryCoordinates[i];
+            var zUpPosition = new Vector3(0, 0, WHConstants.DefaultZ);
+            NewBuildingController.CreateWall(previousCoordinate + zUpPosition,
+             new Vector3(boundaryCoordinates[i].x, boundaryCoordinates[i].z, 0) + zUpPosition, true, true);
+            previousCoordinate = new Vector3(boundaryCoordinates[i].x, boundaryCoordinates[i].z, 0);
         }
     }
 }

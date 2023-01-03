@@ -6,10 +6,10 @@ using UnityEngine.UIElements;
 public class CreatorEventManager : MonoBehaviour
 {
     private GameObject BuildingCanvas;
-    private float MIN_SCALE = 4.0f; // zoom-in and zoom-out limits
-    private static float MAX_SCALE = 20f;
-    public float zoomSpeed = 30f;
-    private Camera _camera;
+    public static float MIN_SCALE = 3.0f; // zoom-in and zoom-out limits
+    public static float MAX_SCALE = 20f;
+    public static float zoomSpeed = 50f;
+    private static Camera _camera;
     public static void SetMaxScale(float maxScale)
     {
         MAX_SCALE = maxScale;
@@ -38,23 +38,57 @@ public class CreatorEventManager : MonoBehaviour
         buildingInventoryController = BuildingInventoryController.Get();
         Label positionLabel = CreatorUIController.getRoot().Q<Label>(_Position_Label);
         // UnityEngine.Cursor.SetCursor(currentBlock.BlockTexture, Vector2.zero, CursorMode.Auto);
-        if (_IsMouseOverBuildingCanvas())
+        if (_IsMouseOverBuildingCanvas() && !CreatorUIController.isInputOverVisualElement())
         {
-
             Vector3 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             ConvertCoordinate.GeoPosition LatLong = ConvertCoordinate.WorldPositionToLatLon(new Vector2(worldPosition.x + BuildingCanvas.transform.position.x, worldPosition.y + BuildingCanvas.transform.position.y));
             positionLabel.text = "Position: " + LatLong.latitude + ", " + LatLong.longitude;
+
+            if (buildingInventoryController.currentBlock != null)
+            {
+                if (buildingInventoryController.currentBlock.AssetType == "Elevator")
+                {
+                    Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.ELEVATOR_POINTER);
+                    UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
+                }
+
+                if (buildingInventoryController.currentBlock.AssetType == "Wall")
+                {
+                    if (InputEventHandler.selected == false)
+                    {
+                        Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.FINGER_POINTER);
+                        UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
+                    }
+                }
+
+                if (buildingInventoryController.currentBlock.AssetType == "Window")
+                {
+                    Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.WINDOW_POINTER);
+                    UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 4), CursorMode.Auto);
+                }
+
+                if (buildingInventoryController.currentBlock.AssetType == "Door")
+                {
+                    Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.DOOR_POINTER);
+                    UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
+                }
+            }
         }
         else
         {
             positionLabel.text = "";
+            if (!InputEventHandler.selected)
+                UnityEngine.Cursor.SetCursor(null, Vector3.zero, CursorMode.Auto);
         }
 
         _CanDrop();
 
         if (Math.Abs(Input.mouseScrollDelta.y) > 0f)
         {
-            _ZoomBuildingCanvas(Input.mouseScrollDelta.y > 0f ? 1 : -1);
+            if (!CreatorUIController.isInputOverVisualElement())
+            {
+                _ZoomBuildingCanvas(Input.mouseScrollDelta.y > 0f ? 1 : -1);
+            }
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -72,7 +106,8 @@ public class CreatorEventManager : MonoBehaviour
                         {
                             if (buildingInventoryController.currentBlock.AssetType == "Elevator")
                             {
-                                //TODO: CreateItem Elevator
+                                //TODO: Check for Elevator Validation
+                                NewBuildingController.CreateElevator(new Vector3(hitInfo.point.x, hitInfo.point.y, -0.2f), buildingInventoryController.currentBlock.BlockSprite);
                             }
                             else if (buildingInventoryController.currentBlock.AssetType == "Wall")
                             {
@@ -255,15 +290,12 @@ public class CreatorEventManager : MonoBehaviour
             playerObject.transform.position = newPosition;
         }
     }
-    private void _ZoomBuildingCanvas(int zoomDir)
+    public static void _ZoomBuildingCanvas(int zoomDir)
     {
-        if (_IsMouseOverBuildingCanvas())
-        {
-            // apply zoom
-            _camera.orthographicSize += zoomDir * Time.deltaTime * zoomSpeed;
-            // clamp camera distance
-            _camera.orthographicSize = Mathf.Clamp(_camera.orthographicSize, MIN_SCALE, MAX_SCALE);
-        }
+        // apply zoom
+        _camera.orthographicSize += zoomDir * Time.deltaTime * zoomSpeed;
+        // clamp camera distance
+        _camera.orthographicSize = Mathf.Clamp(_camera.orthographicSize, MIN_SCALE, MAX_SCALE);
     }
 
     private void CreateLine(RaycastHit hitInfo)
@@ -271,19 +303,21 @@ public class CreatorEventManager : MonoBehaviour
         _lineRendererGO = new GameObject();
         LineRenderer lineRenderer = _lineRendererGO.AddComponent<LineRenderer>();
         lineRenderer.widthMultiplier = WHConstants.DefaultWall2DHeight;
-        lineRenderer.SetPosition(0, new Vector3(hitInfo.point.x, hitInfo.point.y, -0.2f));
+        lineRenderer.SetPosition(0, new Vector3(hitInfo.point.x, hitInfo.point.y, WHConstants.DefaultZ));
     }
 
     private void UpdateLine(RaycastHit hitInfo)
     {
         LineRenderer lineRenderer = _lineRendererGO.GetComponent<LineRenderer>();
-        lineRenderer.SetPosition(1, new Vector3(hitInfo.point.x, hitInfo.point.y, -0.2f));
+        lineRenderer.SetPosition(1, new Vector3(hitInfo.point.x, hitInfo.point.y, WHConstants.DefaultZ));
     }
 
     private void GenerateLine()
     {
         LineRenderer lineRenderer = _lineRendererGO.GetComponent<LineRenderer>();
-        if (lineRenderer.GetPosition(0) != lineRenderer.GetPosition(1))
+        var length = Vector3.Distance(lineRenderer.GetPosition(0), lineRenderer.GetPosition(1));
+
+        if (lineRenderer.GetPosition(0) != lineRenderer.GetPosition(1) && length > HarnessConstant.WALL_LENGTH_THRESHOLD)
         {
             NewBuildingController.CreateWall(lineRenderer.GetPosition(0), lineRenderer.GetPosition(1));
         }
@@ -300,9 +334,10 @@ public class CreatorEventManager : MonoBehaviour
             if (hitInfo.transform.tag == WHConstants.METABLOCK)
             {
                 CreatorItem item = CreatorItemFinder.FindItemWithGameObject(hitInfo.transform.gameObject);
+
                 if (item is NewWall)
                 {
-                    NewBuildingController.DetachAndDeleteNode(item.name);
+                    NewBuildingController.DetachWall(item.name);
                 }
                 NewBuildingController.DeleteItem(item.name);
             }

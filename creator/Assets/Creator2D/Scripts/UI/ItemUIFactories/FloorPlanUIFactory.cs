@@ -57,10 +57,11 @@ public class FloorPlanUIFactory : IItemUIFactory
         //TODO
         heightField.RegisterCallback<InputEvent>((evt) =>
         {
-            IEnumerable<VisualElement> children = NewBuildingController.GetBuilding().uiItem.Foldout.Children();
+            var newHeight = float.Parse(evt.newData);
+            var previousHeight = float.Parse(evt.previousData);
             int floorPlanNumber = NamingController.GetItemNameNumber(foldout.name);
-            float adjustmentHeight = float.Parse(evt.newData) - float.Parse(evt.previousData);
-            NewBuildingController.AdjustFloorPlans(children, floorPlanNumber, 0, adjustmentHeight);
+            float adjustmentHeight = newHeight - previousHeight;
+            NewBuildingController.AdjustFloorPlans(floorPlanNumber, 0, adjustmentHeight * WHConstants.FEET_TO_METER);
         });
         return heightField;
     }

@@ -1,107 +1,183 @@
 using UnityEngine;
 using System.Collections.Generic;
+using ObjectModel;
 
 public class WallTransform : ITransformHandler
 {
-    public static Dictionary<GameObject, WallListener> wallListenersList = new Dictionary<GameObject, WallListener>();
-    private HarnessEventHandler eventHandler;
+    public InputEventHandler eventHandler;
     private WallListener _wallListener;
     private LineRenderer _wallRenderer;
     private Color _originalColor;
+    public WallListener wallListener
+    {
+        private set { _wallListener = value; }
+        get { return _wallListener; }
+    }
 
+    public CreatorItem WallItem
+    {
+        get { return this._wallListener.wallItem; }
+    }
+
+    public GameObject WallGO
+    {
+        get { return this._wallListener.wallGO; }
+    }
+
+    public enum WallState
+    {
+        CLICKABLE,
+        CLICKED
+    }
+    public WallState wallState;
 
     public WallTransform(GameObject go, CreatorItem item)
     {
         this._wallRenderer = go.GetComponent<LineRenderer>();
         this._originalColor = this._wallRenderer.material.color;
 
-        _wallListener = new WallListener(go, item as NewWall);
-        wallListenersList.Add(go, _wallListener);
+        wallListener = new WallListener(go, item as NewWall);
 
-        eventHandler = go.GetComponent<HarnessEventHandler>() == null ? go.AddComponent<HarnessEventHandler>() : go.GetComponent<HarnessEventHandler>();
+        TransformDatas.wallListenersList.Add(go, wallListener);
+        wallState = WallState.CLICKABLE;
 
-        eventHandler.drag += Dragged;
-        eventHandler.mouseHover += Hovered;
-        eventHandler.mouseExit += Exit;
-        eventHandler.mouseDown += DragStart;
-        eventHandler.mouseUp += Released;
+        RegisterEvents(go);
     }
 
-    private enum state
+    private void RegisterEvents(GameObject go)
     {
-        idle,
-        dragging
-    }
-    private state _state = state.idle;
+        eventHandler = go.GetComponent<InputEventHandler>() == null ? go.AddComponent<InputEventHandler>() : go.GetComponent<InputEventHandler>();
 
-    public void DragStart(Vector3 data)
-    {
-        HarnessEventHandler.selected = true;
-    }
-
-    public void Dragged(Vector3 data)
-    {
-        _state = state.dragging;
-        if (eventHandler.isInsideCanvas())
-        {
-            foreach (var node in _wallListener.nodes)
-            {
-                var x = Input.GetAxis("Mouse X");
-                var y = Input.GetAxis("Mouse Y");
-
-                Vector3 moveDirection = new Vector3(x, y, 0.0f);
-                moveDirection = Quaternion.AngleAxis(eventHandler._camera.transform.eulerAngles.z, Vector3.forward) * moveDirection;
-                moveDirection *= eventHandler._camera.orthographicSize / 10.0f;
-
-                var pos = new Vector3(node.Value.nodeGO.transform.position.x + moveDirection.x * HarnessConstant.MOVEMENT_SENSITIVITY * Time.deltaTime, node.Value.nodeGO.transform.position.y + moveDirection.y * HarnessConstant.MOVEMENT_SENSITIVITY * Time.deltaTime, -0.2f);
-                node.Value.NodeDragged(pos);
-            }
-        }
+        eventHandler.MouseHovered += Hovered;
+        eventHandler.MouseClick += WallClicked;
+        eventHandler.MouseDragStart += DragStart;
+        eventHandler.MouseDrag += Dragged;
+        eventHandler.MouseDragEnd += Released;
+        eventHandler.MouseExit += Exit;
     }
 
     public void Hovered()
     {
-        if (!HarnessEventHandler.selected && !CreatorUIController.isInputOverVisualElement())
+        if (IsInteractable())
+        {
+            if (wallState == WallState.CLICKABLE)
+            {
+                if (!InputEventHandler.selected && !CreatorUIController.isInputOverVisualElement())
+                {
+                    Highlight();
+                    foreach (var node in wallListener.nodes)
+                    {
+                        node.Value.NodeHovered();
+                    }
+                }
+            }
+        }
+    }
+
+    public void WallClicked()
+    {
+        if (IsInteractable())
+        {
+            CreatorHotKeyController.Instance.DeselectAllItems();
+
+            TransformDatas.SelectedWall = this;
+            wallState = WallState.CLICKED;
+
+            Highlight();
+            foreach (var node in wallListener.nodes)
+            {
+                node.Value.nodeState = Node.NodeState.CLICKED;
+            }
+
+            CreatorHotKeyController.Instance.hotkeyMenu.Populate(CreatorHotKeyController.Instance.wallKeys);
+        }
+    }
+
+    public bool IsInteractable()
+    {
+        BuildingInventoryController buildingInventoryController = BuildingInventoryController.Get();
+
+        if (buildingInventoryController.currentBlock == null)
+        {
+            return true;
+        }
+        else if (buildingInventoryController.currentBlock.AssetType == "Wall")
+        {
+            return true;
+        }
+        Trace.Log($"{buildingInventoryController.currentBlock.AssetType}");
+        return false;
+    }
+
+    public void DragStart(Vector3 data)
+    {
+        CreatorHotKeyController.Instance.DeselectAllItems();
+        InputEventHandler.selected = true;
+
+        //Determine the offset of each moving node from the mouse position
+        foreach (var node in wallListener.nodes)
+        {
+            node.Value.offset = node.Value.nodeGO.transform.position - data;
+        }
+    }
+
+    public void Dragged(Vector3 data)
+    {
+        //if (eventHandler.isInsideCanvas())
         {
             Highlight();
-            foreach (var node in _wallListener.nodes)
+            foreach (var node in wallListener.nodes)
             {
-                node.Value.NodeHovered();
+                //Set the position of each node as per the mouse position
+                var pos = data + node.Value.offset;
+                node.Value.NodeDragged(pos);
             }
         }
     }
 
     public void Exit()
     {
-        HarnessEventHandler.selected = false;
-        RemoveHighlight();
-        foreach (var node in _wallListener.nodes)
+        if (wallState == WallState.CLICKABLE)
         {
-            node.Value.NodeExitWall();
+            InputEventHandler.selected = false;
+            RemoveHighlight();
+            foreach (var node in wallListener.nodes)
+            {
+                node.Value.NodeExit();
+            }
         }
     }
 
-    public void Released()
+    public void Released(Vector3 data)
     {
-        HarnessEventHandler.selected = false;
-        foreach (var node in _wallListener.nodes)
+        if (wallState == WallState.CLICKABLE)
         {
-            foreach (var wall in wallListenersList)
+            InputEventHandler.selected = false;
+            for (int i = 0; i < wallListener.nodes.Count; i++)
             {
-                if (wall.Value.nodes.ContainsValue(node.Value))
+                foreach (var wall in TransformDatas.wallListenersList)
                 {
-                    var line = wall.Value.wallGO.GetComponent<LineRenderer>();
-                    var pos0 = line.GetPosition(0);
-                    var pos1 = line.GetPosition(1);
+                    if (wall.Value.nodes.ContainsValue(wallListener.nodes[i]))
+                    {
+                        var line = wall.Value.wallGO.GetComponent<LineRenderer>();
+                        var pos0 = line.GetPosition(0);
+                        var pos1 = line.GetPosition(1);
+                        var dist = Vector3.Distance(pos0, pos1);
+                        var attach = pos0 != pos1 && dist > HarnessConstant.WALL_LENGTH_THRESHOLD;
 
-                    float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
-
-                    NewBuildingController.UpdateWallHandle(wall.Value.wallItem.name, pos0, pos1, angle);
+                        float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
+                        NewBuildingController.UpdateWallHandle(wall.Value.wallItem.name, pos0, pos1, angle, attach);
+                    }
                 }
+                wallListener.nodes[i].NodeReleased(data);
             }
-            node.Value.NodeReleaseWall();
+            RemoveHighlight();
         }
-        RemoveHighlight();
+    }
+
+    public void DetachWall()
+    {
+        NewBuildingController.DetachWall(TransformDatas.SelectedWall.wallListener.wallItem.name);
     }
 
     public void Highlight()
@@ -109,6 +185,10 @@ public class WallTransform : ITransformHandler
         if (this._wallRenderer != null)
         {
             this._wallRenderer.material.color = HarnessConstant.HOVER_HIGHLIGHT_COLOR;
+            foreach (var node in wallListener.nodes)
+            {
+                node.Value.NodeHovered();
+            }
         }
     }
 
@@ -117,6 +197,10 @@ public class WallTransform : ITransformHandler
         if (this._wallRenderer != null)
         {
             this._wallRenderer.material.color = this._originalColor;
+            foreach (var node in wallListener.nodes)
+            {
+                node.Value.NodeExit();
+            }
         }
     }
 }

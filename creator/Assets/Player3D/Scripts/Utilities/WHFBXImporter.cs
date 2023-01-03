@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Autodesk.Fbx;
 using UnityEngine;
+using Newtonsoft.Json;
+
 class WHFbxImporter : System.IDisposable
 {
 
@@ -15,6 +17,15 @@ class WHFbxImporter : System.IDisposable
     public int NumNodes { private set; get; }
 
     private FbxSystemUnit UnitySystemUnit { get { return FbxSystemUnit.m; } }
+
+    public static string structureName;
+
+    public static string buildingName;
+
+    /// <summary>
+    /// Number of fbx imported 
+    /// </summary>
+    public static int NumFbx { private set; get; }
 
     private FbxAxisSystem UnityAxisSystem
     {
@@ -48,13 +59,19 @@ class WHFbxImporter : System.IDisposable
     {
         using (var fbxImporter = Create())
         {
-            fbxImporter.pathName = filePath.Substring(0, filePath.LastIndexOf("\\"));
+            buildingName = ObjectName.BUILDING + NumFbx.ToString();
+            structureName = ObjectName.CREATOR_STRUCTURE + NumFbx.ToString();
+            SceneObject.Create(SceneObject.Mode.Player, buildingName);
+            SceneObject.Create(SceneObject.Mode.Player, structureName);
+            NumFbx++;
+            fbxImporter.pathName = filePath.Substring(0, filePath.LastIndexOf(WHConstants.PATH_DIVIDER));
             return fbxImporter.ImportAll(filePath);
         }
     }
 
     int ImportAll(string filePath)
     {
+
         using (var fbxManager = FbxManager.Create())
         {
             // configure IO settings.
@@ -64,9 +81,9 @@ class WHFbxImporter : System.IDisposable
             fbxManager.SetIOSettings(fbxIOSettings);
             // fbxManager.SetIOSettings (FbxIOSettings.Create (fbxManager, Globals.IOSROOT));
 
-            if (SceneObject.Find(SceneObject.Mode.Player, ObjectName.BUILDING) != null)
+            if (SceneObject.Find(SceneObject.Mode.Player, buildingName) != null)
             {
-                UnityEngine.Object.Destroy(SceneObject.Find(SceneObject.Mode.Player, ObjectName.BUILDING));
+                UnityEngine.Object.Destroy(SceneObject.Find(SceneObject.Mode.Player, buildingName));
             }
             // Import the scene to make sure file is valid
             using (FbxImporter fbxImporter = FbxImporter.Create(fbxManager, "myImporter"))
@@ -144,8 +161,8 @@ class WHFbxImporter : System.IDisposable
                                              AxisSystemToString(fbxAxisSystem)));
         }
 
-        GameObject Structure = SceneObject.Find(SceneObject.Mode.Player, ObjectName.CREATOR_STRUCTURE);
-        FbxNode StructureNode = fbxScene.GetRootNode().FindChild(ObjectName.CREATOR_STRUCTURE);
+        GameObject Structure = SceneObject.Find(SceneObject.Mode.Player, structureName);
+        FbxNode StructureNode = fbxScene.GetRootNode().FindChild("Structure");
 
         ProcessNode(StructureNode != null ? StructureNode : fbxScene.GetRootNode(), Structure);
 
@@ -212,9 +229,11 @@ class WHFbxImporter : System.IDisposable
     {
         string name = fbxNode.GetName();
 
+        if (name.Contains("Clone")) return;
+
         GameObject unityGo;
 
-        if (name == ObjectName.CREATOR_STRUCTURE)
+        if (name == structureName)
         {
             unityGo = unityParentObj;
         }
@@ -227,13 +246,36 @@ class WHFbxImporter : System.IDisposable
 
         NumNodes++;
 
-        if (name != ObjectName.CREATOR_STRUCTURE && unityParentObj != null)
+        if (name != structureName && unityParentObj != null)
         {
             unityGo.transform.parent = unityParentObj.transform;
         }
 
         ProcessTransform(fbxNode, unityGo);
-        ProcessMesh(fbxNode, unityGo);
+
+        if (name.Contains("Door") || name.Contains("Window") || name.Contains("Elevator"))
+        {
+            GameObject item;
+            if (name.Contains("Door"))
+            {
+                item = PrefabFinder.Find("Door");
+            }
+            else if (name.Contains("Window"))
+            {
+                item = PrefabFinder.Find("Window");
+            }
+            else
+            {
+                item = PrefabFinder.Find("Elevator");
+            }
+            item.transform.parent = unityGo.transform;
+            item.transform.localPosition = new Vector3(0, 0, 0);
+            item.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        }
+        else
+        {
+            ProcessMesh(fbxNode, unityGo);
+        }
 
         for (int i = 0; i < fbxNode.GetChildCount(); ++i)
         {
@@ -583,7 +625,7 @@ class WHFbxImporter : System.IDisposable
 
         if (filePathProperty != null && filePathProperty.IsValid())
         {
-            var filePath = pathName + "\\Textures\\" + filePathProperty.GetString();
+            var filePath = pathName + WHConstants.PATH_DIVIDER + "Textures" + WHConstants.PATH_DIVIDER + filePathProperty.GetString();
             if (File.Exists(filePath))
             {
                 fileData = File.ReadAllBytes(filePath);

@@ -7,7 +7,7 @@ using System.Threading;
 
 class ServerSocket
 {
-    static Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+    static Socket serverSocket;
     private static string guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static Func<string, bool> _actionHandler;
     private static Thread clientThread;
@@ -25,6 +25,7 @@ class ServerSocket
     {
         try
         {
+            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
             IPAddress iP = IPAddress.Parse("127.0.0.1");
 
             serverSocket.Bind(new IPEndPoint(iP, 40107));
@@ -94,12 +95,10 @@ class ServerSocket
         }
         catch (SocketException exception)
         {
+            CloseSocket();
+
             Trace.Log(exception.ToString());
             throw exception;
-        }
-        finally
-        {
-            CloseSocket();
         }
     }
 
@@ -109,7 +108,10 @@ class ServerSocket
         {
             clientThread.Abort();
         }
-        serverSocket.Close();
+        if (serverSocket != null)
+        {
+            serverSocket.Close();
+        }
     }
 
     private static string AcceptKey(ref string key)

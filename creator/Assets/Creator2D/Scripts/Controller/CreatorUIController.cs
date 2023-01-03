@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +7,10 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using TerrainEngine;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Net.Http;
+using UnityEngine.Networking;
 public class CreatorUIController : MonoBehaviour
 {
     private UIDocument m_UIDocument;
@@ -39,12 +44,16 @@ public class CreatorUIController : MonoBehaviour
 
     private static List<VisualElement> flyOutElementList = new List<VisualElement>();
 
+    public static string buildingID = null;
+    public static GameObject buildingGO;
+    public static string previousBuildingID;
     public static VisualElement getRoot()
     {
         return CreatorUIController.root;
     }
+    public static bool UnSavedProgress;
 
-    async public void Start()
+    async public void Awake()
     {
         m_UIDocument = GetComponent<UIDocument>();
         CreatorUIController.root = m_UIDocument.rootVisualElement;
@@ -84,24 +93,143 @@ public class CreatorUIController : MonoBehaviour
         compassButton = CreatorUIController.root.Query<Button>("compass-button");
         compassButton.AddManipulator(new CompassMouseManipulator());
 
-        StartCoroutine(PrepareVersionData());
+        UserProfileDesign();
+        VisualElement topPanel = CreatorUIController.root.Q<VisualElement>("top-menu-panel");
+        VisualElement mainPanel = CreatorUIController.root.Q<VisualElement>("mainPanel");
+        topPanel.BringToFront();
+        topPanel.style.position = Position.Absolute;
+        topPanel.style.left = 0;
+        topPanel.style.top = 0;
+
+        mainPanel.style.marginTop = 60;
 
         GameObject player = SceneObject.GetPlayer(SceneObject.Mode.Creator);
         Trace.Assert(player != null, "SceneObject.Mode.Creator does not have a Player gameobject");
         player.AddComponent<VersionChanger>();
 
-        BuildingCanvas bc = BuildingCanvas.Get();
-        OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail();
-        bc.GenerateCanvas(buildingData);
-
-        //TODO convert gameobjects to UI Hierachy Elements and PAN Objects
-
-        // if(WHFbxImporter.ImportObjects(_getFBXSubPath()) == 1){
-        //     Debug.Log("Successfully imported fbx objects.");
-        // }else{
-        //     Debug.Log("Error on imporing fbx objects.");
-        // }
+#if UNITY_EDITOR
+        if (WelcomeUIController.buildingID != null && WelcomeUIController.buildingID != "")
+        {
+            OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail(WelcomeUIController.buildingID);
+            CreateBuildingCanvas(buildingData);
+            previousBuildingID = WelcomeUIController.buildingID;
+        }
+#else
+        if (TerrainController.Get() == null || TerrainController.Get().GetState() == TerrainController.TerrainState.Unloaded)
+        {
+            OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail();
+            previousBuildingID = buildingData.id;
+            CreateBuildingCanvas(buildingData);
+        }
+#endif
     }
+
+    private async void UserProfileDesign()
+    {
+        UserProfileData userData = await UserProfile.GetUserProfileData();
+        Label userNameLabel = CreatorUIController.root.Q<Label>("UserName");
+        userNameLabel.text = userData.firstname + " " + userData.lastname;
+        VisualElement avatarFrame = CreatorUIController.root.Q<VisualElement>("avatar-frame");
+
+        if (userData.profilePicture != null && userData.profilePicture.location != null & userData.profilePicture.filename != null)
+        {
+            string url = WHConstants.S3_BUCKET_PATH + "/" + userData.profilePicture.location + "/" + userData.profilePicture.filename;
+            StartCoroutine(DownloadProfilePicture(url, avatarFrame));
+        }
+        else
+        {
+            StyleBackground backgroundImage = new StyleBackground(Resources.Load<Texture2D>("Icons/avatar_icon"));
+            avatarFrame.style.backgroundImage = backgroundImage;
+        }
+
+        VisualElement UserFrame = CreatorUIController.root.Q<VisualElement>("user-frame");
+        UserFrame.AddManipulator(new Clickable(evt => BuildUserProfileDropDown()));
+    }
+
+    void BuildUserProfileDropDown()
+    {
+        VisualElement UserDropDownMenu = CreatorUIController.root.Q<VisualElement>("user-dropdown-menu");
+        var opened = UserDropDownMenu.ClassListContains("dropdown-menu-open");
+        if (!opened)
+        {
+            VisualElement dropDownContainer = new VisualElement();
+            dropDownContainer.name = "dropdown-container";
+            VisualElement MyProfileElement = new VisualElement();
+            MyProfileElement.AddToClassList("dropdown-item");
+            MyProfileElement.AddToClassList("dropdown-menu-open");
+
+            TextElement profileText = new TextElement();
+            profileText.text = "My Profile";
+            MyProfileElement.Add(profileText);
+            profileText.AddManipulator(new Clickable(evt => goToProfile()));
+            dropDownContainer.Add(MyProfileElement);
+
+            VisualElement separator = new VisualElement();
+            separator.AddToClassList("dropdown-menu-divider");
+            dropDownContainer.Add(separator);
+
+            VisualElement LogoutElement = new VisualElement();
+            LogoutElement.AddToClassList("dropdown-item");
+            LogoutElement.AddToClassList("dropdown-menu-open");
+
+            TextElement LogoutText = new TextElement();
+            LogoutText.text = "Logout";
+            LogoutElement.Add(LogoutText);
+            LogoutElement.AddManipulator(new Clickable(evt => logoutUser()));
+            dropDownContainer.Add(LogoutElement);
+
+            UserDropDownMenu.Add(dropDownContainer);
+            UserDropDownMenu.AddToClassList("dropdown-menu-open");
+        }
+        else
+        {
+            VisualElement dropDownContainer = CreatorUIController.root.Q<VisualElement>("dropdown-container");
+            if (dropDownContainer != null)
+            {
+                UserDropDownMenu.Remove(dropDownContainer);
+            }
+            UserDropDownMenu.RemoveFromClassList("dropdown-menu-open");
+        }
+    }
+
+    //Open the profile page of the user
+    void goToProfile()
+    {
+        Application.OpenURL($"{WHConstants.WEB_URL}/account");
+    }
+
+    // Logout the user from app
+    void logoutUser()
+    {
+        string unsubmittedId = CreatorSubmission.GetUsersUnSubmittedBuildingId();
+        var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+
+        if (unsubmittedId == null || UnSavedProgress)
+        {
+            LoadingUIController.ActiveMode = LoadingUIController.Mode.UnsavedLogout;
+            loadingUI.SetActive(true);
+        }
+
+        else
+        {
+            AuthenticationHandler.Logout();
+            var bootstrap = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<AppBootstrap>();
+            bootstrap.Init();
+            loadingUI.SetActive(false);
+        }
+    }
+
+    IEnumerator DownloadProfilePicture(string url, VisualElement avatarFrame)
+    {
+        using (var uwr = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET))
+        {
+            uwr.downloadHandler = new DownloadHandlerTexture();
+            yield return uwr.SendWebRequest();
+            StyleBackground backgroundImage = new StyleBackground(DownloadHandlerTexture.GetContent(uwr));
+            avatarFrame.style.backgroundImage = backgroundImage;
+        }
+    }
+
     IEnumerator PrepareVersionData()
     {
         VersionDownloader.PrepareData();
@@ -130,9 +258,10 @@ public class CreatorUIController : MonoBehaviour
         controller.latitudeUser = BuildingCanvas.centerLatLon[1].ToString();
         controller.longitudeUser = BuildingCanvas.centerLatLon[0].ToString();
         SceneObject.Get().ActiveMode = SceneObject.Mode.Player;
+        previousBuildingID = buildingID;
     }
 
-    public static void CreateBuildingCanvas(OsmBuildingData buildingData)
+    public async static void CreateBuildingCanvas(OsmBuildingData buildingData)
     {
         CreatorItem buildingItem = NewBuildingController.GetBuilding();
         if (buildingItem != null)
@@ -142,7 +271,51 @@ public class CreatorUIController : MonoBehaviour
             buildingItem.Destroy();
         }
         BuildingCanvas buildingCanvas = BuildingCanvas.Get();
-        buildingCanvas.GenerateCanvas(buildingData);
+        buildingID = buildingData.id;
+        string fbxName = WHConstants.PATH_DIVIDER + "myCreation.fbx";
+        string fbxPath = CacheFolderUtils.fbxFolder(buildingID);
+        if (File.Exists(fbxPath + fbxName))
+        {
+            ImportFbx(buildingCanvas, buildingData, fbxPath + fbxName);
+            return;
+        }
+        else if (Directory.Exists(TerrainRuntime.LOCALCACHE_AUTHORED_BUILDINGS_FBX_FOLDER + buildingID))
+        {
+            string filePath = Directory.GetFiles(TerrainRuntime.LOCALCACHE_AUTHORED_BUILDINGS_FBX_FOLDER + buildingID)[0];
+            ImportFbx(buildingCanvas, buildingData, filePath);
+            return;
+        }
+        else if (!Directory.Exists(TerrainRuntime.LOCALCACHE_AUTHORED_BUILDINGS_FBX_FOLDER + buildingID) && buildingData.asset != null)
+        {
+            string filePath = TerrainRuntime.LOCALCACHE_AUTHORED_BUILDINGS_FBX_FOLDER + buildingID + WHConstants.PATH_DIVIDER + buildingData.asset.fbx.filename;
+            await VersionDownloader.DownloadFileTaskAsync(WHConstants.S3_BUCKET_PATH + "/" + buildingData.asset.fbx.location + "/" + buildingData.asset.fbx.filename, filePath);
+            ImportFbx(buildingCanvas, buildingData, filePath);
+            return;
+        }
+        else
+        {
+            buildingCanvas.GenerateCanvas(buildingData);
+        }
+    }
+
+
+    private static void ImportFbx(BuildingCanvas buildingCanvas, OsmBuildingData buildingData, string filePath)
+    {
+        buildingCanvas.GenerateCanvas(buildingData, false);
+        var floorBoundary = new List<Vector3>();
+        foreach (var coord in BuildingCanvas.boundaryCoordinates)
+        {
+            floorBoundary.Add(new Vector3(coord.x, 0, coord.y));
+        }
+        if (WHFbxImporter2D.ImportObjects(filePath, floorBoundary) == 1)
+        {
+            SetupAddFloorDropdown();
+            Debug.Log("Successfully imported fbx objects.");
+        }
+        else
+        {
+            Debug.Log("Error on imporing fbx objects.");
+        }
     }
 
     private static string SelectedFloorName = null;
@@ -162,7 +335,10 @@ public class CreatorUIController : MonoBehaviour
         floorOptionList.Add(_copy_from_below);
         foreach (var item in NewBuildingController.GetBuilding().children)
         {
-            floorOptionList.Add(item.name);
+            if (item.name.Contains("FloorPlan"))
+            {
+                floorOptionList.Add(item.name);
+            }
         }
         return floorOptionList;
     }
@@ -273,7 +449,6 @@ public class CreatorUIController : MonoBehaviour
 
     private void SelectFlyOutButtonControl(VisualElement button)
     {
-
         var elemParent = button.parent;
         button.AddToClassList(buttonActiveClassName);
         elemParent.AddToClassList(buttonActiveClassName);
@@ -293,32 +468,32 @@ public class CreatorUIController : MonoBehaviour
         Debug.Log("ContentCutButtonPressed");
     }
 
-    void OnSave()
+    async void OnSave()
     {
         Debug.Log("On Save pressed");
         GameObject building = null;
         try
         {
-            messageLabel.RemoveFromClassList("hide");
-            messageLabel.AddToClassList("show");
-            messageLabel.text = "Generating FBX...";
+            var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+            LoadingUIController.ActiveMode = LoadingUIController.Mode.Saving;
+            loadingUI.SetActive(true);
             GameObject structure = SceneObject.Find(SceneObject.Mode.Creator, ObjectName.CREATOR_STRUCTURE);
             building = Item3d.getBuildingGameObject();
             if (building != null)
             {
                 building.transform.parent = structure.transform;
             }
-            string subPath = _getFBXSubPath();
-            string path = subPath + "\\myCreation.fbx";
-            bool subPathExists = System.IO.Directory.Exists(subPath);
+            string subPath = CacheFolderUtils.fbxFolder(buildingID);
+            string path = subPath + WHConstants.PATH_DIVIDER + "myCreation.fbx";
+            bool subPathExists = System.IO.Directory.Exists(path);
             if (!subPathExists)
             {
-                System.IO.Directory.CreateDirectory(subPath);
+                string buildingId = CreatorUIController.buildingID;
+                await CreatorSubmission.ActiveBuilds(buildingId);
             }
-            WHFbxExporter.ExportObjects(path, path.Substring(0, path.LastIndexOf("\\")), structure);
-
-            messageLabel.text = "FBX Saved Successfully.";
-            StartCoroutine(HideMessage());
+            WHFbxExporter.ExportObjects(path, path.Substring(0, path.LastIndexOf(WHConstants.PATH_DIVIDER)), structure);
+            loadingUI.SetActive(false);
+            UnSavedProgress = false;
         }
         catch (Exception e)
         {
@@ -360,16 +535,16 @@ public class CreatorUIController : MonoBehaviour
         }
     }
 
-    private string _getFBXSubPath()
+    void OnZoomIn(VisualElement button)
     {
-        /**
-        todo: 1. refine folder structure . what about cross platform?
-              2. move the method in utils.
-         path = C:/Users/<PC_USER_NAME>/Documents/earth9/<PLOT_ID>/<BUILDING_ID>
-        
-        **/
-        return "C:\\Users\\" + System.Windows.Forms.SystemInformation.UserName.ToString() + "\\Documents\\earth9\\eeb52773-318c-4a4b-a16b-c5ff0bb72623\\eeb52773-318c-4a4b-a16b-c5ff0bb72623";
+        CreatorEventManager._ZoomBuildingCanvas(-1);
     }
+
+    void OnZoomOut(VisualElement button)
+    {
+        CreatorEventManager._ZoomBuildingCanvas(1);
+    }
+
 
     public static bool isInputOverVisualElement()
     {

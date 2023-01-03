@@ -65,3 +65,38 @@
     border: 1px solid #F4EFF4;
     border-radius: 4px;
 }
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: none;
+  min-width: 160px;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  font-size: 14px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.dropdown-item {
+    display: flex;
+    width: 100%;
+    padding: 10px 15px;
+    color: #212529;
+    white-space: nowrap;
+    background-color: transparent;
+    cursor: Pointer;
+}
+
+.dropdown-menu-divider {
+  height: 1px;
+  margin: 9px 0;
+  overflow: hidden;
+  background-color: #e5e5e5;
+}
+
+.dropdown-menu-open {
+  display: flex;
+}

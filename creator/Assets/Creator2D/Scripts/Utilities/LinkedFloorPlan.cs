@@ -1,43 +1,44 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class LinkedFloorPlan
 {
-    private static List<List<CreatorItem>> linkedFloorsList = new List<List<CreatorItem>>();
-    private static Dictionary<CreatorItem, int> linkedFloorsDictionary = new Dictionary<CreatorItem, int>();
+    private static Dictionary<CreatorItem, List<CreatorItem>> linkedFloorsDictionary = new Dictionary<CreatorItem, List<CreatorItem>>();
 
     public static List<CreatorItem> GetLinkedItems(CreatorItem item)
     {
         if (linkedFloorsDictionary.ContainsKey(item))
         {
-            return linkedFloorsList[linkedFloorsDictionary[item]];
+            return linkedFloorsDictionary[item];
         }
         return new List<CreatorItem>() { item };
     }
-
     public static void Link(CreatorItem itemToLink, CreatorItem baseItem)
     {
         if (linkedFloorsDictionary.ContainsKey(baseItem))
         {
-            List<CreatorItem> linkedItems = linkedFloorsList[linkedFloorsDictionary[baseItem]];
+            List<CreatorItem> linkedItems = linkedFloorsDictionary[baseItem];
             linkedItems.Add(itemToLink);
-            linkedFloorsDictionary[itemToLink] = linkedFloorsDictionary[baseItem];
+            linkedFloorsDictionary[baseItem] = linkedItems;
         }
         else
         {
-            linkedFloorsDictionary[baseItem] = linkedFloorsList.Count;
-            linkedFloorsDictionary[itemToLink] = linkedFloorsList.Count;
-            linkedFloorsList.Add(new List<CreatorItem>() { itemToLink, baseItem });
+            linkedFloorsDictionary[baseItem] = new List<CreatorItem>() { itemToLink, baseItem };
         }
     }
-
     public static void UnLink(CreatorItem linkedItem, CreatorItem baseItem)
     {
         if (linkedFloorsDictionary.ContainsKey(baseItem))
         {
-            List<CreatorItem> linkedItems = linkedFloorsList[linkedFloorsDictionary[baseItem]];
+            List<CreatorItem> linkedItems = linkedFloorsDictionary[baseItem];
             linkedItems.Remove(linkedItem);
-            linkedFloorsDictionary.Remove(linkedItem);
+            linkedFloorsDictionary[baseItem] = linkedItems;
         }
+    }
+
+    public static CreatorItem GetParentItem(CreatorItem linkedItem)
+    {
+        return linkedFloorsDictionary.FirstOrDefault(x => x.Value.Contains(linkedItem) && x.Key != linkedItem).Key;
     }
 }

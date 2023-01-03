@@ -29,6 +29,10 @@ public class HotkeyMenu : MonoBehaviour
         ToggleDetails,
         ToggleFly,
         ToggleLocation,
+        DetachNode,
+        DeleteItem,
+        Explore,
+        Elevator
     }
 
     private static readonly Dictionary<Key, KeyInfo> s_HotKeys = new Dictionary<Key, KeyInfo>()
@@ -46,6 +50,10 @@ public class HotkeyMenu : MonoBehaviour
         { Key.ToggleDetails,  new KeyInfo("T",   "+/- Details") },
         { Key.ToggleFly,      new KeyInfo("F",   "Toggle Flying") },
         { Key.ToggleLocation, new KeyInfo("L",   "+/- Location") },
+        { Key.DetachNode,     new KeyInfo("D",   "Detach Nodes") },
+        { Key.DeleteItem,     new KeyInfo("Del", "Delete") },
+        { Key.Explore,        new KeyInfo("E",   "Explore") },
+        { Key.Elevator,       new KeyInfo("G",   "Elevator") }
     };
 
     private struct KeyInfo
@@ -80,6 +88,7 @@ public class HotkeyMenu : MonoBehaviour
             GameObject panelObj = menuItemObj.transform.Find(MENUITEM_PANEL_NAME).gameObject;
             GameObject helpObj = menuItemObj.transform.Find(MENUITEM_HELPTEXT_NAME).gameObject;
             GameObject keyTextObj = panelObj.transform.GetChild(0).gameObject;
+            Trace.Log($"HOTKEY :: {keyTextObj.name}");
 
             SetKeyText(k, keyTextObj, helpObj);
             items[k] = menuItemObj;

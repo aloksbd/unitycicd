@@ -8,6 +8,7 @@ public class NewItemWithMesh : CreatorItem, NewIHasRotation, NewIHasDimension, N
     public Vector3 EulerAngles { get => _eulerAngles; }
     public Dimension Dimension { get => _dimension; }
     public NewItemWithMesh(GameObject gameObject, UIItem uiItem) : base(gameObject, uiItem) { }
+    private WallTransform _wallTransform;
 
     public void SetRotation(float x, float y, float z)
     {
@@ -25,7 +26,7 @@ public class NewItemWithMesh : CreatorItem, NewIHasRotation, NewIHasDimension, N
         _eulerAngles += new Vector3(x, z, y);
     }
 
-    public void SetDimension(float length, float height, float width)
+    public virtual void SetDimension(float length, float height, float width)
     {
         _dimension = new Dimension(length, height, width);
     }
@@ -33,6 +34,20 @@ public class NewItemWithMesh : CreatorItem, NewIHasRotation, NewIHasDimension, N
     public virtual Mesh GetMesh()
     {
         return new NewWallCreator(_dimension.Height, _dimension.Length, _dimension.Width, children).CreateWallMesh();
+    }
+
+    public virtual void SetWallTransformer()
+    {
+        _wallTransform = new WallTransform(gameObject, this);
+    }
+
+    public virtual WallTransform GetWallTranformer()
+    {
+        if (_wallTransform == null)
+        {
+            SetWallTransformer();
+        }
+        return _wallTransform;
     }
 
     public override void Select()

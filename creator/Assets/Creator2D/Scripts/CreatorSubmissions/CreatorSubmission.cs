@@ -6,6 +6,8 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
+using TerrainEngine;
+using System.IO;
 
 public class CreatorSubmission : MonoBehaviour
 {
@@ -40,21 +42,28 @@ public class CreatorSubmission : MonoBehaviour
         public bool isLive;
         public string version;
     }
-
+    public class ActiveBuildRequest
+    {
+        public string buildingId { get; set; }
+    }
 
     private static readonly HttpClient _httpClient = new HttpClient();
-    public static async void SubmitCreatorChanges()
+    public static async void SubmitCreatorChanges(bool isForUnsubmittedCreation = false)
     {
-        string submissionId = await AddCreatorSubmission();
+        string buildingId = isForUnsubmittedCreation ? GetUsersUnSubmittedBuildingId() : CreatorUIController.buildingID;
+        string submissionId = await AddCreatorSubmission(buildingId);
         CreatorUploadRequest request = new CreatorUploadRequest();
         request.creatorSubmissionId = submissionId;
         request.creatorAssetType = ObjectName.CREATOR_ASSET_TYPE_FBX;
-        // todo: make dynamic path according to building id.
-        request.filePath = @"C:\Users\" + System.Windows.Forms.SystemInformation.UserName.ToString() + @"\Documents\earth9\eeb52773-318c-4a4b-a16b-c5ff0bb72623\eeb52773-318c-4a4b-a16b-c5ff0bb72623\myCreation.fbx";
+        string fbxPath = CacheFolderUtils.fbxFolder(buildingId);
+        request.filePath = fbxPath + @"\myCreation.fbx";
         await UploadCreatorAssets.UploadCreatorSubmissionAssets(request);
+        DeleteLocalCreation(fbxPath);
+        var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+        loadingUI.SetActive(false);
     }
 
-    public static async Task<string> AddCreatorSubmission()
+    public static async Task<string> AddCreatorSubmission(string buildingId)
     {
         string submissionId = "";
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
@@ -69,17 +78,15 @@ public class CreatorSubmission : MonoBehaviour
         dto.plotId = "d46d0d39-7388-43a1-a8ed-0c5d2787c163";
         dto.blocks = 2;
         // todo : flow to decide default building for user.
-        string buildingId = "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
-        if (DeeplinkHandler.Instance.isDeeplinkCalled)
-        {
-            buildingId = DeeplinkHandler.BuildData.building_id != null ? DeeplinkHandler.BuildData.building_id : "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
-        }
         dto.labelType = "GOOD_CREATOR_SUBMISSION";
         dto.buildingId = buildingId;
         string payload = JsonConvert.SerializeObject(dto);
         HttpContent c = new StringContent(payload, Encoding.UTF8, "application/json");
         try
         {
+            LoadingUIController.ActiveMode = LoadingUIController.Mode.Submitting;
+            var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+            loadingUI.SetActive(true);
             var response = await _httpClient.PostAsync(WHConstants.API_URL + "/creator-submissions", c);
             response.EnsureSuccessStatusCode();
             string resp = await response.Content.ReadAsStringAsync();
@@ -94,5 +101,67 @@ public class CreatorSubmission : MonoBehaviour
         }
         return submissionId;
     }
+
+    public static async Task<string> ActiveBuilds(string buildingId)
+    {
+        string submissionId = "";
+        if (_httpClient.DefaultRequestHeaders.Authorization == null)
+        {
+            string token = await TokenFetch.GetAccessToken();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+        }
+        ActiveBuildRequest payload = new ActiveBuildRequest()
+        {
+            buildingId = buildingId
+        };
+        HttpContent c = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+        try
+        {
+            var response = await _httpClient.PostAsync(WHConstants.API_URL + "/active-builds/add", c);
+
+            string resp = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+            dynamic submissionResponse = JsonConvert.DeserializeObject<dynamic>(resp);
+            submissionId = submissionResponse.data.activeBuildId;
+            return submissionId;
+        }
+        catch (Exception e)
+        {
+            Trace.Exception(e);
+        }
+        return submissionId;
+    }
+
+    public static void DeleteLocalCreation(string filePath)
+    {
+        Directory.Delete(filePath, true);
+    }
+
+    public static void DeleteAllLocalCreation()
+    {
+        if (Directory.Exists(Application.persistentDataPath + "/UserCreation/" + WHConstants.USER))
+        {
+            DirectoryInfo dirs = new DirectoryInfo(Application.persistentDataPath + "/UserCreation/" + WHConstants.USER);
+            foreach (DirectoryInfo dir in dirs.GetDirectories())
+            {
+                Directory.Delete(dir.FullName, true);
+            }
+        }
+    }
+
+    public static string GetUsersUnSubmittedBuildingId()
+    {
+        string[] dirs = Directory.GetDirectories(CacheFolderUtils.getUserDataFolder(), "*", SearchOption.TopDirectoryOnly);
+
+        foreach (string dir in dirs)
+        {
+            if (File.Exists(dir + "\\myCreation.fbx"))
+            {
+                return dir.Substring(dir.LastIndexOf("\\") + 1);
+            }
+        }
+        return null;
+    }
+
 
 }
