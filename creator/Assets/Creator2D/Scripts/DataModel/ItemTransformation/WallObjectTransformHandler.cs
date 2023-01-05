@@ -13,6 +13,7 @@ public class WallObjectTransformHandler : ITransformHandler
     private Vector3 _offset;
     private GameObject _parent;
     private LineRenderer _parent_wall;
+    private Vector3 InitialPos;
 
 
     public WallObjectTransformHandler(GameObject go, CreatorItem item, string type)
@@ -56,6 +57,7 @@ public class WallObjectTransformHandler : ITransformHandler
     {
         Highlight();
         HarnessEventHandler.selected = true;
+        InitialPos = this._objectGO.transform.localPosition;
         _offset = this._objectGO.transform.localPosition - data;
 
         _parent = this._objectGO.transform.parent.gameObject;
@@ -114,10 +116,19 @@ public class WallObjectTransformHandler : ITransformHandler
     {
         if (wallObjectState == WallObjectState.CLICKABLE)
         {
-            InputEventHandler.selected = false;
-            var wallItem = this.item.Parent;
-            NewBuildingController.UpdateWallObject(this.item.name, wallItem, this._objectGO.transform.position, this._objectGO.transform.localPosition, _parent, this._objectType);
-            RemoveHighlight();
+            if (InputEventHandler.CheckWallObjectOverlap(this._objectGO))
+            {
+                Trace.Log($"REPOSITION TO INTIAL POS");
+                this._objectGO.transform.localPosition = InitialPos;
+            }
+            else
+            {
+                Trace.Log($"OK");
+                InputEventHandler.selected = false;
+                var wallItem = this.item.Parent;
+                NewBuildingController.UpdateWallObject(this.item.name, wallItem, this._objectGO.transform.position, this._objectGO.transform.localPosition, this._objectType);
+                RemoveHighlight();
+            }
         }
     }
 

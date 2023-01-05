@@ -12,11 +12,12 @@ public class InputEventHandler : MonoBehaviour, IDragHandler, IBeginDragHandler,
     public event Action MouseClick;
     public static bool IsMoving;
     public static bool selected;
-    public static LayerMask _layer;
+    public static LayerMask UiMask, UiWallObjectOverlap;
 
     public void Start()
     {
-        _layer = 1 << LayerMask.NameToLayer("UI");
+        UiMask = 1 << LayerMask.NameToLayer("UI");
+        UiWallObjectOverlap = 1 << LayerMask.NameToLayer("Default");
     }
 
     public void OnPointerEnter(PointerEventData data)
@@ -89,7 +90,7 @@ public class InputEventHandler : MonoBehaviour, IDragHandler, IBeginDragHandler,
 
     public static bool IsInsideCanvas(Vector3 position)
     {
-        if (Physics.Raycast(position, Vector3.forward, out RaycastHit hitInfo, Mathf.Infinity, _layer, QueryTriggerInteraction.Collide))
+        if (Physics.Raycast(position, Vector3.forward, out RaycastHit hitInfo, Mathf.Infinity, UiMask, QueryTriggerInteraction.Collide))
         {
             if (hitInfo.transform.name == "BuildingCanvas")
             {
@@ -101,12 +102,40 @@ public class InputEventHandler : MonoBehaviour, IDragHandler, IBeginDragHandler,
 
     public static bool CursorInsideCanvas()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, _layer, QueryTriggerInteraction.Collide))
+        if (Camera.main != null)
         {
-            if (hitInfo.transform.name == "BuildingCanvas")
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, UiMask, QueryTriggerInteraction.Collide))
             {
-                return true;
+                if (hitInfo.transform.name == "BuildingCanvas")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    static GameObject target;
+
+    public static bool CheckWallObjectOverlap(GameObject GO)
+    {
+        target = GO;
+        var bound = GO.GetComponent<BoxCollider>().bounds;
+
+        Collider[] collider = Physics.OverlapBox(bound.center, bound.extents * 2, Quaternion.identity, UiWallObjectOverlap, QueryTriggerInteraction.Collide);
+        if (collider.Length > 0)
+        {
+            foreach (var obj in collider)
+            {
+                if (obj.gameObject != GO)
+                {
+                    var item = CreatorItemFinder.FindItemWithGameObject(obj.gameObject);
+                    if (item is NewWindow || item is NewDoor)
+                    {
+                        return true;
+                    }
+                }
             }
         }
         return false;

@@ -348,7 +348,7 @@ public class NewBuildingController
         return Vector3.Distance(bound.max, bound.min) - (object_bound.size.x * 1.2f);
     }
 
-    public static void UpdateWallObject(string itemName, CreatorItem itemParent, Vector3 position, Vector3 localPosition, GameObject parent, string type)
+    public static void UpdateWallObject(string itemName, CreatorItem itemParent, Vector3 position, Vector3 localPosition, string type)
     {
         CheckAndRemoveFromParent(floorPlan);
         List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
@@ -356,19 +356,20 @@ public class NewBuildingController
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(itemParent.name, floorPlanItem);
             CreatorItem objItem = CreatorItemFinder.FindByName(itemName, parentItem);
+            var parent = objItem.Parent.gameObject;
 
             if (type == WHConstants.WINDOW)
             {
                 objItem.GetComponent<NewIHasDimension>().SetDimension(WHConstants.DefaultWindowLength, WHConstants.DefaultWindowHeight, WHConstants.DefaultWindowBreadth);
-                objItem.SetPosition(new Vector3(Mathf.Abs(position.x - parent.gameObject.transform.position.x), 0, WHConstants.DefaultWindowY));
+                objItem.SetPosition(new Vector3(localPosition.x, 0, WHConstants.DefaultWindowY));
             }
             if (type == WHConstants.DOOR)
             {
                 objItem.GetComponent<NewIHasDimension>().SetDimension(WHConstants.DefaultDoorLength, WHConstants.DefaultDoorHeight, WHConstants.DefaultDoorBreadth);
-                objItem.SetPosition(new Vector3(Mathf.Abs(position.x - parent.gameObject.transform.position.x), 0, WHConstants.DefaultDoorY));
+                objItem.SetPosition(new Vector3(localPosition.x, 0, WHConstants.DefaultDoorY));
             }
             objItem.GetComponent<NewIHasRotation>().SetRotation(0, 0, 0);
-            objItem.gameObject.transform.localPosition = localPosition + new Vector3(0, 0, WHConstants.DefaultZ);
+            objItem.gameObject.transform.localPosition = localPosition;
         }
         DeselectAll();
         CreatorUIController.UnSavedProgress = true;
@@ -444,6 +445,7 @@ public class NewBuildingController
 
                 var position = createCommand.createdItem.gameObject.transform.localPosition;
                 createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, WHConstants.DefaultZ);
+                createCommand.createdItem.SetPosition(new Vector3(position.x, 0, WHConstants.DefaultDoorY));
             }
         }
         DeselectAll();
@@ -466,6 +468,7 @@ public class NewBuildingController
 
             var position = createCommand.createdItem.gameObject.transform.localPosition;
             createCommand.createdItem.gameObject.transform.localPosition = new Vector3(position.x, 0, WHConstants.DefaultZ);
+            createCommand.createdItem.SetPosition(new Vector3(position.x, 0, WHConstants.DefaultWindowY));
         }
         DeselectAll();
         CreatorUIController.UnSavedProgress = true;
