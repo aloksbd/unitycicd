@@ -10,10 +10,11 @@ public class FloorPlanHierarchyUIFactory : IItemUIFactory
             foldout = new Foldout();
             foldout.name = "floor-plan-hierarchy";
             foldout.AddToClassList("bold-font");
+            foldout.AddToClassList("full-width");
             CreatorUIController.getRoot().Q<VisualElement>("floor-panel").Add(foldout);
         }
         foldout.value = true;
-        foldout.AddToClassList(WHCSSConstants.PINK_BACKGROUND_COLOR);
+        // foldout.AddToClassList(WHCSSConstants.PINK_BACKGROUND_COLOR);
         UIItem itemUI = new UIItem(foldout);
         return itemUI;
     }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class CreatorRoofFactory : ICreatorItemFactory
 {
-    public CreatorItem Create(string name = "Roof", bool createGO = true)
+    public CreatorItem Create(string name = WHConstants.ROOF, bool createGO = true)
     {
         CreatorItem item;
         if (createGO)

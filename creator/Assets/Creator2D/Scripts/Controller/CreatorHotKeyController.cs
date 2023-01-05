@@ -131,20 +131,6 @@ public class CreatorHotKeyController : MonoBehaviour
     }
 
 
-    public void OnDisplayNodes(InputAction.CallbackContext value)
-    {
-        if (value.started)
-        {
-            foreach (var listner in TransformDatas.wallListenersList)
-            {
-                foreach (var node in listner.Value.nodes)
-                {
-                    Trace.Log($"{listner.Value.wallGO.name} LISTENING :: {node.Value.nodeGO.name} in floor {node.Value.floor.name}");
-                }
-            }
-        }
-    }
-
     public void OnExplore(InputAction.CallbackContext value)
     {
         if (value.started)

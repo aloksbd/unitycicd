@@ -31,8 +31,8 @@ namespace TerrainEngine
         public Material wipRoofMaterial;
         public Material wipPylonMaterial;
         [Space(5)]
-        public bool procedurallyGeneratePartialBuilds = false;
-        public bool procedurallyGeneratePendingApprovals = false;
+        public bool procedurallyGeneratePartialBuilds = true;
+        public bool procedurallyGeneratePendingApprovals = true;
         public bool procedurallyGenerateLives = false;
         public bool buidingColliders;
         public float distanceFilter = 0;

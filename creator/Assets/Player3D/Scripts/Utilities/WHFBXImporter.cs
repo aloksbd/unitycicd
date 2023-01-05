@@ -253,20 +253,20 @@ class WHFbxImporter : System.IDisposable
 
         ProcessTransform(fbxNode, unityGo);
 
-        if (name.Contains("Door") || name.Contains("Window") || name.Contains("Elevator"))
+        if (name.Contains(WHConstants.DOOR) || name.Contains(WHConstants.WINDOW) || name.Contains(WHConstants.ELEVATOR))
         {
             GameObject item;
-            if (name.Contains("Door"))
+            if (name.Contains(WHConstants.DOOR))
             {
-                item = PrefabFinder.Find("Door");
+                item = PrefabFinder.Find(WHConstants.DOOR);
             }
-            else if (name.Contains("Window"))
+            else if (name.Contains(WHConstants.WINDOW))
             {
-                item = PrefabFinder.Find("Window");
+                item = PrefabFinder.Find(WHConstants.WINDOW);
             }
             else
             {
-                item = PrefabFinder.Find("Elevator");
+                item = PrefabFinder.Find(WHConstants.ELEVATOR);
             }
             item.transform.parent = unityGo.transform;
             item.transform.localPosition = new Vector3(0, 0, 0);

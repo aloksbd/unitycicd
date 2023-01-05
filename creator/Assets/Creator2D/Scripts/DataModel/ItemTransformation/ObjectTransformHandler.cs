@@ -75,7 +75,10 @@ public class ObjectTransformHandler : ITransformHandler
 
     public void Dragged(Vector3 data)
     {
-        this._objectGO.transform.position = data + _offset;
+        if (InputEventHandler.CursorInsideCanvas())
+        {
+            this._objectGO.transform.position = data + _offset;
+        }
     }
 
     public void Hovered()

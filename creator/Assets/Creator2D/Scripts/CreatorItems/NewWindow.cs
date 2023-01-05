@@ -10,7 +10,7 @@ public class NewWindow : NewItemWithMesh, IHas3DObject, NewIFlipable
 
     public GameObject GetGameObject()
     {
-        return PrefabFinder.Find("Window");
+        return PrefabFinder.Find(WHConstants.WINDOW);
     }
 
     public override CreatorItem Clone()
@@ -27,7 +27,7 @@ public class NewWindow : NewItemWithMesh, IHas3DObject, NewIFlipable
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
 
-        WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(clone.gameObject, clone as NewWindow, "window");
+        WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(clone.gameObject, clone as NewWindow, WHConstants.WINDOW);
 
         CloneChildren(clone);
         return clone;

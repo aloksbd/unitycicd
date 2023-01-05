@@ -13,8 +13,8 @@ namespace ObjectModel
 
     public class Floor : Item
     {
-        private Floor() : base(() => NamingStrategy.GetName("Floor")) { }
-        private Floor(ITypedItem typedItem, IHasDimension dimension, Item Parent) : base(() => NamingStrategy.GetName("Floor", Parent.Children))
+        private Floor() : base(() => NamingStrategy.GetName(WHConstants.FLOOR)) { }
+        private Floor(ITypedItem typedItem, IHasDimension dimension, Item Parent) : base(() => NamingStrategy.GetName(WHConstants.FLOOR, Parent.Children))
         {
             AddComponent(typedItem);
             AddComponent(dimension);

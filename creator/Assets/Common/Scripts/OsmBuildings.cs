@@ -34,7 +34,7 @@ public class OsmBuildings
     // todo : create separate file for this.    
     private static readonly HttpClient _httpClient = new HttpClient();
 
-    public static async Task<OsmBuildingData> GetBuildingDetail(string buildingId = "c95b5836-d3a2-4190-9615-2fa6ae6841a2", bool fromWelcome = true)
+    public static async Task<OsmBuildingData> GetBuildingDetail(string buildingId = null, bool fromWelcome = true)
     {
         // todo: figure out where to get it : plot id or building id will be fetched from context.
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
@@ -47,7 +47,7 @@ public class OsmBuildings
             buildingId = WelcomeUIController.buildingID;
         }
 #else
-        if (DeeplinkHandler.Instance.isDeeplinkCalled)
+        if (DeeplinkHandler.Instance.isDeeplinkCalled && buildingId == null)
         {
             buildingId = DeeplinkHandler.BuildData.building_id != null ? DeeplinkHandler.BuildData.building_id : "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
         }

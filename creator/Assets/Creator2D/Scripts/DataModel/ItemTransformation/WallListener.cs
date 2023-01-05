@@ -30,6 +30,7 @@ public class WallListener
                 if (isClose)
                 {
                     TransformDatas.allNodeList.Remove(checking_node.nodeGO);
+                    UnRegisterEvents(checking_node);
                     GameObject.Destroy(checking_node.nodeGO);
                     checking_node = allnodes.Value;
                     break;
@@ -46,6 +47,9 @@ public class WallListener
             nodes[position] = checking_node;
         }
         UpdateNodeListner(checking_node);
+
+        //Reposition the wall end after updating the node
+        checking_node.NodeDragged(checking_node.nodeGO.transform.position);
     }
 
     public void HandleHovered(Node node)
@@ -57,7 +61,7 @@ public class WallListener
 
     }
 
-    public void DragStart(Vector3 data, Node node)
+    public void Dragging(Vector3 data, Node node)
     {
         foreach (var n in nodes)
         {
@@ -102,6 +106,7 @@ public class WallListener
 
         float angle = Mathf.Atan2(pos1.y - pos0.y, pos1.x - pos0.x) * 180 / Mathf.PI;
         NewBuildingController.UpdateWallHandle(this.wallItem.name, pos0, pos1, angle, attach);
+
     }
 
     public void DetachNodes(Node node)
@@ -117,13 +122,24 @@ public class WallListener
         }
     }
 
-
     public void UpdateNodeListner(Node node)
     {
+        //This makes sure that no multiple subscription is done to the same node
+        UnRegisterEvents(node);
+
         node.onNodeHovered += HandleHovered;
         node.onNodeExit += HandleExit;
-        node.onNodeDrag += DragStart;
+        node.onNodeDrag += Dragging;
         node.onNodeReleased += HandleReleased;
         node.OnNodeDetach += DetachNodes;
+    }
+
+    public void UnRegisterEvents(Node node)
+    {
+        node.onNodeHovered -= HandleHovered;
+        node.onNodeExit -= HandleExit;
+        node.onNodeDrag -= Dragging;
+        node.onNodeReleased -= HandleReleased;
+        node.OnNodeDetach -= DetachNodes;
     }
 }

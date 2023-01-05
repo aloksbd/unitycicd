@@ -4,7 +4,7 @@ namespace ObjectModel
 {
     public class Ceiling : Item
     {
-        private Ceiling() : base(() => NamingStrategy.GetName("Ceiling"))
+        private Ceiling() : base(() => NamingStrategy.GetName(WHConstants.CEILING))
         {
             AddComponent(new Selectable());
         }

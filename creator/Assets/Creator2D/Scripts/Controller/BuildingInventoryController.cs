@@ -37,7 +37,6 @@ public class BuildingInventoryController
     private void Initialize()
     {
         buildingInventoryRoot = CreatorUIController.getRoot().Q<VisualElement>(buildingInventoryName);
-        buildingInventoryRoot.style.marginTop = 10;
         GameObject cam = SceneObject.GetCamera(SceneObject.Mode.Creator);
         cam.GetComponent<CreatorEventManager>().enabled = true;
     }
@@ -61,7 +60,7 @@ public class BuildingInventoryController
         Inventories.Add(label);
         DropdownField inventoryDropDown = new DropdownField();
         inventoryDropDown.AddToClassList("row-container");
-        inventoryDropDown.AddToClassList("add-floor-drop-down");
+        inventoryDropDown.AddToClassList("category-drop-down");
         inventoryDropDown.name = dropdownName;
         inventoryDropDown.choices = inventoryList;
         inventoryDropDown.RegisterValueChangedCallback(RegisterDropdownCallBacks);
@@ -89,6 +88,7 @@ public class BuildingInventoryController
         VisualElement buttonContainer = new VisualElement();
         buttonContainer.AddToClassList(buttonContainerClassName);
         scrollViewContent.AddToClassList("metablock-scroll");
+        scrollViewContent.AddToClassList("full-height");
 
         // OnChange Categories setup meta block button
         foreach (var metaBlock in getBlocks(CategoryName))
@@ -131,7 +131,7 @@ public class BuildingInventoryController
         button.Add(metaLabel);
 
         // Instantiates our primitive object on a left click.
-        button.RegisterCallback<PointerUpEvent, string>(SelectObject, metaBlock.BlockName);
+        button.RegisterCallback<PointerUpEvent, MetaBlock>(SelectObject, metaBlock);
 
         // Sets a basic tooltip to the button itself.
         button.tooltip = metaBlock.BlockName;
@@ -146,10 +146,10 @@ public class BuildingInventoryController
                 (metaBlock) => MetaBlockIsCurrentlySelected(metaBlock)
             ).ForEach(UnselectMetaBlock);
     }
-
-    private void SelectObject(PointerUpEvent evt, string BlockName)
+    private void SelectObject(PointerUpEvent evt, MetaBlock metaBlockItem)
     {
         if (NewBuildingController.CurrentFloorPlan() == null) return;
+        if (!NewBuildingController.CurrentFloorPlan().CanAcceptItem(metaBlockItem.AssetType)) return;
         VisualElement clickedMetaBlock = evt.currentTarget as VisualElement;
 
         if (!MetaBlockIsCurrentlySelected(clickedMetaBlock))
@@ -157,7 +157,7 @@ public class BuildingInventoryController
             GetAllMetaBlocks().Where(
                 (metaBlock) => metaBlock != clickedMetaBlock && MetaBlockIsCurrentlySelected(metaBlock)
             ).ForEach(UnselectMetaBlock);
-            SelectMetaBlock(clickedMetaBlock, BlockName);
+            SelectMetaBlock(clickedMetaBlock, metaBlockItem.BlockName);
         }
     }
 

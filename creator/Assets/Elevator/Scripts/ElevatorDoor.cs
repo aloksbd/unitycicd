@@ -5,22 +5,22 @@ using System.Collections;
 
 public class ElevatorDoor : MonoBehaviour
 {
-    [SerializeField] private Transform      playerPos;
-    [SerializeField] private TMP_Text       floorNoTxt;
-    public Transform                        PlayerT => playerPos;
-    public int                              FloorNumber => myFloorNo;
+    [SerializeField] private Transform playerPos;
+    [SerializeField] private TMP_Text floorNoTxt;
+    public Transform PlayerT => playerPos;
+    public int FloorNumber => myFloorNo;
 
-    private bool                            allowdToUseElevator = false;
-    private int                             myFloorNo;
-    [SerializeField] private Transform      buildingRef;
+    private bool allowdToUseElevator = false;
+    private int myFloorNo;
+    [SerializeField] private Transform buildingRef;
 
     private IEnumerator Start()
     {
         yield return null;
         string floorName = transform.parent.parent.parent.name;
-        floorName = floorName.Substring("FloorPlan".Length);
+        floorName = floorName.Substring(WHConstants.FLOOR_PLAN.Length);
         _ = int.TryParse(floorName, out myFloorNo);
-        floorNoTxt.text = (myFloorNo == 1)? "Lobby" : "Floor " + myFloorNo;
+        floorNoTxt.text = (myFloorNo == 1) ? "Lobby" : "Floor " + myFloorNo;
 
         myFloorNo -= 1;
         buildingRef = transform.parent.parent.parent.parent;
@@ -49,5 +49,5 @@ public class ElevatorDoor : MonoBehaviour
         allowdToUseElevator = false;
         ElevatorController.OnPlayerEnterElevatorDoor(myFloorNo, allowdToUseElevator);
     }
-    
+
 }

@@ -37,7 +37,7 @@ public class CreatorElevatorFactory : ICreatorItemFactory
         }
         if (createGO)
         {
-            ObjectTransformHandler transformHandler = new ObjectTransformHandler(elevator, item, "elevator");
+            ObjectTransformHandler transformHandler = new ObjectTransformHandler(elevator, item, WHConstants.ELEVATOR);
         }
         return item;
     }

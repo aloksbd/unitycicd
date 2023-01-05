@@ -297,7 +297,7 @@ class WHFbxExporter : System.IDisposable
 
         var name = unityGo.name;
 
-        if (name.Contains("FloorPlan"))
+        if (name.Contains(WHConstants.FLOOR_PLAN))
         {
             CreatorItem item = CreatorItemFinder.FindByName(name);
             if (item != null)
@@ -314,7 +314,7 @@ class WHFbxExporter : System.IDisposable
                 heightProperty.Set(dimension.Height);
             }
         }
-        else if (name.Contains("Wall"))
+        else if (name.Contains(WHConstants.WALL))
         {
             FbxProperty localBoundX = FbxProperty.Create(fbxNode, new FbxDataType(EFbxType.eFbxFloat), "LOCALBOUND_X");
             localBoundX.Set(unityGo.GetComponent<Renderer>().localBounds.size.x);

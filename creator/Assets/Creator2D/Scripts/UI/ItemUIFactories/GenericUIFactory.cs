@@ -16,6 +16,12 @@ public class DoorUIFactory : GenericUIFactory { }
 
 public class WindowUIFactory : GenericUIFactory { }
 
-public class RoofUIFactory : GenericUIFactory { }
+public class RoofUIFactory : GenericUIFactory
+{
+    public UIItem Create(string name)
+    {
+        return new UIItem(name, true);
+    }
+}
 
 public class ElevatorUIFactory : GenericUIFactory { }

@@ -39,7 +39,7 @@ public class CreatorWindowFactory : ICreatorItemFactory
         }
         if (createGO)
         {
-            WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(window, item, "window");
+            WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(window, item, WHConstants.WINDOW);
         }
         return item;
     }

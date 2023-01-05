@@ -28,7 +28,7 @@ public class HarnessManipulator : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        UnityEngine.Cursor.SetCursor(current_cursor, Vector2.zero, CursorMode.Auto);
+        UnityEngine.Cursor.SetCursor(current_cursor, new Vector2(current_cursor.width / 2, current_cursor.height / 2), CursorMode.Auto);
         mouseEnter?.Invoke();
     }
 
@@ -40,19 +40,19 @@ public class HarnessManipulator : MonoBehaviour
 
     public void OnMouseDrag()
     {
-        UnityEngine.Cursor.SetCursor(current_cursor, Vector2.zero, CursorMode.Auto);
+        UnityEngine.Cursor.SetCursor(current_cursor, new Vector2(current_cursor.width / 2, current_cursor.height / 2), CursorMode.Auto);
         if (mouseDrag != null)
         {
-            mouseDrag(getMousePosition());
+            mouseDrag(getMousePosition().GetValueOrDefault());
         }
     }
 
     public void OnMouseDown()
     {
-        UnityEngine.Cursor.SetCursor(current_cursor, Vector2.zero, CursorMode.Auto);
+        UnityEngine.Cursor.SetCursor(current_cursor, new Vector2(current_cursor.width / 2, current_cursor.height / 2), CursorMode.Auto);
         if (mouseDown != null)
         {
-            mouseDown(getMousePosition());
+            mouseDown(getMousePosition().GetValueOrDefault());
         }
     }
 
@@ -61,13 +61,20 @@ public class HarnessManipulator : MonoBehaviour
         UnityEngine.Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         if (mouseUp != null)
         {
-            mouseUp(getMousePosition());
+            mouseUp(getMousePosition().GetValueOrDefault());
         }
     }
 
-    public Vector3 getMousePosition()
+    public Vector3? getMousePosition()
     {
-        return Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        // return Input.mousePosition;
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        var plane = new Plane(Vector3.forward, Vector3.zero);
+
+        float rayDistance;
+        if (plane.Raycast(ray, out rayDistance))
+        {
+            return ray.GetPoint(rayDistance);
+        }
+        return null;
     }
 }

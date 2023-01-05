@@ -99,7 +99,10 @@ public class Node
 
     public void NodeDragged(Vector3 data)
     {
-        onNodeDrag?.Invoke(data, this);
+        if (InputEventHandler.CursorInsideCanvas())
+        {
+            onNodeDrag?.Invoke(data, this);
+        }
     }
 
     public void NodeExit()
@@ -119,7 +122,12 @@ public class Node
 
     public void NodeReleaseWall()
     {
-        RemoveHighLight();
+        if (nodeState == NodeState.CLICKABLE)
+        {
+            InputEventHandler.selected = false;
+
+            RemoveHighLight();
+        }
     }
 
     public void NodeReleased(Vector3 data)
@@ -130,28 +138,6 @@ public class Node
 
             RemoveHighLight();
             onNodeReleased?.Invoke(this);
-        }
-    }
-
-    public void AdjustAttachedObjects()
-    {
-        var parent = this.nodeGO.transform.parent;
-        var wall = parent.GetComponent<LineRenderer>();
-        var bound = wall.bounds;
-
-        for (int i = 2; i < parent.childCount; i++)
-        {
-            var GO = parent.GetChild(i).gameObject;
-            var object_bound = GO.GetComponent<SpriteRenderer>().bounds;
-
-            if (GO.transform.localPosition.x > Vector3.Distance(bound.max, bound.min) - (object_bound.size.x * 1.2f))
-            {
-                CreatorItem item = CreatorItemFinder.FindItemWithGameObject(GO);
-                if (item is NewWindow || item is NewDoor)
-                {
-                    NewBuildingController.DeleteItem(item.name);
-                }
-            }
         }
     }
 

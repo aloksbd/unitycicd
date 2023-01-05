@@ -101,20 +101,13 @@ public class CreatorUIController : MonoBehaviour
         topPanel.style.left = 0;
         topPanel.style.top = 0;
 
-        mainPanel.style.marginTop = 60;
+        mainPanel.style.marginTop = 55;
 
         GameObject player = SceneObject.GetPlayer(SceneObject.Mode.Creator);
         Trace.Assert(player != null, "SceneObject.Mode.Creator does not have a Player gameobject");
         player.AddComponent<VersionChanger>();
 
-#if UNITY_EDITOR
-        if (WelcomeUIController.buildingID != null && WelcomeUIController.buildingID != "")
-        {
-            OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail(WelcomeUIController.buildingID);
-            CreateBuildingCanvas(buildingData);
-            previousBuildingID = WelcomeUIController.buildingID;
-        }
-#else
+#if !UNITY_EDITOR
         if (TerrainController.Get() == null || TerrainController.Get().GetState() == TerrainController.TerrainState.Unloaded)
         {
             OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail();
@@ -335,7 +328,7 @@ public class CreatorUIController : MonoBehaviour
         floorOptionList.Add(_copy_from_below);
         foreach (var item in NewBuildingController.GetBuilding().children)
         {
-            if (item.name.Contains("FloorPlan"))
+            if (item.name.Contains(WHConstants.FLOOR_PLAN))
             {
                 floorOptionList.Add(item.name);
             }
@@ -355,11 +348,20 @@ public class CreatorUIController : MonoBehaviour
                 AddFloorDropDown = new DropdownField();
                 AddFloorDropDown.name = _add_floor_drop_down;
                 AddFloorDropDown.AddToClassList("add-floor-drop-down");
-                AddFloorDropDown.RegisterValueChangedCallback(RegisterAddFloorDropdownCallBacks);
+                AddFloorDropDown.AddToClassList("col-xs-6");
+                AddFloorDropDown.AddToClassList("no-padding");
+                AddFloorDropDown.AddToClassList("no-margin");
                 AddFloorContent.Insert(AddFloorContent.childCount - 1, AddFloorDropDown);
+
+                AddFloorDropDown.choices = choices;
+                AddFloorDropDown.RegisterValueChangedCallback(RegisterAddFloorDropdownCallBacks);
+                AddFloorDropDown.value = choices[0];
             }
-            AddFloorDropDown.choices = choices;
-            AddFloorDropDown.value = "Copy From Below";
+            else
+            {
+                AddFloorDropDown.choices = choices;
+                AddFloorDropDown.value = choices[0];
+            }
         }
     }
 
@@ -386,9 +388,14 @@ public class CreatorUIController : MonoBehaviour
         // Applies the above asset as a background image for the icon.
         buttonIcon.style.backgroundImage = iconAsset;
 
+
         button.RegisterCallback<PointerUpEvent, VisualElement>(ButtonMethod, button);
         // Sets a basic tooltip to the button itself.
         button.tooltip = button.parent.name;
+        button.style.borderTopLeftRadius = 4;
+        button.style.borderTopRightRadius = 4;
+        button.style.borderBottomLeftRadius = 4;
+        button.style.borderBottomRightRadius = 4;
         // button.AddManipulator(new ToolTipManipulator());
     }
 
@@ -470,13 +477,27 @@ public class CreatorUIController : MonoBehaviour
 
     async void OnSave()
     {
-        Debug.Log("On Save pressed");
+        await SaveFBX();
+        StartCoroutine(ShowCompletedMsg("Saved successfully."));
+    }
+
+    public static async Task<string> OnSaveBeforeSubmit()
+    {
+         return await SaveFBX(true);
+    }
+
+    public static async Task<string> SaveFBX(bool isSaveBeforeSubmit = false)
+    {
         GameObject building = null;
+        string buildingId = null;
         try
         {
-            var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
-            LoadingUIController.ActiveMode = LoadingUIController.Mode.Saving;
-            loadingUI.SetActive(true);
+            if (!isSaveBeforeSubmit)
+            {
+                var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+                LoadingUIController.ActiveMode = LoadingUIController.Mode.Saving;
+                loadingUI.SetActive(true);
+            }
             GameObject structure = SceneObject.Find(SceneObject.Mode.Creator, ObjectName.CREATOR_STRUCTURE);
             building = Item3d.getBuildingGameObject();
             if (building != null)
@@ -485,15 +506,12 @@ public class CreatorUIController : MonoBehaviour
             }
             string subPath = CacheFolderUtils.fbxFolder(buildingID);
             string path = subPath + WHConstants.PATH_DIVIDER + "myCreation.fbx";
-            bool subPathExists = System.IO.Directory.Exists(path);
-            if (!subPathExists)
+            if (!File.Exists(path))
             {
-                string buildingId = CreatorUIController.buildingID;
+                buildingId = CreatorUIController.buildingID;
                 await CreatorSubmission.ActiveBuilds(buildingId);
             }
             WHFbxExporter.ExportObjects(path, path.Substring(0, path.LastIndexOf(WHConstants.PATH_DIVIDER)), structure);
-            loadingUI.SetActive(false);
-            UnSavedProgress = false;
         }
         catch (Exception e)
         {
@@ -506,13 +524,19 @@ public class CreatorUIController : MonoBehaviour
                 Destroy(building);
             }
         }
+        return buildingId;
     }
 
-    IEnumerator HideMessage()
+    public static IEnumerator ShowCompletedMsg(string completedMsg)
     {
+        var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+        loadingUI.SetActive(false);
+        LoadingUIController.ActiveMode = LoadingUIController.Mode.SavedOrSubmitted;
+        LoadingUIController.labelTitle = completedMsg;
+        loadingUI.SetActive(true);
         yield return new WaitForSeconds(2f);
-        messageLabel.RemoveFromClassList("show");
-        messageLabel.AddToClassList("hide");
+        loadingUI.SetActive(false);
+        UnSavedProgress = false;
     }
 
     void OnThreeDRotation(VisualElement button)

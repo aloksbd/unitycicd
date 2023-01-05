@@ -6467,7 +6467,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &757792737
 Transform:
   m_ObjectHideFlags: 0
@@ -7226,7 +7226,6 @@ MonoBehaviour:
   elevatorPanel: {fileID: 1329775290}
   hotkeyMenu: {fileID: 2084449534}
   blackCurtain: {fileID: 1047415170}
-  startingFloor: 0
   elevatorKiosk: {fileID: 976576980}
   elevatorPlayer: {fileID: 412054096}
   currentBuildingTransform: {fileID: 834546165}
@@ -11003,7 +11002,7 @@ MonoBehaviour:
   wipRoofMaterial: {fileID: 2100000, guid: 8d7d58f44791c934592593f58dc68435, type: 2}
   wipPylonMaterial: {fileID: 2100000, guid: f96b59f4c1ae3e64c8394b58c0a9b9cb, type: 2}
   procedurallyGeneratePartialBuilds: 1
-  procedurallyGeneratePendingApprovals: 0
+  procedurallyGeneratePendingApprovals: 1
   procedurallyGenerateLives: 0
   buidingColliders: 1
   distanceFilter: 2100
@@ -14007,7 +14006,19 @@ MonoBehaviour:
     m_ActionId: 824ede19-946e-48e4-8243-498e5c7dcd05
     m_ActionName: Player/Copy/Paste[/Keyboard/c,/Keyboard/ctrl,/Keyboard/v]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 52024048}
+        m_TargetAssemblyTypeName: CreatorHotKeyController, Assembly-CSharp
+        m_MethodName: OnPaste
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: d3269f8e-0fcf-4696-b499-a5f8b5a9a952
     m_ActionName: Player/Paste[/Keyboard/ctrl,/Keyboard/v]
   - m_PersistentCalls:

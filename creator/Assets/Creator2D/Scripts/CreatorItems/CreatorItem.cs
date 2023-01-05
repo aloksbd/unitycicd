@@ -145,6 +145,11 @@ public class CreatorItem : IRenamable, NewIHasPosition, UIItemDelegate, NewISele
         if (_isSelected) Deselect();
         else Select();
     }
+
+    public virtual bool CanAcceptItem(string assetType)
+    {
+        return false;
+    }
 }
 
 public class CreatorFloorPlanItem : CreatorItem, NewIHasDimension
@@ -162,6 +167,7 @@ public class CreatorFloorPlanItem : CreatorItem, NewIHasDimension
         var setFloorPlanCommand = new SetCurrentFloorPlanCommand(this.name, NewBuildingController.CurrentFloorPlan() != null ? NewBuildingController.CurrentFloorPlan().name : "", true);
         var multiCommand = new MultipleCommand(new List<ICommand>() { setFloorPlanCommand });
         NewUndoRedo.AddAndExecuteCommand(multiCommand);
+        NewBuildingController.DeselectAll();
     }
 
     public override void Deselect()
@@ -170,16 +176,30 @@ public class CreatorFloorPlanItem : CreatorItem, NewIHasDimension
         var setFloorPlanCommand = new SetCurrentFloorPlanCommand(this.name, null, false);
         var multiCommand = new MultipleCommand(new List<ICommand>() { setFloorPlanCommand });
         NewUndoRedo.AddAndExecuteCommand(multiCommand);
+        NewBuildingController.DeselectAll();
     }
 
     public void SetDimension(float length, float height, float width)
     {
         _dimension = new Dimension(length, height, width);
     }
+
+    private List<string> AssetList = new List<string> { WHConstants.WALL, WHConstants.WINDOW, WHConstants.DOOR, WHConstants.ELEVATOR };
+
+    public override bool CanAcceptItem(string assetType)
+    {
+        return AssetList.Contains(assetType);
+    }
 }
 
 
 public class Roof : CreatorFloorPlanItem
 {
+    private List<string> AssetList = new List<string> { WHConstants.FURNITURE };
     public Roof(GameObject gameObject, UIItem itemUI) : base(gameObject, itemUI) { }
+
+    public override bool CanAcceptItem(string assetType)
+    {
+        return AssetList.Contains(assetType);
+    }
 }

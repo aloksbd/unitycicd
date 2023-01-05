@@ -11,7 +11,7 @@ public class NewDoor : NewItemWithMesh, IHas3DObject, NewIFlipable
 
     public GameObject GetGameObject()
     {
-        return PrefabFinder.Find("Door");
+        return PrefabFinder.Find(WHConstants.DOOR);
     }
 
     public override CreatorItem Clone()
@@ -27,7 +27,7 @@ public class NewDoor : NewItemWithMesh, IHas3DObject, NewIFlipable
         clone.SetPosition(this.Position);
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
-        WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(clone.gameObject, clone as NewDoor, "door");
+        WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(clone.gameObject, clone as NewDoor, WHConstants.DOOR);
         CloneChildren(clone);
         return clone;
     }

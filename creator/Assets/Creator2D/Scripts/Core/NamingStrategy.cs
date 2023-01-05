@@ -63,14 +63,14 @@ namespace ObjectModel
         {
             foreach (var item in siblings)
             {
-                if (item.Name.Contains("FloorPlan"))
+                if (item.Name.Contains(WHConstants.FLOOR_PLAN))
                 {
                     try
                     {
                         int itemFloorNumber = NamingStrategy.GetItemNameNumber(item.Name);
                         if (itemFloorNumber >= floorNumber)
                         {
-                            item.SetName("FloorPlan" + NamingStrategy.GetFormattedNumber(itemFloorNumber + adjustByNumber));
+                            item.SetName(WHConstants.FLOOR_PLAN + NamingStrategy.GetFormattedNumber(itemFloorNumber + adjustByNumber));
                             var weakPosition = item.GetComponent<IHasPosition>();
                             if (weakPosition.IsAlive)
                             {

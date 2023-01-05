@@ -11,12 +11,13 @@ public class FloorPlanUIFactory : IItemUIFactory
         Foldout floorPlanFoldout = itemUI.Foldout;
         floorPlanFoldout.RemoveFromClassList("normal-font");
         floorPlanFoldout.AddToClassList("bold-font");
-        AddDeleteButton(floorPlanFoldout, name);
+        floorPlanFoldout.AddToClassList("full-width");
+        AddDeleteButton(floorPlanFoldout, itemUI);
         AddHeightElement(floorPlanFoldout, name);
         return itemUI;
     }
 
-    private void AddDeleteButton(Foldout foldout, string name)
+    private void AddDeleteButton(Foldout foldout, UIItem itemUI)
     {
         Label labelElement = foldout.Q<Label>();
         VisualElement toggleVisualElement = labelElement.parent;
@@ -24,7 +25,7 @@ public class FloorPlanUIFactory : IItemUIFactory
         deleteButton.AddToClassList("floorplan-delete-button");
         deleteButton.RegisterCallback<ClickEvent>(evt =>
         {
-            NewBuildingController.DeleteFloorPlan(evt, name);
+            NewBuildingController.DeleteFloorPlan(evt, itemUI);
         });
         toggleVisualElement.Add(deleteButton);
     }
@@ -32,8 +33,11 @@ public class FloorPlanUIFactory : IItemUIFactory
     private void AddHeightElement(Foldout foldout, string name)
     {
         foldout.AddToClassList(WHCSSConstants.PINK_BACKGROUND_COLOR);
+        foldout.style.paddingLeft = 10;
+        foldout.style.marginTop = 5;
         VisualElement HeightElement = new VisualElement();
         HeightElement.AddToClassList("row-container");
+        HeightElement.AddToClassList("align-center");
         HeightElement.Add(CreateHeightTextField(foldout, name));
         HeightElement.Add(CreateHeightButton());
         foldout.Add(HeightElement);
@@ -71,6 +75,7 @@ public class FloorPlanUIFactory : IItemUIFactory
         Button heightUnit = new Button();
         heightUnit.AddToClassList("col-md-2");
         heightUnit.AddToClassList("col-xs-2");
+        heightUnit.style.height = 20;
         heightUnit.style.marginLeft = 0;
         heightUnit.text = WHConstants.FeetUnit;
         return heightUnit;

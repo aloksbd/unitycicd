@@ -14,7 +14,7 @@ namespace ObjectModel
     public class Elevator : Item
     {
 
-        private Elevator(IHasPosition position, IHasRotation rotation, IHasDimension dimension, IHasMesh mesh, Item Parent) : base(() => NamingStrategy.GetName("Elevator", Parent.Children))
+        private Elevator(IHasPosition position, IHasRotation rotation, IHasDimension dimension, IHasMesh mesh, Item Parent) : base(() => NamingStrategy.GetName(WHConstants.ELEVATOR, Parent.Children))
         {
             AddComponent(position);
             AddComponent(rotation);

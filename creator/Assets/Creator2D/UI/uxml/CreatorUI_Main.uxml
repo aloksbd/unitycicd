@@ -6,7 +6,7 @@
     <Style src="project://database/Assets/Creator2D/UI/uss/CreatorGrid.uss?fileID=7433441132597879392&amp;guid=b77ed63c911274503a20ba6e60228ed8&amp;type=3#CreatorGrid" />
     <ui:VisualElement name="top-menu-panel" class="row-container top-panel col-xs-12">
         <ui:VisualElement class="left-top-panel buttons-container">
-            <ui:Instance template="button-template" name="Copy All" style="display:none;"/>
+            <ui:Instance template="button-template" name="Copy All" style="display:none;" />
             <ui:Instance template="button-template" name="Content Cut" style="display:none;"/>
             <ui:Instance template="button-template" name="Content Paste" style="display:none;"/>
             <ui:Instance template="button-template" name="Content Copy" style="display:none;"/>
@@ -38,31 +38,56 @@
     <ui:VisualElement name="mainPanel" class="row-container fly-out-panel">
         <ui:VisualElement class="right-panel col-xs-2">
             <ui:VisualElement class="row-container action-button-panel">
-                <ui:Button display-tooltip-when-elided="true" name="draft-button" tooltip="Save" text="Save to Draft" class="col-xs-6 meta-button action-button grow border-round bold-font" />
-                <ui:Button display-tooltip-when-elided="true" name="submit-button" tooltip="Submit" text="Submit" class="col-xs-6 meta-button grow submit border-round bold-font" />
+                <ui:VisualElement class="col-xs-12">
+                    <ui:VisualElement class="row-container">
+                        <ui:VisualElement class="col-xs-6">
+                            <ui:Button display-tooltip-when-elided="true" name="draft-button" tooltip="Save" text="Save to Draft" class="meta-button action-button draft grow bold-font" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="col-xs-6">
+                            <ui:Button display-tooltip-when-elided="true" name="submit-button" tooltip="Submit" text="Submit" class="meta-button grow submit bold-font" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
+            <ui:VisualElement class="separator" />
             <ui:ScrollView name="scroll-foldout" class="scroll-foldout">
-                <ui:VisualElement name="floor-panel" class="row-container bg-pink">
-                    <ui:Foldout text="Floor Plan Hierarchy" name="floor-plan-hierarchy" class="bold-font" />
+                <ui:VisualElement name="floor-panel" class="row-container full-width">
+                    <ui:Foldout text="Floor Plan Hierarchy" name="floor-plan-hierarchy" class="bold-font foldout-header full-width" />
                 </ui:VisualElement>
             </ui:ScrollView>
-            <ui:VisualElement name="add-floor" class="row-container bg-pink add-floor-container">
-                <ui:Label text="Add Floor" class="label bold-font" />
-                <ui:VisualElement class="add-floor-button-element">
-                    <ui:Button name="add-floor-button" class="add-floor-button" />
+            <ui:VisualElement name="add-floor" class="row-container add-floor-container align-center">
+                <ui:Label text="Add Floor" class="label foldout-header no-padding no-margin col-xs-4" />
+                <ui:VisualElement class="add-floor-button-element col-xs-2 no-padding">
+                    <ui:Button name="add-floor-button" class="add-floor-button">
+                        <ui:VisualElement class="add-floor-button-background" />
+                    </ui:Button>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="building-inventory">
-                <ui:VisualElement name="row-container">
+            <ui:VisualElement class="separator" />
+            <ui:VisualElement name="building-inventory" class="height-50">
+                <ui:VisualElement name="row-container" class="mb-10">
                     <ui:VisualElement name="inventories" />
                 </ui:VisualElement>
-                <ui:VisualElement name="row-container">
-                    <ui:VisualElement name="inventoryContent" />
+                <ui:VisualElement name="row-container" class="full-height">
+                    <ui:VisualElement name="inventoryContent" class="height-90" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="row-container action-button-panel">
-                <ui:Button display-tooltip-when-elided="true" name="main-menu-button" tooltip="Main Menu" text="Main Menu" class="col-xs-6 meta-button action-button grow border-round bold-font" style="display: none;" />
-                <ui:Button display-tooltip-when-elided="true" name="back-to-game-button" tooltip="Explore" text="Back To Game" class="col-xs-12 meta-button back-to-game-button grow border-round bold-font" />
+            <ui:VisualElement class="row-container bottom-action-panel">
+                <ui:VisualElement class="col-xs-12">
+                    <ui:VisualElement class="row-container">
+                        <ui:VisualElement class="col-xs-12">
+                            <ui:VisualElement class="separator" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="row-container">
+                        <ui:VisualElement class="action-button-panel col-xs-12">
+                            <ui:VisualElement>
+                                <ui:Button display-tooltip-when-elided="true" name="back-to-game-button" tooltip="Explore" text="Back to Game" class="col-xs-11 meta-button back-to-game-button grow bold-font" />
+                            </ui:VisualElement>
+                            <ui:Button display-tooltip-when-elided="true" name="main-menu-button" tooltip="Main Menu" text="Main Menu" class="col-xs-6 meta-button action-button grow border-round bold-font" style="display: none;" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="main-panel" class="col-xs-10 main-panel" style="height: 100%; display: flex;">

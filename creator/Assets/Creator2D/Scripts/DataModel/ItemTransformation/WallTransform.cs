@@ -101,7 +101,7 @@ public class WallTransform : ITransformHandler
         {
             return true;
         }
-        else if (buildingInventoryController.currentBlock.AssetType == "Wall")
+        else if (buildingInventoryController.currentBlock.AssetType == WHConstants.WALL)
         {
             return true;
         }
@@ -123,13 +123,13 @@ public class WallTransform : ITransformHandler
 
     public void Dragged(Vector3 data)
     {
-        //if (eventHandler.isInsideCanvas())
+        Highlight();
+        foreach (var node in wallListener.nodes)
         {
-            Highlight();
-            foreach (var node in wallListener.nodes)
+            //Set the position of each node as per the mouse position
+            var pos = data + node.Value.offset;
+            if (InputEventHandler.IsInsideCanvas(pos))
             {
-                //Set the position of each node as per the mouse position
-                var pos = data + node.Value.offset;
                 node.Value.NodeDragged(pos);
             }
         }

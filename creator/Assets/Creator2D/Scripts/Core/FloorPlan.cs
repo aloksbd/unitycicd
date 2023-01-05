@@ -4,9 +4,9 @@ namespace ObjectModel
 {
     public class FloorPlan : Item
     {
-        private FloorPlan() : base(() => NamingStrategy.GetName("FloorPlan")) { }
+        private FloorPlan() : base(() => NamingStrategy.GetName(WHConstants.FLOOR_PLAN)) { }
 
-        private FloorPlan(IHasPosition position, Item Parent) : base(() => NamingStrategy.GetName("FloorPlan", Parent.Children))
+        private FloorPlan(IHasPosition position, Item Parent) : base(() => NamingStrategy.GetName(WHConstants.FLOOR_PLAN, Parent.Children))
         {
             AddComponent(position);
             AddComponent(new Dimension());

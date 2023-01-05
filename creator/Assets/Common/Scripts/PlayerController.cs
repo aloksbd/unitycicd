@@ -323,14 +323,14 @@ public class PlayerController : MonoBehaviour
             if (unsubmittedId != null && CreatorUIController.buildingID != null && CreatorUIController.buildingID != unsubmittedId)
             {
                 // since this case shouldn't happen and should be checked on CreatorMode coming from Web app Build mode
-                  throw new Exception("Invalid building id : ");
+                throw new Exception("Invalid building id : ");
             }
             else
             {
                 CreatorUIController.buildingID = unsubmittedId != null ? unsubmittedId : CreatorUIController.buildingID;
                 if (CreatorUIController.buildingID == null)
                 {
-                    if (osmBuildingData.id != null)
+                    if (osmBuildingData != null && osmBuildingData.id != null)
                     {
                         SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
                         CreatorUIController.CreateBuildingCanvas(osmBuildingData);
@@ -338,11 +338,11 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    if (osmBuildingData.id == null || osmBuildingData.id == CreatorUIController.buildingID)
+                    if (osmBuildingData == null || osmBuildingData.id == null || osmBuildingData.id == CreatorUIController.buildingID)
                     {
                         SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
                     }
-                    else
+                    else if (unsubmittedId != null)
                     {
                         LoadingUIController.ActiveMode = LoadingUIController.Mode.PreviousBuildDetected;
                         LoadingUIController.existingbuildingid = CreatorUIController.buildingID;
@@ -350,6 +350,14 @@ public class PlayerController : MonoBehaviour
                         LoadingUIController.osmBuildingData = osmBuildingData;
                         var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
                         loadingUI.SetActive(true);
+                    }
+                    else
+                    {
+                        LoadingUIController.existingbuildingid = CreatorUIController.buildingID;
+                        LoadingUIController.newBuildingId = osmBuildingData.id;
+                        LoadingUIController.osmBuildingData = osmBuildingData;
+                        CreatorUIController.CreateBuildingCanvas(osmBuildingData);
+                        SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
                     }
                 }
             }
@@ -380,7 +388,7 @@ public class PlayerController : MonoBehaviour
 
     private string[] BuildingMaterialNames()
     {
-        string[] buildingMaterialNames = { "Wall", "Roof", "Floor", "Door", "Window", "FloorPlan" };
+        string[] buildingMaterialNames = { WHConstants.WALL, WHConstants.ROOF, WHConstants.FLOOR, WHConstants.DOOR, WHConstants.WINDOW, WHConstants.FLOOR_PLAN, WHConstants.ELEVATOR };
         return buildingMaterialNames;
     }
 

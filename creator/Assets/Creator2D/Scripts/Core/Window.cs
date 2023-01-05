@@ -6,8 +6,8 @@ namespace ObjectModel
 {
     public class Window : Item
     {
-        private Window() : base(() => NamingStrategy.GetName("Window")) { }
-        private Window(IHasPosition position, IHasDimension dimension) : base(() => NamingStrategy.GetName("Window"))
+        private Window() : base(() => NamingStrategy.GetName(WHConstants.WINDOW)) { }
+        private Window(IHasPosition position, IHasDimension dimension) : base(() => NamingStrategy.GetName(WHConstants.WINDOW))
         {
             AddComponent(position);
             AddComponent(new HasRotation());

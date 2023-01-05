@@ -51,7 +51,7 @@ public class WallObjectTransformHandler : ITransformHandler
         CreatorHotKeyController.Instance.hotkeyMenu.Populate(CreatorHotKeyController.Instance.objectKeys);
         Highlight();
     }
-
+    float direction;
     public void DragStart(Vector3 data)
     {
         Highlight();
@@ -60,13 +60,23 @@ public class WallObjectTransformHandler : ITransformHandler
 
         _parent = this._objectGO.transform.parent.gameObject;
         _parent_wall = _parent.GetComponent<LineRenderer>();
+        direction = Mathf.Sign(_parent_wall.GetPosition(1).x - _parent_wall.GetPosition(0).x);
     }
 
     public void Dragged(Vector3 data)
     {
         Vector3 pos;
 
-        pos = data + _offset;
+        //If line is Left -> Right
+        if (direction > 0)
+        {
+            pos = data + _offset;
+        }
+        //If line is right -> Left
+        else
+        {
+            pos = -data;
+        }
 
         pos.x = Mathf.Clamp(pos.x, 0, GetMaxClamp());
         this._objectGO.transform.localPosition = new Vector3(pos.x, 0f, WHConstants.DefaultZ);

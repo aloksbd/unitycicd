@@ -9,7 +9,7 @@ public class NewElevator : NewItemWithMesh, IHas3DObject, NewIScalable
 
     public GameObject GetGameObject()
     {
-        return PrefabFinder.Find("Elevator");
+        return PrefabFinder.Find(WHConstants.ELEVATOR);
     }
 
     public override void SetDimension(float length, float height, float width)
@@ -32,7 +32,7 @@ public class NewElevator : NewItemWithMesh, IHas3DObject, NewIScalable
         clone.GetComponent<NewIHasRotation>().SetRotation(this.EulerAngles.x, this.EulerAngles.y, this.EulerAngles.z);
         clone.GetComponent<NewIHasDimension>().SetDimension(Dimension.Length, Dimension.Height, Dimension.Width);
 
-        ObjectTransformHandler transformHandler = new ObjectTransformHandler(clone.gameObject, clone as NewElevator, "elevator", true);
+        ObjectTransformHandler transformHandler = new ObjectTransformHandler(clone.gameObject, clone as NewElevator, WHConstants.ELEVATOR, true);
         CloneChildren(clone);
         return clone;
     }

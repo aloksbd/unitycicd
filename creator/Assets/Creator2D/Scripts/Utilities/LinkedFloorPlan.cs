@@ -37,6 +37,11 @@ public class LinkedFloorPlan
         }
     }
 
+    public static bool Remove(CreatorItem baseItem)
+    {
+        return linkedFloorsDictionary.Remove(baseItem);
+    }
+
     public static CreatorItem GetParentItem(CreatorItem linkedItem)
     {
         return linkedFloorsDictionary.FirstOrDefault(x => x.Value.Contains(linkedItem) && x.Key != linkedItem).Key;

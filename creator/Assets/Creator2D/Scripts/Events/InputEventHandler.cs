@@ -12,13 +12,19 @@ public class InputEventHandler : MonoBehaviour, IDragHandler, IBeginDragHandler,
     public event Action MouseClick;
     public static bool IsMoving;
     public static bool selected;
+    public static LayerMask _layer;
+
+    public void Start()
+    {
+        _layer = 1 << LayerMask.NameToLayer("UI");
+    }
 
     public void OnPointerEnter(PointerEventData data)
     {
         if (!IsMoving && !CreatorUIController.isInputOverVisualElement() && !HarnessRotateManipulator.IsRotating)
         {
             Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.FINGER_POINTER);
-            UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
+            UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 4, 0), CursorMode.Auto);
 
             MouseHovered?.Invoke();
         }
@@ -77,8 +83,32 @@ public class InputEventHandler : MonoBehaviour, IDragHandler, IBeginDragHandler,
         if (plane.Raycast(ray, out rayDistance))
         {
             return ray.GetPoint(rayDistance);
-
         }
         return null;
+    }
+
+    public static bool IsInsideCanvas(Vector3 position)
+    {
+        if (Physics.Raycast(position, Vector3.forward, out RaycastHit hitInfo, Mathf.Infinity, _layer, QueryTriggerInteraction.Collide))
+        {
+            if (hitInfo.transform.name == "BuildingCanvas")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool CursorInsideCanvas()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, _layer, QueryTriggerInteraction.Collide))
+        {
+            if (hitInfo.transform.name == "BuildingCanvas")
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

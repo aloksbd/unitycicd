@@ -14,9 +14,9 @@ namespace ObjectModel
     [Serializable]
     public class Wall : Item
     {
-        private Wall() : base(() => NamingStrategy.GetName("Wall")) { }
+        private Wall() : base(() => NamingStrategy.GetName(WHConstants.WALL)) { }
 
-        private Wall(IHasPosition position, IHasRotation rotation, IHasDimension dimension, Item Parent) : base(() => NamingStrategy.GetName("Wall", Parent.Children))
+        private Wall(IHasPosition position, IHasRotation rotation, IHasDimension dimension, Item Parent) : base(() => NamingStrategy.GetName(WHConstants.WALL, Parent.Children))
         {
 
             AddComponent(position);

@@ -57,4 +57,16 @@ public static class WHConstants
 #elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
     public static string PATH_DIVIDER = "\\";
 #endif
+
+    // Assets and Building Item Names
+    public const string ROOF = "Roof";
+    public const string FLOOR_PLAN = "FloorPlan";
+    public const string FLOOR = "Floor";
+    public const string CEILING = "Ceiling";
+    public const string BUILD = "Build";
+    public const string WALL = "Wall";
+    public const string DOOR = "Door";
+    public const string ELEVATOR = "Elevator";
+    public const string WINDOW = "Window";
+    public const string FURNITURE = "Furniture";
 }

@@ -51,19 +51,30 @@ public class CreatorSubmission : MonoBehaviour
     public static async void SubmitCreatorChanges(bool isForUnsubmittedCreation = false)
     {
         string buildingId = isForUnsubmittedCreation ? GetUsersUnSubmittedBuildingId() : CreatorUIController.buildingID;
-        string submissionId = await AddCreatorSubmission(buildingId);
         CreatorUploadRequest request = new CreatorUploadRequest();
-        request.creatorSubmissionId = submissionId;
         request.creatorAssetType = ObjectName.CREATOR_ASSET_TYPE_FBX;
         string fbxPath = CacheFolderUtils.fbxFolder(buildingId);
-        request.filePath = fbxPath + @"\myCreation.fbx";
+        request.filePath = fbxPath + WHConstants.PATH_DIVIDER + "myCreation.fbx";
+        string submissionId = await AddCreatorSubmission(buildingId, request.filePath);
+        request.creatorSubmissionId = submissionId;
         await UploadCreatorAssets.UploadCreatorSubmissionAssets(request);
         DeleteLocalCreation(fbxPath);
+        MonoBehaviour mono = GameObject.Find(ObjectName.BOOTSTRAP_OBJECT).GetComponent<MonoBehaviour>();
+        mono.StartCoroutine(ShowCompletedMsg("Submitted sucessfully."));
+    }
+
+    static IEnumerator ShowCompletedMsg(string completedMsg)
+    {
         var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+        loadingUI.SetActive(false);
+        LoadingUIController.ActiveMode = LoadingUIController.Mode.SavedOrSubmitted;
+        LoadingUIController.labelTitle = completedMsg;
+        loadingUI.SetActive(true);
+        yield return new WaitForSeconds(2f);
         loadingUI.SetActive(false);
     }
 
-    public static async Task<string> AddCreatorSubmission(string buildingId)
+    public static async Task<string> AddCreatorSubmission(string buildingId,string filePath)
     {
         string submissionId = "";
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
@@ -84,6 +95,10 @@ public class CreatorSubmission : MonoBehaviour
         HttpContent c = new StringContent(payload, Encoding.UTF8, "application/json");
         try
         {
+            if (!File.Exists(filePath))
+            {
+                await CreatorUIController.OnSaveBeforeSubmit();
+            }
             LoadingUIController.ActiveMode = LoadingUIController.Mode.Submitting;
             var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
             loadingUI.SetActive(true);
@@ -102,9 +117,8 @@ public class CreatorSubmission : MonoBehaviour
         return submissionId;
     }
 
-    public static async Task<string> ActiveBuilds(string buildingId)
+    public static async Task ActiveBuilds(string buildingId)
     {
-        string submissionId = "";
         if (_httpClient.DefaultRequestHeaders.Authorization == null)
         {
             string token = await TokenFetch.GetAccessToken();
@@ -117,19 +131,12 @@ public class CreatorSubmission : MonoBehaviour
         HttpContent c = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
         try
         {
-            var response = await _httpClient.PostAsync(WHConstants.API_URL + "/active-builds/add", c);
-
-            string resp = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-            dynamic submissionResponse = JsonConvert.DeserializeObject<dynamic>(resp);
-            submissionId = submissionResponse.data.activeBuildId;
-            return submissionId;
+            await _httpClient.PostAsync(WHConstants.API_URL + "/active-builds/add", c);
         }
         catch (Exception e)
         {
             Trace.Exception(e);
         }
-        return submissionId;
     }
 
     public static void DeleteLocalCreation(string filePath)
@@ -162,6 +169,4 @@ public class CreatorSubmission : MonoBehaviour
         }
         return null;
     }
-
-
 }

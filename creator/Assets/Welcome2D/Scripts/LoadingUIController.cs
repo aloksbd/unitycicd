@@ -15,6 +15,7 @@ public class LoadingUIController : MonoBehaviour
     private Button continueBuildButton;
     private Button discardBuildButton;
     List<Button> buttons = new List<Button>();
+    public static string labelTitle;
     public static Mode ActiveMode = Mode.PreviousBuildDetected;
     public enum Mode
     {
@@ -24,6 +25,7 @@ public class LoadingUIController : MonoBehaviour
         Submitting,
         NoBuildingDetected,
         UnsavedLogout,
+        SavedOrSubmitted,
     };
 
     public static OsmBuildingData osmBuildingData;
@@ -33,13 +35,13 @@ public class LoadingUIController : MonoBehaviour
 
     void Start()
     {
-        UnityEngine.Cursor.lockState = CursorLockMode.None;
-        UnityEngine.Cursor.visible = true;
         gameObject.SetActive(false);
     }
 
     private void OnEnable()
     {
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
         m_UIDocument = GetComponent<UIDocument>();
 
         root = m_UIDocument.rootVisualElement;
@@ -61,6 +63,9 @@ public class LoadingUIController : MonoBehaviour
                 break;
             case Mode.Submitting:
                 BuildSubmitting(container);
+                break;
+            case Mode.SavedOrSubmitted:
+                BuildingSavedOrSubmitted(container);
                 break;
             case Mode.NoBuildingDetected:
                 BuildNoBuildingDetected(container);
@@ -98,10 +103,19 @@ public class LoadingUIController : MonoBehaviour
 
         Button continuePreviousBuild = new Button();
         continuePreviousBuild.text = "Continue Previous Build";
-        continuePreviousBuild.RegisterCallback<PointerUpEvent>((evt) =>
+        continuePreviousBuild.RegisterCallback<PointerUpEvent>(async (evt) =>
         {
             gameObject.SetActive(false); // gameObject will refer to current LoadingUI GameObject
-            SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
+            if (CreatorUIController.getRoot() != null)
+            {
+                SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
+            }
+            else
+            {
+                SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
+                OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail(existingbuildingid, false);
+                CreatorUIController.CreateBuildingCanvas(buildingData);
+            }
         });
         continuePreviousBuild.AddToClassList(buttonClassName);
 
@@ -212,10 +226,14 @@ public class LoadingUIController : MonoBehaviour
         title.text = "Saving";
         title.AddToClassList(labelClassName);
 
-        //ADD Loader
-        // SpriteRenderer spRenderer = gameObject.AddComponent<SpriteRenderer>();
-        // spRenderer.sprite = Resources.Load<Sprite>("Welcome2D/Resources/Images/loader.png");
+        container.Add(title);
+    }
 
+    private void BuildingSavedOrSubmitted(VisualElement container)
+    {
+        Label title = new Label();
+        title.text = labelTitle;
+        title.AddToClassList(labelClassName);
         container.Add(title);
     }
 

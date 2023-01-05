@@ -40,7 +40,7 @@ public class CreatorDoorFactory : ICreatorItemFactory
         }
         if (createGO)
         {
-            WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(door, item, "door");
+            WallObjectTransformHandler transformHandler = new WallObjectTransformHandler(door, item, WHConstants.DOOR);
         }
 
         return item;

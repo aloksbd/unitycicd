@@ -46,28 +46,28 @@ public class CreatorEventManager : MonoBehaviour
 
             if (buildingInventoryController.currentBlock != null)
             {
-                if (buildingInventoryController.currentBlock.AssetType == "Elevator")
+                if (buildingInventoryController.currentBlock.AssetType == WHConstants.ELEVATOR)
                 {
                     Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.ELEVATOR_POINTER);
                     UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
                 }
 
-                if (buildingInventoryController.currentBlock.AssetType == "Wall")
+                if (buildingInventoryController.currentBlock.AssetType == WHConstants.WALL)
                 {
                     if (InputEventHandler.selected == false)
                     {
                         Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.FINGER_POINTER);
-                        UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
+                        UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 4, 0), CursorMode.Auto);
                     }
                 }
 
-                if (buildingInventoryController.currentBlock.AssetType == "Window")
+                if (buildingInventoryController.currentBlock.AssetType == WHConstants.WINDOW)
                 {
                     Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.WINDOW_POINTER);
-                    UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 4), CursorMode.Auto);
+                    UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
                 }
 
-                if (buildingInventoryController.currentBlock.AssetType == "Door")
+                if (buildingInventoryController.currentBlock.AssetType == WHConstants.DOOR)
                 {
                     Texture2D CursorTexture = Resources.Load<Texture2D>(WHConstants.DOOR_POINTER);
                     UnityEngine.Cursor.SetCursor(CursorTexture, new Vector2(CursorTexture.width / 2, CursorTexture.height / 2), CursorMode.Auto);
@@ -102,14 +102,14 @@ public class CreatorEventManager : MonoBehaviour
                 {
                     if (hitInfo.transform.gameObject == BuildingCanvas)
                     {
-                        if (buildingInventoryController.currentBlock.CategoryName == "Build")
+                        if (buildingInventoryController.currentBlock.CategoryName == WHConstants.BUILD)
                         {
-                            if (buildingInventoryController.currentBlock.AssetType == "Elevator")
+                            if (buildingInventoryController.currentBlock.AssetType == WHConstants.ELEVATOR)
                             {
                                 //TODO: Check for Elevator Validation
                                 NewBuildingController.CreateElevator(new Vector3(hitInfo.point.x, hitInfo.point.y, -0.2f), buildingInventoryController.currentBlock.BlockSprite);
                             }
-                            else if (buildingInventoryController.currentBlock.AssetType == "Wall")
+                            else if (buildingInventoryController.currentBlock.AssetType == WHConstants.WALL)
                             {
                                 _lineRender = true;
                                 CreateLine(hitInfo);
@@ -119,7 +119,7 @@ public class CreatorEventManager : MonoBehaviour
                     }
                     else if (hitInfo.transform.tag == WHConstants.METABLOCK)
                     {
-                        if (buildingInventoryController.currentBlock.AssetType == "Door")
+                        if (buildingInventoryController.currentBlock.AssetType == WHConstants.DOOR)
                         {
                             if (_CheckCanDropOnWall(ray, hitInfo))
                             {
@@ -127,7 +127,7 @@ public class CreatorEventManager : MonoBehaviour
                                 NewBuildingController.CreateDoor(item.name, new Vector3(hitInfo.point.x, hitInfo.point.y, 0), buildingInventoryController.currentBlock.BlockSprite);
                             }
                         }
-                        else if (buildingInventoryController.currentBlock.AssetType == "Window")
+                        else if (buildingInventoryController.currentBlock.AssetType == WHConstants.WINDOW)
                         {
                             if (_CheckCanDropOnWall(ray, hitInfo))
                             {
@@ -168,9 +168,9 @@ public class CreatorEventManager : MonoBehaviour
                 {
                     if (buildingInventoryController.currentBlock && hitInfo.transform.gameObject == BuildingCanvas)
                     {
-                        if (buildingInventoryController.currentBlock.CategoryName == "Build")
+                        if (buildingInventoryController.currentBlock.CategoryName == WHConstants.BUILD)
                         {
-                            if (buildingInventoryController.currentBlock.AssetType == "Wall")
+                            if (buildingInventoryController.currentBlock.AssetType == WHConstants.WALL)
                             {
                                 UpdateLine(hitInfo);
                             }
@@ -222,7 +222,7 @@ public class CreatorEventManager : MonoBehaviour
     private void _CanDrop()
     {
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-        if (buildingInventoryController.currentBlock != null && (buildingInventoryController.currentBlock.AssetType == "Window" || buildingInventoryController.currentBlock.AssetType == "Door") && !CreatorUIController.isInputOverVisualElement() && Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity))
+        if (buildingInventoryController.currentBlock != null && (buildingInventoryController.currentBlock.AssetType == WHConstants.WINDOW || buildingInventoryController.currentBlock.AssetType == WHConstants.DOOR) && !CreatorUIController.isInputOverVisualElement() && Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity))
         {
             if (hitInfo.transform.tag == WHConstants.METABLOCK)
             {
@@ -255,7 +255,7 @@ public class CreatorEventManager : MonoBehaviour
     private bool _CheckCanDropOnWall(Ray ray, RaycastHit hitInfo)
     {
         CreatorItem item = CreatorItemFinder.FindItemWithGameObject(hitInfo.transform.gameObject);
-        return (item != null && item is NewWall && ((NewWall)item).CanAddItem(ray.origin, buildingInventoryController.currentBlock.AssetType == "Window" ? WHConstants.DefaultWindowLength : WHConstants.DefaultDoorLength));
+        return (item != null && item is NewWall && ((NewWall)item).CanAddItem(ray.origin, buildingInventoryController.currentBlock.AssetType == WHConstants.WINDOW ? WHConstants.DefaultWindowLength : WHConstants.DefaultDoorLength));
     }
     private bool _IsMouseOverBuildingCanvas()
     {

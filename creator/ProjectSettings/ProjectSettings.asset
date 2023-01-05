@@ -134,13 +134,8 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: Version [0.25]-12192022
+  bundleVersion: Version [0.2]-12032022
   preloadedAssets:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
@@ -247,8 +242,7 @@ PlayerSettings:
   iOSLaunchScreeniPadCustomStoryboardPath: 
   iOSDeviceRequirements: []
   iOSURLSchemes: []
-  macOSURLSchemes:
-  - earth9-launcher
+  macOSURLSchemes: []
   iOSBackgroundModes: 0
   iOSMetalForceHardShadows: 0
   metalEditorSupport: 1
@@ -400,103 +394,6 @@ PlayerSettings:
       m_Height: 36
       m_Kind: 0
       m_SubKind: 
-  - m_BuildTarget: iPhone
-    m_Icons:
-    - m_Textures: []
-      m_Width: 180
-      m_Height: 180
-      m_Kind: 0
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 120
-      m_Height: 120
-      m_Kind: 0
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 167
-      m_Height: 167
-      m_Kind: 0
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 152
-      m_Height: 152
-      m_Kind: 0
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 76
-      m_Height: 76
-      m_Kind: 0
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 120
-      m_Height: 120
-      m_Kind: 3
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 80
-      m_Height: 80
-      m_Kind: 3
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 80
-      m_Height: 80
-      m_Kind: 3
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 40
-      m_Height: 40
-      m_Kind: 3
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 87
-      m_Height: 87
-      m_Kind: 1
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 58
-      m_Height: 58
-      m_Kind: 1
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 29
-      m_Height: 29
-      m_Kind: 1
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 58
-      m_Height: 58
-      m_Kind: 1
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 29
-      m_Height: 29
-      m_Kind: 1
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 60
-      m_Height: 60
-      m_Kind: 2
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 40
-      m_Height: 40
-      m_Kind: 2
-      m_SubKind: iPhone
-    - m_Textures: []
-      m_Width: 40
-      m_Height: 40
-      m_Kind: 2
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 20
-      m_Height: 20
-      m_Kind: 2
-      m_SubKind: iPad
-    - m_Textures: []
-      m_Width: 1024
-      m_Height: 1024
-      m_Kind: 4
-      m_SubKind: App Store
   m_BuildTargetBatching:
   - m_BuildTarget: Standalone
     m_StaticBatching: 1
@@ -513,6 +410,7 @@ PlayerSettings:
   - m_BuildTarget: WebGL
     m_StaticBatching: 0
     m_DynamicBatching: 0
+  m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs:
   - m_BuildTarget: MacStandaloneSupport
     m_GraphicsJobs: 0
@@ -564,6 +462,8 @@ PlayerSettings:
     m_Devices:
     - Oculus
     - OpenVR
+  m_DefaultShaderChunkSizeInMB: 16
+  m_DefaultShaderChunkCount: 0
   openGLRequireES31: 0
   openGLRequireES31AEP: 0
   openGLRequireES32: 0
@@ -596,10 +496,10 @@ PlayerSettings:
   enableInternalProfiler: 0
   logObjCUncaughtExceptions: 1
   enableCrashReportAPI: 0
-  cameraUsageDescription: use
+  cameraUsageDescription: y
   locationUsageDescription: 
-  microphoneUsageDescription: use
-  bluetoothUsageDescription: use
+  microphoneUsageDescription: y
+  bluetoothUsageDescription: y
   switchNMETAOverride: 
   switchNetLibKey: 
   switchSocketMemoryPoolSize: 6144
@@ -738,6 +638,7 @@ PlayerSettings:
   switchNetworkInterfaceManagerInitializeEnabled: 1
   switchPlayerConnectionEnabled: 1
   switchUseNewStyleFilepaths: 0
+  switchUseLegacyFmodPriorities: 0
   switchUseMicroSleepForYield: 1
   switchEnableRamDiskSupport: 0
   switchMicroSleepForYieldTime: 25
@@ -837,6 +738,7 @@ PlayerSettings:
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
   webGLDecompressionFallback: 0
+  webGLPowerPreference: 2
   scriptingDefineSymbols:
     Standalone: FBXSDK_RUNTIME;CREATOR
   additionalCompilerArguments: {}
@@ -849,6 +751,7 @@ PlayerSettings:
   allowUnsafeCode: 0
   useDeterministicCompilation: 1
   enableRoslynAnalyzers: 1
+  selectedPlatform: 0
   additionalIl2CppArgs: 
   scriptingRuntimeVersion: 1
   gcIncremental: 1
@@ -929,6 +832,7 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 2
+  windowsGamepadBackendHint: 0
   cloudProjectId: 44ce97f0-53b9-4147-ba6e-16cfd51477b4
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []

@@ -101,14 +101,14 @@ public class VideoCaptureController : MonoBehaviour
             manager.SetDefaults();
             manager.m_flythroughType = PegasusConstants.FlythroughType.SingleShot;
 
-            GameObject floor = SceneObject.Find(SceneObject.Mode.Player,"Floor001");
+            GameObject floor = SceneObject.Find(SceneObject.Mode.Player,WHConstants.FLOOR + "001");
             MeshRenderer renderer  = floor.GetComponent<MeshRenderer>();
 
             GameObject building = SceneObject.Find(SceneObject.Mode.Player,buildingName);
 
             var maxBounds = GetMaxBounds(building);
             MeshRenderer[] meshRenderers = building.GetComponentsInChildren<MeshRenderer> ();
-            GameObject wall = SceneObject.Find(SceneObject.Mode.Player,"Wall001");
+            GameObject wall = SceneObject.Find(SceneObject.Mode.Player,WHConstants.WALL+ "001");
             var totalFloorPlan = building.transform.childCount;
             var buildingHeight = building.transform.GetChild(totalFloorPlan -1).transform.position.y;
             var height = Math.Max(1.7f,buildingHeight/10.0f) * (buildingHeight);
@@ -152,11 +152,13 @@ public class VideoCaptureController : MonoBehaviour
     private void RemoveProcedurallyGeneratedOrAuthoredObjectIfExists()
     {
         GameObject procedurallyGeneratedObject = SceneObject.Find(SceneObject.Mode.Player, ObjectName.CREATOR_BUILDING + "_" + submissionDetail.buildingId + "[0]");
-        if(procedurallyGeneratedObject!=null){
+        if (procedurallyGeneratedObject != null)
+        {
             procedurallyGeneratedObject.SetActive(false);
         }
         GameObject liveAuthoredGameObject = SceneObject.Find(SceneObject.Mode.Player, ObjectName.CREATOR_BUILDING + "_LIVE_" + submissionDetail.buildingId);
-        if(liveAuthoredGameObject != null){
+        if (liveAuthoredGameObject != null)
+        {
             liveAuthoredGameObject.SetActive(false);
         }
     }

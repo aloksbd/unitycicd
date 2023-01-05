@@ -16,9 +16,9 @@ namespace ObjectModel
 
     public class Door : Item
     {
-        private Door() : base(() => NamingStrategy.GetName("Door")) { }
+        private Door() : base(() => NamingStrategy.GetName(WHConstants.DOOR)) { }
 
-        private Door(IHasPosition position, IHasDimension dimension) : base(() => NamingStrategy.GetName("Door"))
+        private Door(IHasPosition position, IHasDimension dimension) : base(() => NamingStrategy.GetName(WHConstants.DOOR))
         {
             AddComponent(position);
             AddComponent(new HasRotation());

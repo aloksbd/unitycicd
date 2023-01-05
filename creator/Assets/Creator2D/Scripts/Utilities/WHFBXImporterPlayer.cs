@@ -247,22 +247,22 @@ class WHFbxImporterPlayer : System.IDisposable
         ProcessTransform(fbxNode);
         CreatorItem currentItem = null;
 
-        if (name.Contains("Roof"))
+        if (name.Contains(WHConstants.ROOF))
         {
-            currentItem = new CreatorRoofFactory().Create("Roof", false);
+            currentItem = new CreatorRoofFactory().Create(WHConstants.ROOF, false);
             parentItem.AddChild(currentItem);
             roofItem = currentItem;
             roofItem.SetPosition(new Vector3(0, 0, 0));
         }
-        else if (name.Contains("FloorPlan"))
+        else if (name.Contains(WHConstants.FLOOR_PLAN))
         {
             if (roofItem == null)
             {
-                roofItem = new CreatorRoofFactory().Create("Roof", false);
+                roofItem = new CreatorRoofFactory().Create(WHConstants.ROOF, false);
                 parentItem.AddChild(roofItem);
                 roofItem.SetPosition(new Vector3(0, 0, 0));
 
-                var floorItem = new CreatorFloorFactory().Create("Floor001", false);
+                var floorItem = new CreatorFloorFactory().Create(WHConstants.FLOOR + "001", false);
                 roofItem.AddChild(floorItem);
                 floorItem.GetComponent<NewIHasBoundary>().SetBoundary(_floorBoundary);
             }
@@ -298,13 +298,13 @@ class WHFbxImporterPlayer : System.IDisposable
             var roofPosition = roofItem.Position;
             roofItem.SetPosition(new Vector3(0, 0, roofPosition.z + floorPlanHeight));
         }
-        else if (name.Contains("Floor"))
+        else if (name.Contains(WHConstants.FLOOR))
         {
             currentItem = new CreatorFloorFactory().Create(name, false);
             parentItem.AddChild(currentItem);
             currentItem.GetComponent<NewIHasBoundary>().SetBoundary(_floorBoundary);
         }
-        else if (name.Contains("Ceiling"))
+        else if (name.Contains(WHConstants.CEILING))
         {
             float height = WHConstants.DefaultFloorHeight;
             if (parentItem.GetComponent<NewIHasDimension>() != null)
@@ -316,7 +316,7 @@ class WHFbxImporterPlayer : System.IDisposable
             currentItem.GetComponent<NewIHasPosition>().SetPosition(new Vector3(0, 0, height));
             currentItem.GetComponent<NewIHasBoundary>().SetBoundary(_floorBoundary);
         }
-        else if (name.Contains("Wall"))
+        else if (name.Contains(WHConstants.WALL))
         {
             var pos = goPos;
             var endX = pos.x;
@@ -336,16 +336,16 @@ class WHFbxImporterPlayer : System.IDisposable
             currentItem = new CreatorWallFactory(new Vector3(pos.x, pos.z, WHConstants.DefaultZ), new Vector3(endX, endY, WHConstants.DefaultZ), isExterior).Create(name, false);
             parentItem.AddChild(currentItem);
         }
-        else if (name.Contains("Door") || name.Contains("Window"))
+        else if (name.Contains(WHConstants.DOOR) || name.Contains(WHConstants.WINDOW))
         {
             var pos = goPos;
             var parentPos = parentItem.GetComponent<NewIHasPosition>().Position;
-            Sprite sprite = name.Contains("Door") ? Resources.Load<Sprite>("Sprites/Door") : Resources.Load<Sprite>("Sprites/Window");
-            currentItem = name.Contains("Door") ? new CreatorDoorFactory(parentItem, new Vector3(pos.x + parentPos.x, parentPos.y, WHConstants.DefaultZ), sprite).Create(name, false) : new CreatorWindowFactory(parentItem, new Vector3(pos.x + parentPos.x, parentPos.y, WHConstants.DefaultZ), sprite).Create(name, false);
+            Sprite sprite = name.Contains(WHConstants.DOOR) ? Resources.Load<Sprite>("Sprites/Door") : Resources.Load<Sprite>("Sprites/Window");
+            currentItem = name.Contains(WHConstants.DOOR) ? new CreatorDoorFactory(parentItem, new Vector3(pos.x + parentPos.x, parentPos.y, WHConstants.DefaultZ), sprite).Create(name, false) : new CreatorWindowFactory(parentItem, new Vector3(pos.x + parentPos.x, parentPos.y, WHConstants.DefaultZ), sprite).Create(name, false);
             parentItem.AddChild(currentItem);
             // currentItem.gameObject.transform.localPosition = new Vector3(goPos.x, 0.0f, -0.2f);
         }
-        else if (name.Contains("Elevator"))
+        else if (name.Contains(WHConstants.ELEVATOR))
         {
             var pos = goPos;
             Sprite sprite = Resources.Load<Sprite>("Sprites/Elevator");

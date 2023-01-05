@@ -642,6 +642,10 @@ namespace TerrainEngine
         {
             SetPresentationState(PresentationState.Running);
             SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
+            var authenticationUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.AUTHENTICATION_UI);
+            authenticationUI.SetActive(false);
+            var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+            loadingUI.SetActive(false);
         }
 
         public void OnResume()
