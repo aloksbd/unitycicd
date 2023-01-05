@@ -246,8 +246,8 @@ jobs:
           
           # Finally, we need to "attach the staple" to our executable, which will allow our app to be
           # validated by macOS even when an internet connection is not available.
-          echo "Attach staple"
-          xcrun stapler staple "creator/build/mac/earth9/earth9.app"
+          #echo "Attach staple"
+          #xcrun stapler staple "creator/build/mac/earth9/earth9.app"
           
           #
           #
