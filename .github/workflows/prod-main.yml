@@ -1,4 +1,4 @@
-name: Build Installer
+name: Build prod Installer
 
 on:
   push:
