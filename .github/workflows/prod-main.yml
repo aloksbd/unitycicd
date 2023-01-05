@@ -6,106 +6,6 @@ on:
       - main
 
 jobs:
-#   buildInstallerForWindows:
-#     name: Build for windows
-#     runs-on: windows-2019 #For docker error in windows-latest
-#     strategy:
-#       fail-fast: false
-    
-#     steps:
-#       - uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-#           lfs: true
-
-#       - name: Get current date for build generation
-#         id: date
-#         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-
-#       - name: Cache for windows
-#         uses: actions/cache@v2
-#         with:
-#           path: creator/Library
-#           key: Library-creator-StandaloneWindows64-${{
-#             hashFiles('creator/**') }}
-#           restore-keys: |
-#             Library-creator-StandaloneWindows64-
-#             Library-creator-
-#             Library-
-
-#       - name: Setup Preprocessor for build
-#         uses: game-ci/unity-builder@v2
-#         env:
-#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#         with:
-#           projectPath: creator
-#           targetPlatform: StandaloneWindows64
-#           buildMethod: Earth9Builder.BuildScript.BuildCreator
-
-#       - name: Build Play for windows
-#         uses: game-ci/unity-builder@v2
-#         env:
-#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#         with:
-#           projectPath: creator
-#           targetPlatform: StandaloneWindows64
-#           buildMethod: Earth9Builder.BuildScript.BuildPlay
-#           allowDirtyBuild: true
-          
-#       - name: Build Creator for windows
-#         uses: game-ci/unity-builder@v2
-#         env:
-#           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-#           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-#           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#         with:
-#           projectPath: creator
-#           targetPlatform: StandaloneWindows64
-#           buildMethod: Earth9Builder.BuildScript.BuildCreator
-#           allowDirtyBuild: true
-
-# #       - name: Build Admin for windows
-# #         uses: game-ci/unity-builder@v2
-# #         env:
-# #           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-# #           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-# #           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-# #         with:
-# #           projectPath: creator
-# #           targetPlatform: StandaloneWindows64
-# #           buildMethod: Earth9Builder.BuildScript.BuildAdmin
-# #           allowDirtyBuild: true
-
-#       - name: Building the installer
-#         run: |
-#           "C:\Program Files (x86)\Inno Setup 6\iscc.exe" "earth9-installer.iss"
-#         shell: cmd
-          
-#       - name: Upload the installer as an artifact
-#         uses: actions/upload-artifact@v2
-#         if: ${{ github.event_name != 'pull_request' }}
-#         with:
-#           path: "Output"
-#           name: Setup-Windows-${{ steps.date.outputs.date }}
-          
-#       - name: Create zip of admin-build
-#         uses: vimtor/action-zip@v1
-#         with:
-#           files: creator/build/windows/earth9-admin/
-#           recursive: true
-#           dest: admin-build-${{ steps.date.outputs.date }}.zip
-
-#       - name: Upload admin-build.zip to Google Drive
-#         uses: adityak74/google-drive-upload-git-action@main
-#         with:
-#           credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
-#           filename: admin-build-${{ steps.date.outputs.date }}.zip
-#           overwrite: true
-#           folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER }}
 
   buildInstallerForMacOS:
     name: Build Installer for MacOS
@@ -139,19 +39,7 @@ jobs:
             Library-creator-
             Library-
             
-      #- name: Setup Preprocessor for build
-       # uses: game-ci/unity-builder@v2
-        #env:
-         # UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          #UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          #UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        #with:
-         # projectPath: ${{ matrix.projectPath }}
-          #targetPlatform: ${{ matrix.targetPlatform }}
-          #buildMethod: Earth9Builder.BuildScript.BuildPlay
-      
-
-      - name: Build Testing for Mac
+      - name: Setup Preprocessor for build
         uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -159,9 +47,9 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ matrix.projectPath }}
-          targetPlatform: StandaloneOSX
-          buildMethod: Earth9Builder.BuildScript.BuildTestingPlay
-          #allowDirtyBuild: true
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildMethod: Earth9Builder.BuildScript.BuildPlay
+    
 
       - name: Codesign Play mode app bundle
         # Extract the secrets we defined earlier as environment variables
@@ -233,15 +121,9 @@ jobs:
       - name: Building the installer
         run: |
           brew install create-dmg
-          #create-dmg --volname "Earth9 installer" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/mac/earth9/earth9.app" 200 190 --app-drop-link 600 185 --eula "license.rtf" "earth9.dmg" "creator/build/mac/earth9/earth9.app"
-          create-dmg --volname "Earth9 installer" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/mac/earth9-testing/earth9-testing.app" 200 190 --app-drop-link 600 185 --eula "license.rtf" "earth9-testing.dmg" "creator/build/mac/earth9-testing/earth9-testing.app"
-      
-      #- uses: actions/upload-artifact@v2
-        #with:
-          #name: Setup-Mac-Play-${{ steps.date.outputs.date }}
-          #path: earth9.dmg
+          create-dmg --volname "Earth9 installer" --window-pos 200 120 --window-size 800 450 --icon-size 100 --icon "creator/build/mac/earth9/earth9.app" 200 190 --app-drop-link 600 185 --eula "license.rtf" "earth9.dmg" "creator/build/mac/earth9/earth9.app"
           
       - uses: actions/upload-artifact@v2
         with:
-          name: Setup-Mac-Testing-${{ steps.date.outputs.date }}
-          path: earth9-testing.dmg
+          name: Setup-Mac-Play-${{ steps.date.outputs.date }}
+          path: earth9.dmg
