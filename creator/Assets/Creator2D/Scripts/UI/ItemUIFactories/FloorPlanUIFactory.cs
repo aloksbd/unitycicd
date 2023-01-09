@@ -47,7 +47,6 @@ public class FloorPlanUIFactory : IItemUIFactory
     {
         TextField heightField = new TextField();
         heightField.AddToClassList("col-md-10");
-        heightField.AddToClassList("col-md-10");
         heightField.AddToClassList("floor-height-input"); //TODO this css is getting overriden?
         heightField.style.marginRight = 0;
         heightField.style.marginLeft = 0;

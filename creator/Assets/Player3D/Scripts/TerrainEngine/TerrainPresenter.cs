@@ -632,8 +632,17 @@ namespace TerrainEngine
             controller.UpdateState(TerrainController.TerrainState.UserAborted);
             StartCoroutine(WaitForTerrainAborted(() =>
             {
-                SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
+                NavigateToWelcomeMode();
             }));
+        }
+
+        private void NavigateToWelcomeMode()
+        {
+            SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
+            var authenticationUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.AUTHENTICATION_UI);
+            authenticationUI.SetActive(false);
+            var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+            loadingUI.SetActive(false);
         }
 
         //-------------------------------------------
@@ -641,11 +650,7 @@ namespace TerrainEngine
         public void OnExitToMainMenu()
         {
             SetPresentationState(PresentationState.Running);
-            SceneObject.Get().ActiveMode = SceneObject.Mode.Welcome;
-            var authenticationUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.AUTHENTICATION_UI);
-            authenticationUI.SetActive(false);
-            var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
-            loadingUI.SetActive(false);
+            NavigateToWelcomeMode();
         }
 
         public void OnResume()

@@ -49,7 +49,16 @@ public class OsmBuildings
 #else
         if (DeeplinkHandler.Instance.isDeeplinkCalled && buildingId == null)
         {
-            buildingId = DeeplinkHandler.BuildData.building_id != null ? DeeplinkHandler.BuildData.building_id : "53ca1211-e6cb-44d9-88e1-f329d89bbe78";
+            buildingId = DeeplinkHandler.BuildData.building_id != null ? DeeplinkHandler.BuildData.building_id : null;
+            if (buildingId == null)
+            {
+                LoadingUIController.ActiveMode = LoadingUIController.Mode.NoBuildingDetected;
+                LoadingUIController.existingbuildingid = null;
+                LoadingUIController.newBuildingId = null;
+                LoadingUIController.osmBuildingData = null;
+                var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+                loadingUI.SetActive(true);
+            }
         }
 #endif
         using (var result = await _httpClient.GetAsync(new System.Uri(WHConstants.API_URL + "/buildings/" + buildingId)))

@@ -106,7 +106,7 @@ public class LoadingUIController : MonoBehaviour
         continuePreviousBuild.RegisterCallback<PointerUpEvent>(async (evt) =>
         {
             gameObject.SetActive(false); // gameObject will refer to current LoadingUI GameObject
-            if (CreatorUIController.getRoot() != null)
+            if (CreatorUIController.getRoot() != null && CreatorUIController.buildingID != null)
             {
                 SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
             }

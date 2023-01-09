@@ -33,8 +33,20 @@ public class AuthenticationUIController : MonoBehaviour
         var obj = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.AUTHENTICATION_UI);
         obj.SetActive(false);
 
-        var obj1 = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.WELCOME_UI);
-        obj1.SetActive(true);
+        var PrevActiveMode = SceneObject.Get().PrevActiveMode;
+        if (PrevActiveMode != SceneObject.Mode.INVALID)
+        {
+            SceneObject.Get().ActiveMode = PrevActiveMode;
+            if (PrevActiveMode == SceneObject.Mode.Creator)
+            {
+                CreatorUIController.Get().UserProfileDesign();
+            }
+        }
+        else
+        {
+            var obj1 = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.WELCOME_UI);
+            obj1.SetActive(true);
+        }
     }
 
     private void AuthenticationHandler_OnAuthenticationFailed()

@@ -15,7 +15,7 @@ public class Node
     private Color _originalColor;
     private LayerMask _layerMask;
     public CreatorItem floor;
-    public Vector3 offset;
+    public Vector3 offset, InitialPos;
     public enum NodeState
     {
         CLICKABLE,
@@ -93,6 +93,7 @@ public class Node
 
     public void NodeDragStart(Vector3 data)
     {
+        InitialPos = data;
         CreatorHotKeyController.Instance.DeselectAllItems();
         HighLight();
     }
@@ -134,6 +135,10 @@ public class Node
     {
         if (nodeState == NodeState.CLICKABLE)
         {
+            if (InputEventHandler.CheckObjectOverlap(this.nodeGO))
+            {
+                onNodeDrag?.Invoke(InitialPos, this);
+            }
             InputEventHandler.selected = false;
 
             RemoveHighLight();

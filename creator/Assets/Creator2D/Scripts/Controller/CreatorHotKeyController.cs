@@ -118,14 +118,14 @@ public class CreatorHotKeyController : MonoBehaviour
             {
                 var temp = TransformDatas.SelectedObject.item;
                 DeselectAllItems();
-                NewBuildingController.DeleteItem(temp.name, false);
+                NewBuildingController.DeleteItem(temp.name);
             }
 
             if (TransformDatas.SelectedWallObject != null)
             {
                 var temp = TransformDatas.SelectedWallObject.item;
                 DeselectAllItems();
-                NewBuildingController.DeleteItem(temp.name, false);
+                NewBuildingController.DeleteWallObject(temp.name, temp.Parent);
             }
         }
     }

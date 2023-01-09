@@ -116,14 +116,12 @@ public class InputEventHandler : MonoBehaviour, IDragHandler, IBeginDragHandler,
 
         return false;
     }
-    static GameObject target;
 
-    public static bool CheckWallObjectOverlap(GameObject GO)
+    public static bool CheckObjectOverlap(GameObject GO)
     {
-        target = GO;
         var bound = GO.GetComponent<BoxCollider>().bounds;
 
-        Collider[] collider = Physics.OverlapBox(bound.center, bound.extents * 2, Quaternion.identity, UiWallObjectOverlap, QueryTriggerInteraction.Collide);
+        Collider[] collider = Physics.OverlapBox(bound.center, bound.extents, Quaternion.identity, UiWallObjectOverlap, QueryTriggerInteraction.Collide);
         if (collider.Length > 0)
         {
             foreach (var obj in collider)

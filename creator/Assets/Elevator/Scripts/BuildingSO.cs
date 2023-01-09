@@ -8,8 +8,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "CurrentBuildingData", menuName = "Elevator/BuildingData")]
 public class BuildingSO : ScriptableObject
 {
-    public List<FloorData>      floorData = new List<FloorData>();
-    public int                  numberOfFloors = 0;
+    public List<FloorData> floorData = new List<FloorData>();
+    public int numberOfFloors = 0;
 
     public async Task LoadData()
     {
@@ -17,7 +17,7 @@ public class BuildingSO : ScriptableObject
         FloorData floorData;
         foreach (var floorPlan in NewBuildingController.GetBuilding().children)
         {
-            linkedFloor = LinkedFloorPlan.GetLinkedItems(floorPlan);
+            linkedFloor = LinkedFloorPlan.GetChildItems(floorPlan);
             floorData = new FloorData();
             foreach (var item in linkedFloor)
             {

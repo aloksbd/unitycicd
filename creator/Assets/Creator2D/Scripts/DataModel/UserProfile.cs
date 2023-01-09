@@ -4,10 +4,16 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
+using UnityEngine;
 
 public class UserProfile
 {
     private static readonly HttpClient _httpClient = new HttpClient();
+
+    public static void LogOut()
+    {
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
+    }
     public static async Task<UserProfileData> GetUserProfileData()
     {
         if (_httpClient.DefaultRequestHeaders.Authorization == null)

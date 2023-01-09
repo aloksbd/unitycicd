@@ -188,6 +188,6 @@ public class AuthenticationHandler
         AccessToken = null;
         IsAuthenticated = false;
         PlayerPrefs.DeleteKey("access_token");
-
+        UserProfile.LogOut();
     }
 }

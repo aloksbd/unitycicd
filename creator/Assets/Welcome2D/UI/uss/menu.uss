@@ -106,11 +106,11 @@
 }
 
 .loading-label {
-    align-items: center; width: 100%; flex-wrap: nowrap; white-space: normal; -unity-text-align: upper-center; color: rgb(250, 247, 247); -unity-font-style: bold; font-size: 60%; margin-top: 0; padding-left: 40px; margin-left: 0; margin-right: 0; margin-bottom: 0; padding-right: 40px; top: 20%;
+    align-items: center; width: 100%; flex-wrap: nowrap; white-space: normal; -unity-text-align: upper-center; color: rgb(250, 247, 247); -unity-font-style: bold; font-size: 70%; margin-top: 0; padding-left: 40px; margin-left: 0; margin-right: 0; margin-bottom: 0; padding-right: 40px; top: 20%;
 }
 
 .loading-sub-label {
-    align-items: center; width: 100%; flex-wrap: nowrap; white-space: normal; -unity-text-align: upper-center; color: rgb(253, 251, 251); -unity-font-style: bold; font-size: 20%; margin-top: 0; padding-left: 40px; padding-top: 20px; margin-left: 0; margin-right: 0; margin-bottom: 0; padding-right: 40px; top: 20%;
+    align-items: center; width: 100%; flex-wrap: nowrap; white-space: normal; -unity-text-align: upper-center; color: rgb(253, 251, 251); -unity-font-style: bold; font-size: 40%; margin-top: 0; padding-left: 40px; padding-top: 20px; margin-left: 0; margin-right: 0; margin-bottom: 0; padding-right: 40px; top: 20%;
 }
 
 .loading-button {

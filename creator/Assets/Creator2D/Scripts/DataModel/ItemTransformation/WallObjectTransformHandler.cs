@@ -116,19 +116,14 @@ public class WallObjectTransformHandler : ITransformHandler
     {
         if (wallObjectState == WallObjectState.CLICKABLE)
         {
-            if (InputEventHandler.CheckWallObjectOverlap(this._objectGO))
+            if (InputEventHandler.CheckObjectOverlap(this._objectGO))
             {
-                Trace.Log($"REPOSITION TO INTIAL POS");
                 this._objectGO.transform.localPosition = InitialPos;
             }
-            else
-            {
-                Trace.Log($"OK");
-                InputEventHandler.selected = false;
-                var wallItem = this.item.Parent;
-                NewBuildingController.UpdateWallObject(this.item.name, wallItem, this._objectGO.transform.position, this._objectGO.transform.localPosition, this._objectType);
-                RemoveHighlight();
-            }
+            InputEventHandler.selected = false;
+            var wallItem = this.item.Parent;
+            NewBuildingController.UpdateWallObject(this.item.name, wallItem, this._objectGO.transform.position, this._objectGO.transform.localPosition, this._objectType);
+            RemoveHighlight();
         }
     }
 

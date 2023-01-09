@@ -44,7 +44,8 @@ public class NewBuildingController
     public static CreatorItem CreateFloorPlan(string SelectedFloorPlanName)
     {
         float posZ = 0;
-        CreatorItem belowFloorPlan = GetPreviousFloorPlan();
+        List<CreatorItem> FloorPlanList = GetPreviousFloorPlan();
+        CreatorItem belowFloorPlan = FloorPlanList.Count > 0 ? FloorPlanList[FloorPlanList.Count - 1] : null;
         if (belowFloorPlan != null)
         {
             var z = belowFloorPlan.GetComponent<NewIHasPosition>().Position.z;
@@ -134,18 +135,18 @@ public class NewBuildingController
         unLinkButton.RemoveFromHierarchy();
     }
 
-    private static CreatorItem GetPreviousFloorPlan()
+    private static List<CreatorItem> GetPreviousFloorPlan()
     {
-        CreatorItem previousFloorPlan = null;
+        List<CreatorItem> FloorPlanList = new List<CreatorItem>();
 
         foreach (var child in GetBuilding().children)
         {
             if (child.name.Contains(WHConstants.FLOOR_PLAN))
             {
-                previousFloorPlan = child;
+                FloorPlanList.Add(child);
             }
         }
-        return previousFloorPlan;
+        return FloorPlanList;
     }
 
     public static void CreateRoof()
@@ -160,7 +161,9 @@ public class NewBuildingController
 
     public static void CreateFloor(List<Vector3> boundary)
     {
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             string name = NamingController.GetName(WHConstants.FLOOR, floorPlan.uiItem.Foldout.Children());
@@ -213,7 +216,9 @@ public class NewBuildingController
         {
             height = floorPlan.GetComponent<NewIHasDimension>().Dimension.Height;
         }
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             string name = NamingController.GetName(WHConstants.CEILING, floorPlan.uiItem.Foldout.Children());
@@ -231,7 +236,9 @@ public class NewBuildingController
     public static void CreateWall(Vector3 startPosition, Vector3 endPosition, bool attach = true, bool isExterior = false)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             string name = NamingController.GetName(WHConstants.WALL, floorPlanItem.uiItem.Foldout.Children());
@@ -268,7 +275,9 @@ public class NewBuildingController
     public static void UpdateWall(string ItemName, Vector3 pos0, Vector3 pos1, float angle)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(ItemName, floorPlanItem);
@@ -284,7 +293,9 @@ public class NewBuildingController
     public static void UpdateWallHandle(string ItemName, Vector3 pos0, Vector3 pos1, float angle, bool attach = true)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(ItemName, floorPlanItem);
@@ -351,7 +362,9 @@ public class NewBuildingController
     public static void UpdateWallObject(string itemName, CreatorItem itemParent, Vector3 position, Vector3 localPosition, string type)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(itemParent.name, floorPlanItem);
@@ -423,10 +436,28 @@ public class NewBuildingController
         CreatorUIController.UnSavedProgress = true;
     }
 
+    public static void DeleteWallObject(string itemName, CreatorItem itemParent)
+    {
+        CheckAndRemoveFromParent(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
+        foreach (CreatorItem floorPlanItem in linkedFloors)
+        {
+            CreatorItem parentItem = CreatorItemFinder.FindByName(itemParent.name, floorPlanItem);
+            CreatorItem objItem = CreatorItemFinder.FindByName(itemName, parentItem);
+
+            var deleteCommand = new DeleteItemCommand(objItem.Id, false);
+            deleteCommand.Execute();
+        }
+    }
+
     public static void CreateDoor(string wallName, Vector3 startPosition, UnityEngine.Sprite sprite)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(wallName, floorPlanItem);
@@ -455,7 +486,9 @@ public class NewBuildingController
     public static void CreateWindow(string wallName, Vector3 startPosition, UnityEngine.Sprite sprite)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(wallName, floorPlanItem);
@@ -478,8 +511,7 @@ public class NewBuildingController
     {
         var floorPlanName = uIItem.Foldout.name;
         var item = CreatorItemFinder.FindByName(floorPlanName);
-        var previousFloorPlan = GetPreviousFloorPlan();
-        if (previousFloorPlan != null && previousFloorPlan == item)
+        if (GetPreviousFloorPlan().Count < 2)
         {
             return; // We are not allowing to delete the floorplan if there is only one TODO need to show a warning dialog
         }
@@ -488,7 +520,7 @@ public class NewBuildingController
         {
             LinkedFloorPlan.UnLink(item, parentItem);
         }
-        List<CreatorItem> linkedItemList = LinkedFloorPlan.GetLinkedItems(item);
+        List<CreatorItem> linkedItemList = LinkedFloorPlan.GetChildItems(item);
         for (var i = 0; i < linkedItemList.Count; i++)
         {
             if (linkedItemList[i] != item)
@@ -509,7 +541,9 @@ public class NewBuildingController
     public static void DetachNodes(string itemName, int key)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
             CreatorItem parentItem = CreatorItemFinder.FindByName(itemName, floorPlanItem);
@@ -529,7 +563,9 @@ public class NewBuildingController
     public static void DetachWall(string itemName)
     {
         CheckAndRemoveFromParent(floorPlan);
-        List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+        List<CreatorItem> linkedFloors = new List<CreatorItem>();
+        linkedFloors.Add(floorPlan);
+        LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
 
         foreach (CreatorItem floorPlanItem in linkedFloors)
         {
@@ -542,13 +578,15 @@ public class NewBuildingController
         }
     }
 
-    public static void DeleteItem(string itemName, bool isWall = false)
+    public static void DeleteItem(string itemName)
     {
         var itemCheck = CreatorItemFinder.FindByName(itemName, floorPlan);
         if (!(itemCheck is NewElevator))
         {
             CheckAndRemoveFromParent(floorPlan);
-            List<CreatorItem> linkedFloors = LinkedFloorPlan.GetLinkedItems(floorPlan);
+            List<CreatorItem> linkedFloors = new List<CreatorItem>();
+            linkedFloors.Add(floorPlan);
+            LinkedFloorPlan.GetLinkedItems(floorPlan, linkedFloors);
             foreach (CreatorItem floorPlanItem in linkedFloors)
             {
                 var item = CreatorItemFinder.FindByName(itemName, floorPlanItem);
@@ -593,7 +631,7 @@ public class NewBuildingController
                     if (itemFloorPlanNumber >= floorPlanNumber)
                     {
                         string name = WHConstants.FLOOR_PLAN + NamingController.GetFormattedNumber(itemFloorPlanNumber + adjustByNumber);
-                        foreach (CreatorItem linkedItem in LinkedFloorPlan.GetLinkedItems(item))
+                        foreach (CreatorItem linkedItem in LinkedFloorPlan.GetChildItems(item))
                         {
                             if (item != linkedItem)
                             {

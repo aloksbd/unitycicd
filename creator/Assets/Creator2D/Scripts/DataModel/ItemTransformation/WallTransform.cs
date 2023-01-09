@@ -118,6 +118,7 @@ public class WallTransform : ITransformHandler
         foreach (var node in wallListener.nodes)
         {
             node.Value.offset = node.Value.nodeGO.transform.position - data;
+            node.Value.InitialPos = data;
         }
     }
 

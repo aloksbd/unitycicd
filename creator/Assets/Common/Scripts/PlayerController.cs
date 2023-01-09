@@ -342,7 +342,7 @@ public class PlayerController : MonoBehaviour
                     {
                         SceneObject.Get().ActiveMode = SceneObject.Mode.Creator;
                     }
-                    else if (unsubmittedId != null)
+                    else if (osmBuildingData.id != CreatorUIController.buildingID || unsubmittedId != null)
                     {
                         LoadingUIController.ActiveMode = LoadingUIController.Mode.PreviousBuildDetected;
                         LoadingUIController.existingbuildingid = CreatorUIController.buildingID;

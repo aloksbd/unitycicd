@@ -40,6 +40,11 @@ public class UIItem : IRenamable
         foldout.name = name;
         foldout.text = name;
         foldout.value = value;
+        if (name == "Roof")
+        {
+            foldout.style.paddingLeft = 10;
+            foldout.AddToClassList(WHCSSConstants.PINK_BACKGROUND_COLOR);
+        }
         foldout.AddToClassList("normal-font");
         foldout.AddToClassList("typography_variant_subtitle2");
         foldout.AddToClassList("full-width");
@@ -57,7 +62,7 @@ public class UIItem : IRenamable
         // _value is used to store _foldout's value because _foldout.value reverts to previous state after exiting this function
         _value = !_value;
         _foldout.value = _value;
-        // _foldout.ToggleInClassList(WHCSSConstants.WHITE_BACKGROUND_COLOR);
+        _foldout.ToggleInClassList(WHCSSConstants.WHITE_BACKGROUND_COLOR);
         if (_delegate != null && propagate) _delegate.OnCLick();
     }
 

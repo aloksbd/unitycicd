@@ -55,6 +55,7 @@ public class CreatorUIController : MonoBehaviour
 
     async public void Awake()
     {
+        c_instance = this;
         m_UIDocument = GetComponent<UIDocument>();
         CreatorUIController.root = m_UIDocument.rootVisualElement;
         CreatorUIController.root.Query(className: "toptool-button").
@@ -111,13 +112,38 @@ public class CreatorUIController : MonoBehaviour
         if (TerrainController.Get() == null || TerrainController.Get().GetState() == TerrainController.TerrainState.Unloaded)
         {
             OsmBuildingData buildingData = await OsmBuildings.GetBuildingDetail();
-            previousBuildingID = buildingData.id;
-            CreateBuildingCanvas(buildingData);
+            string unsubmittedId = CreatorSubmission.GetUsersUnSubmittedBuildingId();
+            if (unsubmittedId != null && buildingData.id != unsubmittedId)
+            {
+                LoadingUIController.ActiveMode = LoadingUIController.Mode.PreviousBuildDetected;
+                LoadingUIController.existingbuildingid = unsubmittedId;
+                LoadingUIController.newBuildingId = buildingData.id;
+                LoadingUIController.osmBuildingData = buildingData;
+                var loadingUI = SceneObject.Find(SceneObject.Mode.Welcome, ObjectName.LOADING_UI);
+                loadingUI.SetActive(true);
+            }
+            else
+            {
+                previousBuildingID = buildingData.id;
+                CreateBuildingCanvas(buildingData);
+            }
         }
 #endif
     }
 
-    private async void UserProfileDesign()
+    private static CreatorUIController c_instance = null;
+
+    public static CreatorUIController Get()
+    {
+        if (c_instance == null)
+        {
+            c_instance = new CreatorUIController();
+        }
+        return c_instance;
+    }
+
+
+    public async void UserProfileDesign()
     {
         UserProfileData userData = await UserProfile.GetUserProfileData();
         Label userNameLabel = CreatorUIController.root.Q<Label>("UserName");
@@ -483,7 +509,7 @@ public class CreatorUIController : MonoBehaviour
 
     public static async Task<string> OnSaveBeforeSubmit()
     {
-         return await SaveFBX(true);
+        return await SaveFBX(true);
     }
 
     public static async Task<string> SaveFBX(bool isSaveBeforeSubmit = false)

@@ -83,6 +83,7 @@
     border-right-color: rgb(51, 148, 255);
     border-top-color: rgb(51, 148, 255);
     border-bottom-color: rgb(51, 148, 255);
+    margin-right: 10px;
 }
 
 .avatar-label {
@@ -339,7 +340,7 @@
     background-color: rgb(255, 255, 255);
     min-width: 80px;
     height: 20px;
-    margin-top: 2px;
+    margin-top: 4px;
     border-top-width: 1px;
     border-bottom-width: 1px;
     border-right-width: 1px;
@@ -352,6 +353,8 @@
     border-bottom-left-radius: 2px;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 .add-floor-drop-down .unity-popup-field__input {
